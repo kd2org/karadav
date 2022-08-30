@@ -1,0 +1,4 @@
+FallbackResource /index.php
+
+# see https://stackoverflow.com/a/66136226
+ErrorDocument 404 /index.php
