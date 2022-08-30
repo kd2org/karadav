@@ -1,0 +1,156 @@
+body {
+	text-align: center;
+}
+
+table {
+	margin: 2em auto;
+}
+
+table tr:nth-child(even) {
+	background: #eee;
+}
+
+input[type=button], input[type=submit] {
+	font-size: 1.2em;
+	padding: .3em .5em;
+	margin: 0 .3em;
+	border: none;
+	background: #ccc;
+	border-radius: .2em;
+	cursor: pointer;
+}
+
+td input[type=button], td input[type=submit] {
+	font-size: 1em;
+}
+
+input[type=text], textarea {
+	font-size: 1.2em;
+	padding: .3em .5em;
+	border: none;
+	background: #fff;
+	border-radius: .2em;
+	width: calc(100% - 1em);
+}
+
+input:focus, textarea:focus {
+	box-shadow: 0px 0px 5px blue;
+	outline: 1px solid #999;
+}
+
+input[type=button]:hover, input[type=submit]:hover {
+	color: darkred;
+	text-decoration: underline;
+	background: #fff;
+	box-shadow: 0px 0px 5px #000;
+}
+
+.close {
+	text-align: right;
+	margin: 0;
+}
+
+.close input {
+	font-size: .8em;
+}
+
+input[type=submit] {
+	float: right;
+}
+
+dialog {
+	position: absolute;
+	top: 1em;
+	right: 1em;
+	bottom: 1em;
+	left: 1em;
+	box-shadow: 0px 0px 5px #000;
+	background: #eee;
+	border: none;
+	border-radius: .5em;
+}
+
+dialog form div {
+	clear: both;
+	margin: 2em 0;
+	text-align: center;
+}
+
+.a {
+	margin: 1em 0;
+}
+
+#mdp div, #mdp textarea {
+	width: calc(100% - 1em);
+	padding: .5em;
+	font-size: 1em;
+	height: calc(100% - 1em);
+	text-align: left;
+	margin: 0;
+}
+
+#md {
+	overflow: hidden;
+	overflow-x: auto;
+}
+
+#mdp {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-gap: .2em;
+	background: #ddd;
+	height: 82vh;
+}
+
+dialog.preview {
+	height: calc(100%);
+	width: calc(100%);
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 0;
+	border-radius: 0;
+}
+
+iframe, .md_preview {
+	overflow: auto;
+	position: absolute;
+	top: 2em;
+	left: 0;
+	width: calc(100vw);
+	height: calc(100vh);
+	padding: 0;
+	margin: 0;
+	border: none;
+}
+
+.preview form {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.md_preview {
+	width: calc(100vw - 2em);
+	height: calc(100vh - 2em);
+	padding: 1em;
+	text-align: left;
+}
+
+.preview .close {
+	height: 2em;
+	text-align: center;
+	font-size: 1em;
+	display: block;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	border-radius: 0;
+}
+
+.preview img {
+	max-width: 95%;
+	max-height: 95%;
+}
