@@ -26,8 +26,7 @@ CREATE TABLE app_sessions (
 );
 
 CREATE INDEX app_sessions_idx ON app_sessions (user);
-
-CREATE INDEX app_sessions_login ON app_sessions (user);
+CREATE UNIQUE INDEX app_sessions_token ON app_sessions (token);
 
 -- Files properties stored using PROPPATCH
 -- We are not using this currently, this is just to get test coverage from litmus
@@ -36,6 +35,7 @@ CREATE TABLE properties (
 	uri TEXT NOT NULL,
 	ns_url TEXT NOT NULL,
 	name TEXT NOT NULL,
+	ns TEXT NOT NULL,
 	xml TEXT NOT NULL
 );
 

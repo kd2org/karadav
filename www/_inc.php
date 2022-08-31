@@ -52,26 +52,29 @@ function get_directory_size(string $path): int
 	return $total;
 }
 
-function html(string $title, string $html): void
+function html_head(string $title): void
 {
 	$title = htmlspecialchars($title);
 
 	echo <<<EOF
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8" />
-	<title>{$title}</title>
-	<link rel="stylesheet" type="text/css" href="/admin.css" />
-</head>
-<body>
-<h1>{$title}</h1>
-{$html}
-<footer>
-	Powered by <a href="https://github.com/kd2.org/karadav/">KaraDAV</a>
-</footer>
-</body>
-</html>
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>{$title}</title>
+		<link rel="stylesheet" type="text/css" href="/admin.css" />
+	</head>
+	<body>
+	<h1>{$title}</h1>
 EOF;
+}
 
+function html_foot(): void
+{
+	echo '
+	<footer>
+		Powered by <a href="https://github.com/kd2.org/karadav/">KaraDAV</a>
+	</footer>
+	</body>
+	</html>';
 }

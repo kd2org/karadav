@@ -23,30 +23,37 @@ class Server extends WebDAV_NextCloud
 	public function __construct()
 	{
 		$this->users = new Users;
+		$this->root_url = WWW_URL;
 	}
 
 	public function route(?string $uri = null): bool
 	{
-		if (!parent::route($uri)) {
-			// If NextCloud layer didn't return anything
-			// it means we fall back to the default WebDAV server
-			// available on the root path. We need to handle a
-			// classic login/password auth here.
-
-			$users = new Users;
-			$user = $users->login($_SERVER['PHP_AUTH_USER'] ?? null, $_SERVER['PHP_AUTH_PW'] ?? null);
-
-			if (!$user) {
-				http_response_code(401);
-				header('WWW-Authenticate: Basic realm="Please login"');
-				return true;
-			}
-
-			$this->user = $user;
-			$this->setBaseURI('/files/' . $user->login . '/');
-
-			return WebDAV::route($uri);
+		if (parent::route($uri)) {
+			return true;
 		}
+
+		if (0 !== strpos($uri, '/files/')) {
+			return false;
+		}
+
+		// If NextCloud layer didn't return anything
+		// it means we fall back to the default WebDAV server
+		// available on the root path. We need to handle a
+		// classic login/password auth here.
+
+		$users = new Users;
+		$user = $users->login($_SERVER['PHP_AUTH_USER'] ?? null, $_SERVER['PHP_AUTH_PW'] ?? null);
+
+		if (!$user) {
+			http_response_code(401);
+			header('WWW-Authenticate: Basic realm="Please login"');
+			return true;
+		}
+
+		$this->user = $user;
+		$this->setBaseURI('/files/' . $user->login . '/');
+
+		return WebDAV::route($uri);
 	}
 
 	public function nc_auth(?string $login, ?string $password): bool
@@ -69,7 +76,7 @@ class Server extends WebDAV_NextCloud
 
 	public function nc_get_quota(): array
 	{
-		return $this->users->quota();
+		return (array) $this->users->quota($this->users->current());
 	}
 
 	public function nc_generate_token(): string
@@ -85,16 +92,16 @@ class Server extends WebDAV_NextCloud
 			return null;
 		}
 
-		return ['user' => $session->user, 'password' => $session->password];
+		return ['login' => $session->user, 'password' => $session->password];
 	}
 
 	public function nc_login_url(?string $token): string
 	{
 		if ($token) {
-			return sprintf('%s/login.php?nc_token=%s', $this->root_url, $token);
+			return sprintf('%slogin.php?nc=%s', $this->root_url, $token);
 		}
 		else {
-			return sprintf('%s/login.php?nc_redirect=yes', $this->root_url);
+			return sprintf('%slogin.php?nc=redirect', $this->root_url);
 		}
 	}
 
@@ -254,6 +261,8 @@ class Server extends WebDAV_NextCloud
 		else {
 			unlink($target);
 		}
+
+		$this->properties($uri)->clear();
 	}
 
 	protected function copymove(bool $move, string $uri, string $destination): bool
@@ -300,6 +309,8 @@ class Server extends WebDAV_NextCloud
 		}
 		else {
 			$method($source, $target);
+
+			$this->properties($uri)->move($destination);
 		}
 
 		return $overwritten;
@@ -335,12 +346,14 @@ class Server extends WebDAV_NextCloud
 		mkdir($target, 0770);
 	}
 
-	protected function html_directory(string $uri, iterable $list, array $strings = self::LANGUAGE_STRINGS): string
+	protected function html_directory(string $uri, iterable $list, array $strings = self::LANGUAGE_STRINGS): ?string
 	{
 		$out = parent::html_directory($uri, $list, $strings);
 
-		$out = str_replace('</head>', sprintf('<link rel="stylesheet" type="text/css" href="%sfiles.css" /></head>', WWW_URL), $out);
-		$out = str_replace('</body>', sprintf('<script type="text/javascript" src="%sfiles.js"></script></body>', WWW_URL), $out);
+		if (null !== $out) {
+			$out = str_replace('</head>', sprintf('<link rel="stylesheet" type="text/css" href="%sfiles.css" /></head>', WWW_URL), $out);
+			$out = str_replace('</body>', sprintf('<script type="text/javascript" src="%sfiles.js"></script></body>', WWW_URL), $out);
+		}
 
 		return $out;
 	}
@@ -386,6 +399,10 @@ class Server extends WebDAV_NextCloud
 				$prop = $prop->prop->children();
 				$ns = $prop->getNamespaces(true);
 				$ns = array_flip($ns);
+
+				if (!key($ns)) {
+					throw new WebDAV_Exception('Empty xmlns', 400);
+				}
 
 				$this->properties($uri)->set(key($ns), $prop->getName(), array_filter($ns, 'trim'), $prop->asXML());
 			}

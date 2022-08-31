@@ -58,4 +58,9 @@ class Properties
 	{
 		DB::getInstance()->run('DELETE FROM properties WHERE user = ? AND uri = ?;', $this->user, $this->uri);
 	}
+
+	public function move(string $uri)
+	{
+		DB::getInstance()->run('UPDATE properties SET uri = ? WHERE user = ? AND uri = ?;', $uri, $this->user, $this->uri);
+	}
 }

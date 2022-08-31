@@ -25,4 +25,6 @@ $name = $_SERVER['SERVER_NAME'];
 $port = !in_array($_SERVER['SERVER_PORT'], [80, 443]) ? ':' . $_SERVER['SERVER_PORT'] : '';
 $root = '/';
 
-define('KaraDAV\WWW_URL', sprintf('http%s://%s%s%s', $https, $name, $port, $root));
+//define('KaraDAV\WWW_URL', sprintf('http%s://%s%s%s', $https, $name, $port, $root));
+
+const WWW_URL = 'http://192.168.43.171:8080/';
