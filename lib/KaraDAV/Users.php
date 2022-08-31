@@ -91,7 +91,7 @@ class Users
 			return $current;
 		}
 
-		if (!$login || (!$password && !$app_password)) {
+		if (!$login || !$password) {
 			return null;
 		}
 
@@ -102,24 +102,7 @@ class Users
 			return null;
 		}
 
-		if ($app_password) {
-			$list = DB::getInstance()->iterate('SELECT password FROM app_sessions WHERE login = ? AND expiry > datetime();', $login);
-			$ok = false;
-			$app_password = trim($app_password) . $user->password;
-
-			// We have to iterate on all sessions, as NextCloud does not provide a unique login
-			foreach ($list as $session) {
-				if (password_verify($app_password, $hash)) {
-					$ok = true;
-					break;
-				}
-			}
-
-			if (!$ok) {
-				return null;
-			}
-		}
-		elseif (!password_verify(trim($password), $user->password)) {
+		if (!password_verify(trim($password), $user->password)) {
 			return null;
 		}
 
@@ -129,7 +112,7 @@ class Users
 		return $user;
 	}
 
-	public function appSessionCreate(?string $token = null): ?string
+	public function appSessionCreate(?string $token = null): ?stdClass
 	{
 		$current = $this->current();
 
@@ -137,7 +120,11 @@ class Users
 			return null;
 		}
 
-		if (null === $token) {
+		if (null !== $token) {
+			if (!ctype_alnum($token) || strlen($token) > 100) {
+				return null;
+			}
+
 			$expiry = '+10 minutes';
 			$hash = null;
 			$password = null;
@@ -150,13 +137,22 @@ class Users
 			// this way we can invalidate all sessions if we change
 			// the user password
 			$hash = password_hash($password . $current->password, null);
+			$token = $this->generatePassword();
 		}
 
 		DB::getInstance()->run(
 			'INSERT OR IGNORE INTO app_sessions (user, password, expiry, token) VALUES (?, ?, datetime(\'now\', ?), ?);',
 			$current->login, $hash, $expiry, $token);
 
-		return $password;
+		return (object) compact('password', 'token');
+	}
+
+	public function appSessionCreateAndGetRedirectURL(): string
+	{
+		$session = $this->appSessionCreate();
+		$current = $this->current();
+
+		return sprintf(Server::NC_AUTH_REDIRECT_URL, WWW_URL, $session->token, $session->password);
 	}
 
 	public function appSessionValidateToken(string $token): ?stdClass
@@ -174,12 +170,14 @@ class Users
 		// The app password contains the user password hash
 		// this way we can invalidate all sessions if we change
 		// the user password
-		$hash = password_hash($session->password . $current->password, null);
+		$user = $this->get($session->user);
+		$hash = password_hash($session->password . $user->password, null);
+		$session->token = self::generatePassword();
 
 		DB::getInstance()->run('UPDATE app_sessions
-			SET token = NULL, password = ?, expiry = datetime(\'now\', \'+1 month\')
+			SET token = ?, password = ?, expiry = datetime(\'now\', \'+1 month\')
 			WHERE token = ?;',
-			$hash, $token);
+			$session->token, $hash, $token);
 
 		return $session;
 	}
@@ -187,19 +185,44 @@ class Users
 	public function appSessionLogin(?string $login, ?string $app_password): ?stdClass
 	{
 		// From time to time, clean up old sessions
-		if (random_int() % 100 == 0) {
+		if (time() % 100 == 0) {
 			DB::getInstance()->run('DELETE FROM app_sessions WHERE expiry < datetime();');
 		}
 
-		return $this->login($login, null, $app_password);
+		if ($user = $this->current()) {
+			return $user;
+		}
+
+		$user = DB::getInstance()->first('SELECT s.password AS app_hash, u.*
+			FROM app_sessions s INNER JOIN users u ON u.login = s.user
+			WHERE s.token = ? AND s.expiry > datetime();', $login);
+
+		if (!$user) {
+			return null;
+		}
+
+		$app_password = trim($app_password) . $user->password;
+
+		if (!password_verify($app_password, $user->app_hash)) {
+			return null;
+		}
+
+		@session_start();
+		$_SESSION['user'] = $user;
+
+		return $user;
 	}
 
 	public function quota(?stdClass $user = null): stdClass
 	{
 		$user ??= $this->current();
-		$used = get_directory_size($user->path);
-		$total = $user->quota;
-		$free = $user->quota - $used;
+		$used = $total = $free = 0;
+
+		if ($user) {
+			$used = get_directory_size($user->path);
+			$total = $user->quota;
+			$free = $user->quota - $used;
+		}
 
 		return (object) compact('free', 'total', 'used');
 	}

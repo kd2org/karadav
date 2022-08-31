@@ -7,27 +7,61 @@ require_once __DIR__ . '/_inc.php';
 $users = new Users;
 $install_password = DB::getInstallPassword();
 
-$error = $install_message = '';
+$error = 0;
 
 if (!empty($_POST['login']) && !empty($_POST['password'])) {
 	if ($users->login($_POST['login'], $_POST['password'])) {
-		header('Location: /');
-		exit;
-	}
+		$url = null;
 
-	$error = '<p class="error">Invalid login or password</p>';
+		if (!empty($_POST['nc']) && $_POST['nc'] == 'redirect') {
+			$url = $users->appSessionCreateAndGetRedirectURL();
+		}
+		elseif (!empty($_POST['nc'])) {
+			$users->appSessionCreate($_POST['nc']);
+			$error = -1;
+		}
+		else {
+			$url = './';
+		}
+
+		var_dump($url); exit;
+
+		if ($url) {
+			header('Location: ' . $url);
+			exit;
+		}
+	}
+	else {
+		$error = 1;
+	}
+}
+
+html_head('Login');
+
+if ($error == -1) {
+	echo '<p class="confirm">You are logged in, you can close this window or tab and go back to the app.</p>';
+	exit;
+}
+
+if ($error) {
+	echo '<p class="error">Invalid login or password</p>';
 }
 
 if ($install_password) {
-	$install_message = sprintf('<p class="info">Your default user is:<br />
+	printf('<p class="info">Your default user is:<br />
 		demo / %1$s<br>
 		<em>(this is only visible by you and will disappear when you close your browser)</em></p>', $install_password);
 }
 
-html('Login', <<<EOF
-<form method="post" action="">
-{$install_message}
-{$error}
+echo '
+<form method="post" action="">';
+
+if (isset($_GET['nc'])) {
+	printf('<input type="hidden" name="nc" value="%s" />', htmlspecialchars($_GET['nc']));
+	echo '<p class="info">The NextCloud app is trying to access your data. Please login to continue.</p>';
+}
+
+echo '
 <fieldset>
 	<legend>Login</legend>
 	<dl>
@@ -39,4 +73,6 @@ html('Login', <<<EOF
 	<p><input type="submit" value="Submit" /></p>
 </fieldset>
 </form>
-EOF);
+';
+
+html_foot();
