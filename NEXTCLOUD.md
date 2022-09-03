@@ -29,6 +29,30 @@ Those endpoints are requested by the clients and one or the other client will fa
 
 ## Desktop client
 
+### Requests performed
+
+This is when you are adding a new server to the client:
+
+1. `GET /status.php`
+2. `GET /remote.php/webdav/` (without a `Authorization` header, to see if the server supports Basic auth)
+3. `PROPFIND /remote.php/webdav/` (not sure why)
+4. `GET /ocs/v2.php/cloud/capabilities?format=json` 
+5. `POST /index.php/login/v2`
+6. `POST /index.php/login/v2/poll` (at this point you are logged-in)
+8. `PROPFIND /remote.php/webdav/` requesting only the `d:getlastmodified` property for the root directory (depth = 0).
+8. `PROPFIND /remote.php/webdav/` only for `oc:size` on the root directory and depth = 0. This could have been in previous request to make things faster.
+9. `PROPFIND /remote.php/webdav/` only for `oc:size` and `d:getlastmodified` on the root directory and depth = 1 when you are clicking the button to select the folders to sync.
+
+After you have set up the sync you get a bunch of requests:
+
+1. `GET /status.php`
+2. `PROPFIND /remote.php/webdav/` requesting only the `d:getlastmodified` property for the root directory (depth = 0)
+3. `GET /ocs/v1.php/cloud/capabilities?format=json` which is now returning more stuff as you are logged-in (also note the `v1`, before it was `v2`)
+4. `GET /ocs/v1.php/config?format=json`
+5. `GET /ocs/v1.php/cloud/user?format=json`
+6. (other requests for internal Nextcloud features)
+7. `PROPFIND /remote.php/dav/files/toto/` (where toto is the username)
+
 ### Etags are mandatory
 
 ### Don't use text/xml
@@ -56,3 +80,8 @@ https://github.com/nextcloud/desktop/issues/4873
 <oc:downloadURL></oc:downloadURL>
 <oc:permissions>%s</oc:permissions>
 <oc:share-types/>
+
+## Use a proxy with desktop client
+
+1. start mitmweb
+2. run `export http_proxy=http://localhost:8080 && nextcloud -l --logdebug`
