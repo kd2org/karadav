@@ -15,7 +15,12 @@ if (PHP_SAPI == 'cli-server') {
 		return false;
 	}
 
-	file_put_contents('php://stderr', $uri . "\n");
+	$method = $_SERVER['REQUEST_METHOD'] ?? $_SERVER['REDIRECT_REQUEST_METHOD'];
+	file_put_contents('php://stderr', sprintf("%s %s\n", $method, $uri));
+
+	if ($method != 'GET' && $method != 'HEAD') {
+		file_put_contents('php://stderr', file_get_contents('php://input') . "\n");
+	}
 }
 
 $s = new Server;

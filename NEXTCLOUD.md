@@ -27,6 +27,10 @@ The second API is different but is explained in the documentation, it involves e
 
 Those endpoints are requested by the clients and one or the other client will fail if they don't return something that looks valid.
 
+## Mobile app
+
+* `getcontentlength` must be present and be a number, even for collections
+
 ## Desktop client
 
 ### Requests performed

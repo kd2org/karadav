@@ -169,7 +169,7 @@ class Server extends WebDAV_NextCloud
 
 		switch ($name) {
 			case 'DAV::getcontentlength':
-				return is_dir($target) ? '' : filesize($target);
+				return is_dir($target) ? 0 : filesize($target);
 			case 'DAV::getcontenttype':
 				return mime_content_type($target);
 			case 'DAV::resourcetype':
@@ -206,7 +206,7 @@ class Server extends WebDAV_NextCloud
 				return new \DateTime('@' . filectime($target));
 			// NextCloud stuff
 			case self::PROP_OC_ID:
-				return md5($target);
+				return $this->nc_direct_id($uri);
 			case self::PROP_OC_PERMISSIONS:
 				return implode('', [self::PERM_READ, self::PERM_WRITE, self::PERM_CREATE, self::PERM_DELETE, self::PERM_RENAME_MOVE]);
 			case self::PROP_OC_SIZE:
