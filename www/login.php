@@ -24,8 +24,6 @@ if (!empty($_POST['login']) && !empty($_POST['password'])) {
 			$url = './';
 		}
 
-		var_dump($url); exit;
-
 		if ($url) {
 			header('Location: ' . $url);
 			exit;

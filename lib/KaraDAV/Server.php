@@ -131,7 +131,7 @@ class Server extends WebDAV_NextCloud
 		DB::getInstance()->run('DELETE FROM locks WHERE user = ? AND uri = ? AND token = ?;', $this->user->login, $uri, $token);
 	}
 
-	protected function list(string $uri): iterable
+	protected function list(string $uri, ?array $properties): iterable
 	{
 		$dirs = glob($this->user->path . $uri . '/*', \GLOB_ONLYDIR);
 		$dirs = array_map('basename', $dirs);
@@ -163,7 +163,72 @@ class Server extends WebDAV_NextCloud
 		return file_exists($this->user->path . $uri);
 	}
 
-	protected function metadata(string $uri, bool $all = false): ?array
+	protected function get_file_property(string $uri, string $name, int $depth)
+	{
+		$target = $this->user->path . $uri;
+
+		switch ($name) {
+			case 'DAV::getcontentlength':
+				return is_dir($target) ? '' : filesize($target);
+			case 'DAV::getcontenttype':
+				return mime_content_type($target);
+			case 'DAV::resourcetype':
+				return is_dir($target) ? 'collection' : '';
+			case 'DAV::getlastmodified':
+				if (!$uri && $depth == 0 && is_dir($target)) {
+					$mtime = get_directory_mtime($target);
+				}
+				else {
+					$mtime = filemtime($target);
+				}
+
+				if (!$mtime) {
+					return null;
+				}
+
+				return new \DateTime('@' . $mtime);
+			case 'DAV::displayname':
+				return basename($target);
+			case 'DAV::ishidden':
+				return basename($target)[0] == '.';
+			case 'DAV::getetag':
+				if (!$uri && !$depth) {
+					$hash = get_directory_size($target) . get_directory_mtime($target);
+				}
+				else {
+					$hash = filemtime($target) . filesize($target);
+				}
+
+				return md5($hash . $target);
+			case 'DAV::lastaccessed':
+				return new \DateTime('@' . fileatime($target));
+			case 'DAV::creationdate':
+				return new \DateTime('@' . filectime($target));
+			// NextCloud stuff
+			case self::PROP_OC_ID:
+				return md5($target);
+			case self::PROP_OC_PERMISSIONS:
+				return implode('', [self::PERM_READ, self::PERM_WRITE, self::PERM_CREATE, self::PERM_DELETE, self::PERM_RENAME_MOVE]);
+			case self::PROP_OC_SIZE:
+				if (is_dir($target)) {
+					return get_directory_size($target);
+				}
+				else {
+					return filesize($target);
+				}
+			default:
+				break;
+		}
+
+		if (in_array($name, self::NC_PROPERTIES) || in_array($name, self::BASIC_PROPERTIES) || in_array($name, self::EXTENDED_PROPERTIES)) {
+			return null;
+		}
+
+		return null;
+		//return $this->getResourceProperties($uri)->get($name);
+	}
+
+	protected function properties(string $uri, ?array $properties, int $depth): ?array
 	{
 		$target = $this->user->path . $uri;
 
@@ -171,21 +236,21 @@ class Server extends WebDAV_NextCloud
 			return null;
 		}
 
-		$meta = [
-			'modified'   => filemtime($target),
-			'size'       => is_dir($target) ? null : filesize($target),
-			'type'       => mime_content_type($target),
-			'collection' => is_dir($target),
-			'nc_permissions' => implode('', [self::PERM_READ, self::PERM_WRITE, self::PERM_CREATE, self::PERM_DELETE, self::PERM_RENAME_MOVE]),
-		];
-
-		if ($all) {
-			$meta['created']  = filectime($target);
-			$meta['accessed'] = fileatime($target);
-			$meta['hidden']   = basename($target)[0] == '.';
+		if (null === $properties) {
+			$properties = self::BASIC_PROPERTIES + ['DAV::getetag'];
 		}
 
-		return $meta;
+		$out = [];
+
+		foreach ($properties as $name) {
+			$v = $this->get_file_property($uri, $name, $depth);
+
+			if (null !== $v) {
+				$out[$name] = $v;
+			}
+		}
+
+		return $out;
 	}
 
 	protected function put(string $uri, $pointer): bool
@@ -262,7 +327,7 @@ class Server extends WebDAV_NextCloud
 			unlink($target);
 		}
 
-		$this->properties($uri)->clear();
+		//$this->getResourceProperties($uri)->clear();
 	}
 
 	protected function copymove(bool $move, string $uri, string $destination): bool
@@ -310,7 +375,7 @@ class Server extends WebDAV_NextCloud
 		else {
 			$method($source, $target);
 
-			$this->properties($uri)->move($destination);
+			//$this->getResourceProperties($uri)->move($destination);
 		}
 
 		return $overwritten;
@@ -358,27 +423,13 @@ class Server extends WebDAV_NextCloud
 		return $out;
 	}
 
-	protected function properties(string $uri): Properties
+	protected function getResourceProperties(string $uri): Properties
 	{
 		if (!isset($this->properties[$uri])) {
 			$this->properties[$uri] = new Properties($this->user->login, $uri);
 		}
 
 		return $this->properties[$uri];
-	}
-
-	protected function get_extra_ns(string $uri): array
-	{
-		$out = parent::get_extra_ns($uri);
-		$out = array_merge($out, $this->properties($uri)->ns());
-		return $out;
-	}
-
-	protected function get_extra_properties(string $uri, string $file, array $meta, array $requested_properties): string
-	{
-		$out = parent::get_extra_properties($uri, $file, $meta, $requested_properties);
-		$out .= $this->properties($uri)->xml();
-		return $out;
 	}
 
 	protected function set_extra_properties(string $uri, string $body): void
@@ -404,7 +455,7 @@ class Server extends WebDAV_NextCloud
 					throw new WebDAV_Exception('Empty xmlns', 400);
 				}
 
-				$this->properties($uri)->set(key($ns), $prop->getName(), array_filter($ns, 'trim'), $prop->asXML());
+				$this->getResourceProperties($uri)->set(key($ns), $prop->getName(), array_filter($ns, 'trim'), $prop->asXML());
 			}
 		}
 
@@ -412,7 +463,7 @@ class Server extends WebDAV_NextCloud
 			foreach ($xml->remove as $prop) {
 				$prop = $prop->prop->children();
 				$ns = $prop->getNamespaces();
-				$this->properties($uri)->remove(current($ns), $prop->getName());
+				$this->getResourceProperties($uri)->remove(current($ns), $prop->getName());
 			}
 		}
 

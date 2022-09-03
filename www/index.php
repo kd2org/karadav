@@ -2,6 +2,11 @@
 
 namespace KaraDAV;
 
+if (!empty($_SERVER['PATH_INFO'])) {
+	require __DIR__ . '/_router.php';
+	exit;
+}
+
 require_once __DIR__ . '/_inc.php';
 
 $users = new Users;
@@ -19,7 +24,9 @@ $used = $server->format_bytes($quota->used);
 $total = $server->format_bytes($quota->total);
 $www_url = WWW_URL;
 
-html('My files', <<<EOF
+html_head('My files');
+
+echo <<<EOF
 <dl>
 	<dt>WebDAV URL</dt>
 	<dd><a href="{$user->dav_url}"><tt>{$user->dav_url}</tt></a> (click to manage your files from your browser)</dd>
@@ -28,4 +35,6 @@ html('My files', <<<EOF
 	<dt>Quota</dt>
 	<dd>Used {$used} out of {$total} (free: {$free})</dd>
 </dl>
-EOF);
+EOF;
+
+html_foot();
