@@ -1,19 +1,21 @@
 # KaraDAV - A lightweight WebDAV server, with NextCloud compatibility
 
-This is WebDAV server serving a demonstration of the KD2\WebDAV and KD2\WebDAV_NextCloud components, allowing to easily set up a WebDAV file sharing server compatible with NextCloud clients with no depencies and high performance.
+This is WebDAV server, allowing to easily set up a WebDAV file sharing server compatible with NextCloud clients with no depencies and high performance.
 
-The only dependency is SQLite3.
+The only dependency is SQLite3 for the database.
 
 Although this is a demo, this can be used as a simple but powerful file sharing server.
 
 This server features:
 
+* WebDAV class 1, 2, 3 support, support for Etags
 * No database is required
 * Multiple user accounts
 * Share files for users using WebDAV: delete, create, update, mkdir, get, list
 * Compatible with WebDAV clients
 * Supports NextCloud Android app
 * Supports NextCloud desktop app
+* Also [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html)
 * User-friendly directory listings for file browsing with a web browser:
 	* Upload directly from browser
 	* Rename
@@ -25,17 +27,22 @@ This server features:
 
 ## Future development
 
-It is not planned to implement CalDAV and CardDAV currently, but it might come in the future, in the mean time see [Sabre/DAV](https://sabre.io/dav/) for that.
+This might get supported in future (maybe):
+
+* [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
+* Support for [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
+* [Extended MKCOL](https://www.rfc-editor.org/rfc/rfc5689) if CalDAV support is implemented
+* CalDAV/CardDAV support: maybe, why not, we'll see, in the mean time see [Sabre/DAV](https://sabre.io/dav/) for that.
 
 ## Dependencies
 
 This depends on the KD2\WebDAV and KD2\WebDAV_NextCloud classes from the [KD2FW package](https://fossil.kd2.org/kd2fw/), which are packaged in this repository.
 
-These are lightweight and easy to use in your own software to add this feature to your product.
+They are lightweight and easy to use in your own software to add support for WebDAV and NextCloud clients to your software.
 
 ## Author
 
-BohwaZ/KD2
+BohwaZ. Contact me on: IRC = bohwaz@irc.libera.chat / Mastodon = https://mamot.fr/@bohwaz / Twitter = @bohwaz
 
 ## License
 
