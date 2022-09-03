@@ -173,6 +173,7 @@ class Users
 		$user = $this->get($session->user);
 		$hash = password_hash($session->password . $user->password, null);
 		$session->token = self::generatePassword();
+		$session->password = $session->token . ':' . $session->password;
 
 		DB::getInstance()->run('UPDATE app_sessions
 			SET token = ?, password = ?, expiry = datetime(\'now\', \'+1 month\')
@@ -189,28 +190,35 @@ class Users
 			DB::getInstance()->run('DELETE FROM app_sessions WHERE expiry < datetime();');
 		}
 
-		if ($user = $this->current()) {
+		if (($user = $this->current()) && $login == $user->login) {
 			return $user;
 		}
 
+		if (!$app_password) {
+			return null;
+		}
+
+		$token = strtok($app_password, ':');
+		$password = strtok('');
+
 		$user = DB::getInstance()->first('SELECT s.password AS app_hash, u.*
 			FROM app_sessions s INNER JOIN users u ON u.login = s.user
-			WHERE s.token = ? AND s.expiry > datetime();', $login);
+			WHERE s.token = ? AND s.expiry > datetime();', $token);
 
 		if (!$user) {
 			return null;
 		}
 
-		$app_password = trim($app_password) . $user->password;
+		$password = trim($password) . $user->password;
 
-		if (!password_verify($app_password, $user->app_hash)) {
+		if (!password_verify($password, $user->app_hash)) {
 			return null;
 		}
 
 		@session_start();
 		$_SESSION['user'] = $user;
 
-		return $user;
+		return $this->makeUserObjectGreatAgain($user);
 	}
 
 	public function quota(?stdClass $user = null): stdClass

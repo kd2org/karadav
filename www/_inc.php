@@ -37,19 +37,43 @@ if (!file_exists(DB_FILE)) {
 
 function get_directory_size(string $path): int
 {
-	return 0;
 	$total = 0;
+	$path = rtrim($path, '/');
 
-	foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::LEAVES_ONLY, \RecursiveIteratorIterator::CATCH_GET_CHILD) as $p) {
-		try {
-			$total += $p->getSize();
+	foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
+		if (is_dir($f)) {
+			$total += get_directory_size($f);
 		}
-		catch (\RuntimeException $e) {
-			// Ignore file that vanished
+		else {
+			$total += filesize($f);
 		}
 	}
 
 	return $total;
+}
+
+function get_directory_mtime(string $path): int
+{
+	$last = 0;
+	$path = rtrim($path, '/');
+
+	foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
+		if (is_dir($f)) {
+			$m = get_directory_mtime($f);
+
+			if ($m > $last) {
+				$last = $m;
+			}
+		}
+
+		$m = filemtime($f);
+
+		if ($m > $last) {
+			$last = $m;
+		}
+	}
+
+	return $last;
 }
 
 function html_head(string $title): void

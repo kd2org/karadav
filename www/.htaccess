@@ -1,6 +1,5 @@
 Options -Indexes -Multiviews
 DirectoryIndex disabled
-DirectoryIndex index.php
 
 FallbackResource /_router.php
 
