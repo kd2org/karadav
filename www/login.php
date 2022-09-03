@@ -64,7 +64,7 @@ echo '
 	<legend>Login</legend>
 	<dl>
 		<dt><label for="f_login">Login</label></dt>
-		<dd><input type="text" name="login" id="f_login" required /></dd>
+		<dd><input type="text" name="login" id="f_login" required autocapitalize="none" /></dd>
 		<dt><label for="f_password">Password</label></dt>
 		<dd><input type="password" name="password" id="f_password" required /></dd>
 	</dl>

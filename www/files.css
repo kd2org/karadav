@@ -112,6 +112,7 @@ dialog.preview {
 	padding: 0;
 	border-radius: 0;
 	background: #ddd;
+	overflow: hidden;
 }
 
 iframe, .md_preview {
@@ -127,7 +128,15 @@ iframe, .md_preview {
 }
 
 .preview form {
+	height: calc(100% - 2em);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.preview form div {
 	height: 100%;
+	margin: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;

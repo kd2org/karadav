@@ -12,7 +12,7 @@ function html(unsafe)
          .replace(/'/g, "&#039;");
 }
 
-const url = location.href;
+const url = location.pathname;
 
 const PREVIEW_TYPES = /^image\/(png|webp|svg|jpeg|jpg|gif|png)|^application\/pdf|^text\/|^audio\/|^video\//;
 
