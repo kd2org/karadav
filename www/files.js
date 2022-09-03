@@ -42,17 +42,23 @@ const req = (method, url, body, headers) => {
 	return false;
 };
 
-var evt;
+var evt, evt2;
 
-const dialog = (html, ok_btn = true) => {
+const dialog = (hash, html, ok_btn = true) => {
+	location.hash = '#' + hash;
 	var tpl = dialog_tpl.replace(/%b/, ok_btn ? '<p><input type="submit" value="OK" /></p>' : '');
 	$('body').insertAdjacentHTML('beforeend', tpl.replace(/%s/, html));
 	$('.close input').onclick = close;
-	evt = document.addEventListener('keyup', (e) => {
+	evt = window.addEventListener('keyup', (e) => {
 		if (e.key != 'Escape') return;
 		e.preventDefault();
 		close();
 		return false;
+	});
+	evt2 = window.addEventListener('hashchange', (e) => {
+		if (location.hash == '') {
+			close();
+		}
 	});
 	if (a = $('dialog form input, dialog form textarea')) a.focus();
 };
@@ -60,8 +66,11 @@ const dialog = (html, ok_btn = true) => {
 const close = () => {
 	if (!$('dialog')) return;
 	$('dialog').remove();
-	document.removeEventListener('keyup', evt);
+	window.removeEventListener('keyup', evt);
 	evt = null;
+	window.removeEventListener('hashchange', evt2);
+	evt2 = null;
+	location.hash = '';
 };
 
 const $ = (a) => document.querySelector(a);
@@ -85,16 +94,16 @@ Array.from($('table').rows).forEach((tr) => {
 	if (type.match(PREVIEW_TYPES)) {
 		$$('a').onclick = () => {
 			if (file_url.match(/\.md$/)) {
-				dialog('<div class="md_preview"></div>', false);
+				dialog(file_name, '<div class="md_preview"></div>', false);
 				fetch(file_url).then((r) => r.text().then((t) => {
 					$('.md_preview').innerHTML = microdown.parse(html(t));
 				}));
 			}
 			else if (type.match(/^image\//)) {
-				dialog(`<img src="${file_url}" />`, false);
+				dialog(file_name, `<img src="${file_url}" />`, false);
 			}
 			else {
-				dialog(`<iframe src="${file_url}" />`, false);
+				dialog(file_name, `<iframe src="${file_url}" />`, false);
 			}
 			$('dialog').className = 'preview';
 			return false;
@@ -107,7 +116,7 @@ Array.from($('table').rows).forEach((tr) => {
 		$$('.edit').onclick = (e) => {
 			fetch(file_url).then((r) => r.text().then((t) => {
 				let md = file_url.match(/\.md$/);
-				dialog(md ? markdown_dialog : edit_dialog);
+				dialog(file_name, md ? markdown_dialog : edit_dialog);
 				var txt = $('textarea[name=edit]');
 				txt.value = t;
 
@@ -141,14 +150,14 @@ Array.from($('table').rows).forEach((tr) => {
 	}
 
 	$$('.delete').onclick = (e) => {
-		dialog(delete_dialog);
+		dialog('delete', delete_dialog);
 		document.forms[0].onsubmit = () => {
 			return req('DELETE', file_url, '');
 		};
 	};
 
 	$$('.rename').onclick = () => {
-		dialog(rename_dialog);
+		dialog('rename', rename_dialog);
 		let t = $('input[name=rename]');
 		t.value = file_name;
 		t.select();
@@ -164,7 +173,7 @@ Array.from($('table').rows).forEach((tr) => {
 });
 
 $('.mkdir').onclick = () => {
-	dialog(mkdir_dialog);
+	dialog('mkdir', mkdir_dialog);
 	document.forms[0].onsubmit = () => {
 		var name = $('input[name=mkdir]').value;
 
@@ -175,7 +184,7 @@ $('.mkdir').onclick = () => {
 };
 
 $('.mkfile').onclick = () => {
-	dialog(mkfile_dialog);
+	dialog('mkfile', mkfile_dialog);
 	document.forms[0].onsubmit = () => {
 		var name = $('input[name=mkfile]').value;
 
