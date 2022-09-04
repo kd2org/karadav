@@ -6,6 +6,8 @@ use stdClass;
 
 class Users
 {
+	protected ?stdClass $current = null;
+
 	static public function generatePassword(): string
 	{
 		$password = base64_encode(random_bytes(16));
@@ -73,11 +75,29 @@ class Users
 
 	public function current(): ?stdClass
 	{
+		if ($this->current) {
+			return $this->current;
+		}
+
 		if (isset($_COOKIE[session_name()]) && !isset($_SESSION)) {
 			session_start();
 		}
 
-		return $this->makeUserObjectGreatAgain($_SESSION['user'] ?? null);
+		$this->current = $this->makeUserObjectGreatAgain($_SESSION['user'] ?? null);
+
+		return $this->current;
+	}
+
+	public function setCurrent(string $login): bool
+	{
+		$user = $this->get($login);
+
+		if (!$user) {
+			return false;
+		}
+
+		$this->current = $user;
+		return true;
 	}
 
 	public function login(?string $login, ?string $password, ?string $app_password = null): ?stdClass
