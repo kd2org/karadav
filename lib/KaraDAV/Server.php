@@ -74,6 +74,17 @@ class Server extends WebDAV_NextCloud
 		return $this->users->current()->login ?? null;
 	}
 
+	public function nc_set_user(string $login): bool
+	{
+		$ok = $this->users->setCurrent($login);
+
+		if ($ok) {
+			$this->user  = $this->users->current();
+		}
+
+		return $ok;
+	}
+
 	public function nc_get_quota(): array
 	{
 		return (array) $this->users->quota($this->users->current());
@@ -103,6 +114,17 @@ class Server extends WebDAV_NextCloud
 		else {
 			return sprintf('%slogin.php?nc=redirect', $this->root_url);
 		}
+	}
+
+	public function nc_direct_get_secret(string $uri, string $login): string
+	{
+		$user = $this->users->get($login);
+
+		if (!$user) {
+			throw new WebDAV_Exception('No user with that name', 401);
+		}
+
+		return hash('sha256', $uri . $user->login . $user->password);
 	}
 
 	protected function getLock(string $uri, ?string $token = null): ?string
@@ -237,7 +259,7 @@ class Server extends WebDAV_NextCloud
 		}
 
 		if (null === $properties) {
-			$properties = self::BASIC_PROPERTIES + ['DAV::getetag'];
+			$properties = array_merge(self::BASIC_PROPERTIES, ['DAV::getetag', self::PROP_OC_ID]);
 		}
 
 		$out = [];

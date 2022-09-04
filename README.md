@@ -13,9 +13,8 @@ This server features:
 * Multiple user accounts
 * Share files for users using WebDAV: delete, create, update, mkdir, get, list
 * Compatible with WebDAV clients
-* Supports NextCloud Android app
-* Supports NextCloud desktop app
-* Also [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html)
+* Support for HTTP ranges (partial download)
+
 * User-friendly directory listings for file browsing with a web browser:
 	* Upload directly from browser
 	* Rename
@@ -25,12 +24,20 @@ This server features:
 	* Preview of images, text, MarkDown and PDF
 * User-management through web UI
 
+## NextCloud compatibility
+
+* Android app
+* Desktop app (tested on Debian)
+* [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html)
+* Support for [Direct download API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
+
 ## Future development
 
 This might get supported in future (maybe):
 
 * [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
-* Support for [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
+* [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
+* [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html) (maybe?)
 * [Extended MKCOL](https://www.rfc-editor.org/rfc/rfc5689) if CalDAV support is implemented
 * CalDAV/CardDAV support: maybe, why not, we'll see, in the mean time see [Sabre/DAV](https://sabre.io/dav/) for that.
 

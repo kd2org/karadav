@@ -1,7 +1,8 @@
 Options -Indexes -Multiviews
 DirectoryIndex disabled
 
-FallbackResource /_router.php
-
-# see https://stackoverflow.com/a/66136226
-ErrorDocument 404 /_router.php
+RewriteEngine On
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^.*$ /_router.php [L]

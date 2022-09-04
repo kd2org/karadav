@@ -23,6 +23,10 @@ if (PHP_SAPI == 'cli-server') {
 	}
 }
 
+if (isset($_SERVER['REDIRECT_REQUEST_METHOD'])) {
+	$_SERVER['REQUEST_METHOD'] = $_SERVER['REDIRECT_REQUEST_METHOD'];
+}
+
 $s = new Server;
 
 if (!$s->route($uri)) {
