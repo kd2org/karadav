@@ -31,15 +31,22 @@ This server features:
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html)
 * Support for [Direct download API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
 
+## WebDAV clients compatibility
+
+* [FUSE webdavfs](https://github.com/miquels/webdavfs) is recommended for Linux
+* davfs2 is NOT recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
+
 ## Future development
 
 This might get supported in future (maybe):
 
+* [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
 * [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
 * [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
 * [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html) (maybe?)
+* [WebDAV sharing](https://evertpot.com/webdav-caldav-carddav-sharing/)
 * [Extended MKCOL](https://www.rfc-editor.org/rfc/rfc5689) if CalDAV support is implemented
-* CalDAV/CardDAV support: maybe, why not, we'll see, in the mean time see [Sabre/DAV](https://sabre.io/dav/) for that.
+* CalDAV/CardDAV support: maybe, [why not](https://evertpot.com/227/), we'll see, in the mean time see [Sabre/DAV](https://sabre.io/dav/) for that.
 
 ## Dependencies
 

@@ -89,3 +89,9 @@ https://github.com/nextcloud/desktop/issues/4873
 
 1. start mitmweb
 2. run `export http_proxy=http://localhost:8080 && nextcloud -l --logdebug`
+
+## Chunked file upload
+
+* https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md
+* https://github.com/rclone/rclone/pull/6133
+* https://github.com/rclone/rclone/issues/3666

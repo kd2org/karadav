@@ -134,7 +134,7 @@ iframe, .md_preview {
 	justify-content: center;
 }
 
-.preview form div {
+.preview form > div {
 	height: 100%;
 	margin: 0;
 	display: flex;
@@ -166,4 +166,8 @@ iframe, .md_preview {
 .preview img {
 	max-width: 95%;
 	max-height: 95%;
+}
+
+input[name=rename] {
+	width: 30em;
 }

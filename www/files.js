@@ -82,13 +82,15 @@ Array.from($('table').rows).forEach((tr) => {
 	var file_url = $$('a').href;
 	var file_name = $$('a').innerText;
 	var dir = $$('[colspan]');
-	var type = !dir ? $$('td:nth-child(3)').innerText : null;
+	var type = !dir ? $$('td:nth-child(3)').innerText : 'dir';
 
-	if (dir && url.match('..')) {
+	// For back link
+	if (dir && $$('a').getAttribute('href').indexOf('..') != -1) {
 		dir.setAttribute('colspan', 4);
 		return;
 	}
 
+	// Add rename/delete buttons
 	tr.insertAdjacentHTML('beforeend', file_buttons);
 
 	if (type.match(PREVIEW_TYPES)) {
@@ -160,13 +162,15 @@ Array.from($('table').rows).forEach((tr) => {
 		dialog('rename', rename_dialog);
 		let t = $('input[name=rename]');
 		t.value = file_name;
-		t.select();
+		t.focus();
+		t.selectionStart = 0;
+		t.selectionEnd = file_name.lastIndexOf('.');
 		document.forms[0].onsubmit = () => {
 			var name = t.value;
 
 			if (!name) return false;
 
-			return req('MOVE', file_url, '', {'Destination': location.href + name});
+			return req('MOVE', file_url, '', {'Destination': location.pathname + name});
 		};
 	};
 
