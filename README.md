@@ -14,6 +14,9 @@ This server features:
 * Share files for users using WebDAV: delete, create, update, mkdir, get, list
 * Compatible with WebDAV clients
 * Support for HTTP ranges (partial download)
+* Support for [RFC 3230](https://greenbytes.de/tech/webdav/rfc3230.xhtml) to get the MD5 digest hash of a file (to check integrity) on `HEAD` requests (only MD5 is supported so far)
+* Support for `Content-MD5` with `PUT` requests, see [dCache documentation for details](https://dcache.org/old/manuals/UserGuide-6.0/webdav.shtml#checksums)
+* Support for some of the [Microsoft proprietary properties](https://greenbytes.de/tech/webdav/webdavfaq.html)
 
 * User-friendly directory listings for file browsing with a web browser:
 	* Upload directly from browser
