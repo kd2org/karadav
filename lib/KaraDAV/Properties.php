@@ -6,8 +6,7 @@ class Properties
 {
 	protected string $user;
 	protected string $uri;
-	protected array $ns = [];
-	protected array $xml = [];
+	protected array $properties = [];
 
 	protected bool $loaded = false;
 
@@ -20,38 +19,37 @@ class Properties
 	{
 		if (!$this->loaded) {
 			$this->loaded = true;
-			$list = DB::getInstance()->iterate('SELECT ns, xml FROM properties WHERE user = ? AND uri = ?;', $this->user, $this->uri);
+			$list = DB::getInstance()->iterate('SELECT name, attributes, xml FROM properties WHERE user = ? AND uri = ?;', $this->user, $this->uri);
 
 			foreach ($list as $row) {
-				$this->ns = array_merge($this->ns, json_decode($row->ns, true));
-				$this->xml[] = $row->xml;
+				$this->properties[$row->name] = [
+					'attributes' => $row->attributes ? json_decode($row->attributes) : null,
+					'xml' => $row->xml,
+				];
 			}
 		}
 	}
 
-	public function xml(): string
+	public function all(): array
 	{
 		$this->load();
-		return implode("\n", $this->xml);
+		return $this->properties;
 	}
 
-	public function ns(): array
+	public function get(string $name): ?array
 	{
 		$this->load();
-
-		return $this->ns;
+		return $this->properties[$name] ?? null;
 	}
 
-	public function set(string $ns_url, string $name, array $ns, string $xml)
+	public function set(string $name, ?array $attributes, ?string $xml)
 	{
-		$ns = json_encode($ns);
-
-		DB::getInstance()->run('REPLACE INTO properties (user, uri, ns_url, name, ns, xml) VALUES (?, ?, ?, ?, ?, ?);', $this->user, $this->uri, $ns_url, $name, $ns, $xml);
+		DB::getInstance()->run('REPLACE INTO properties (user, uri, name, attributes, xml) VALUES (?, ?, ?, ?, ?);', $this->user, $this->uri, $name, $attributes ? json_encode($attributes) : null, $xml);
 	}
 
-	public function remove(string $ns_url, string $name)
+	public function remove(string $name)
 	{
-		DB::getInstance()->run('DELETE FROM properties WHERE user = ? AND uri = ? AND ns_url = ? AND name = ?;', $this->user, $this->uri, $ns_url, $name);
+		DB::getInstance()->run('DELETE FROM properties WHERE user = ? AND uri = ? AND name = ?;', $this->user, $this->uri, $name);
 	}
 
 	public function clear()
