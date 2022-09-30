@@ -3,6 +3,7 @@
 namespace KaraDAV;
 
 use KD2\WebDAV\AbstractStorage;
+use KD2\WebDAV\Server as WebDAV_Server;
 
 class Storage extends AbstractStorage
 {
@@ -118,12 +119,14 @@ class Storage extends AbstractStorage
 				return new \DateTime('@' . fileatime($target));
 			case 'DAV::creationdate':
 				return new \DateTime('@' . filectime($target));
+			case Server::PROP_DIGEST_MD5:
+				return md5_file($target);
 			// NextCloud stuff
-			case self::PROP_OC_ID:
+			case Nextcloud::PROP_OC_ID:
 				return $this->nc_direct_id($uri);
-			case self::PROP_OC_PERMISSIONS:
-				return implode('', [self::PERM_READ, self::PERM_WRITE, self::PERM_CREATE, self::PERM_DELETE, self::PERM_RENAME_MOVE]);
-			case self::PROP_OC_SIZE:
+			case Nextcloud::PROP_OC_PERMISSIONS:
+				return implode('', [NextCloud::PERM_READ, NextCloud::PERM_WRITE, NextCloud::PERM_CREATE, NextCloud::PERM_DELETE, NextCloud::PERM_RENAME_MOVE]);
+			case Nextcloud::PROP_OC_SIZE:
 				if (is_dir($target)) {
 					return get_directory_size($target);
 				}
@@ -134,7 +137,7 @@ class Storage extends AbstractStorage
 				break;
 		}
 
-		if (in_array($name, self::NC_PROPERTIES) || in_array($name, self::BASIC_PROPERTIES) || in_array($name, self::EXTENDED_PROPERTIES)) {
+		if (in_array($name, Server::NC_PROPERTIES) || in_array($name, Server::BASIC_PROPERTIES) || in_array($name, Server::EXTENDED_PROPERTIES)) {
 			return null;
 		}
 
@@ -151,7 +154,7 @@ class Storage extends AbstractStorage
 		}
 
 		if (null === $properties) {
-			$properties = array_merge(self::BASIC_PROPERTIES, ['DAV::getetag', self::PROP_OC_ID]);
+			$properties = array_merge(Server::BASIC_PROPERTIES, ['DAV::getetag', Nextcloud::PROP_OC_ID]);
 		}
 
 		$out = [];
@@ -167,7 +170,7 @@ class Storage extends AbstractStorage
 		return $out;
 	}
 
-	public function put(string $uri, $pointer): bool
+	public function put(string $uri, $pointer, ?string $hash): bool
 	{
 		if (preg_match(self::PUT_IGNORE_PATTERN, basename($uri))) {
 			return false;
@@ -214,6 +217,10 @@ class Storage extends AbstractStorage
 		if ($delete) {
 			@unlink($tmp_file);
 			throw new WebDAV_Exception('Your quota is exhausted', 403);
+		}
+		elseif ($hash && md5_file($tmp_file) != $hash) {
+			@unlink($tmp_file);
+			throw new WebDAV_Exception('The data sent does not match the supplied MD5 hash', 400);
 		}
 		else {
 			rename($tmp_file, $target);
