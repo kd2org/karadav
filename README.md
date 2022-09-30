@@ -8,6 +8,13 @@ Although this is a demo, this can be used as a simple but powerful file sharing 
 
 This server features:
 
+* User-friendly directory listings for file browsing with a web browser:
+	* Upload directly from browser
+	* Rename
+	* Delete
+	* Create and edit text file
+	* MarkDown live preview
+	* Preview of images, text, MarkDown and PDF
 * WebDAV class 1, 2, 3 support, support for Etags
 * No database is required
 * Multiple user accounts
@@ -17,15 +24,7 @@ This server features:
 * Support for [RFC 3230](https://greenbytes.de/tech/webdav/rfc3230.xhtml) to get the MD5 digest hash of a file (to check integrity) on `HEAD` requests (only MD5 is supported so far)
 * Support for `Content-MD5` with `PUT` requests, see [dCache documentation for details](https://dcache.org/old/manuals/UserGuide-6.0/webdav.shtml#checksums)
 * Support for some of the [Microsoft proprietary properties](https://greenbytes.de/tech/webdav/webdavfaq.html)
-
-* User-friendly directory listings for file browsing with a web browser:
-	* Upload directly from browser
-	* Rename
-	* Delete
-	* Create and edit text file
-	* MarkDown live preview
-	* Preview of images, text, MarkDown and PDF
-* User-management through web UI
+* Passes [Litmus compliance tests](https://github.com/tolsen/litmus) for basic, copymove, props
 
 ## NextCloud compatibility
 
@@ -56,6 +55,76 @@ This might get supported in future (maybe):
 This depends on the KD2\WebDAV and KD2\WebDAV_NextCloud classes from the [KD2FW package](https://fossil.kd2.org/kd2fw/), which are packaged in this repository.
 
 They are lightweight and easy to use in your own software to add support for WebDAV and NextCloud clients to your software.
+
+## Litmus compliance tests
+
+```
+-> running `basic':                  
+ 0. init.................. pass
+ 1. begin................. pass
+ 2. options............... pass
+ 3. put_get............... pass
+ 4. put_get_utf8_segment.. pass
+ 5. put_no_parent......... pass
+ 6. mkcol_over_plain...... pass
+ 7. delete................ pass
+ 8. delete_null........... pass
+ 9. delete_fragment....... pass
+10. mkcol................. pass
+11. mkcol_again........... pass
+12. delete_coll........... pass
+13. mkcol_no_parent....... pass
+14. mkcol_with_body....... pass
+15. finish................ pass
+<- summary for `basic': of 16 tests run: 16 passed, 0 failed. 100.0%
+-> running `copymove':
+ 0. init.................. pass
+ 1. begin................. pass
+ 2. copy_init............. pass
+ 3. copy_simple........... pass
+ 4. copy_overwrite........ pass
+ 5. copy_nodestcoll....... pass
+ 6. copy_cleanup.......... pass
+ 7. copy_coll............. pass
+ 8. copy_shallow.......... pass
+ 9. move.................. pass
+10. move_coll............. pass
+11. move_cleanup.......... pass
+12. finish................ pass
+<- summary for `copymove': of 13 tests run: 13 passed, 0 failed. 100.0%
+-> running `props':
+ 0. init.................. pass
+ 1. begin................. pass
+ 2. propfind_invalid...... pass
+ 3. propfind_invalid2..... pass
+ 4. propfind_d0........... pass
+ 5. propinit.............. pass
+ 6. propset............... pass
+ 7. propget............... pass
+ 8. propextended.......... pass
+ 9. propmove.............. pass
+10. propget............... pass
+11. propdeletes........... pass
+12. propget............... pass
+13. propreplace........... pass
+14. propget............... pass
+15. propnullns............ pass
+16. propget............... pass
+17. prophighunicode....... pass
+18. propget............... pass
+19. propremoveset......... pass
+20. propget............... pass
+21. propsetremove......... pass
+22. propget............... pass
+23. propvalnspace......... pass
+24. propwformed........... pass
+25. propinit.............. pass
+26. propmanyns............ pass
+27. propget............... pass
+28. propcleanup........... pass
+29. finish................ pass
+<- summary for `props': of 30 tests run: 30 passed, 0 failed. 100.0%
+```
 
 ## Author
 

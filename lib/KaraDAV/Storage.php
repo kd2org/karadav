@@ -345,57 +345,21 @@ class Storage extends AbstractStorage
 
 	public function setProperties(string $uri, string $body): void
 	{
-		$xml = @simplexml_load_string($body);
-		// Select correct namespace if required
-		if (!empty(key($xml->getDocNameSpaces()))) {
-			$xml = $xml->children('DAV:');
+		$properties = Server::parsePropPatch($body);
+
+		if (!count($properties)) {
+			return;
 		}
 
 		$db = DB::getInstance();
 
 		$db->exec('BEGIN;');
-		$i = 0;
 
-		if (isset($xml->set)) {
-			foreach ($xml->set as $prop) {
-				$prop = $prop->prop->children();
-				$ns = $prop->getNamespaces(true);
-				$ns = array_flip($ns);
-
-				if (!key($ns)) {
-					throw new WebDAV_Exception('Empty xmlns', 400);
-				}
-
-				$name = key($ns) . ':' . $prop->getName();
-
-				$attributes = iterator_to_array($prop->attributes());
-
-				foreach ($ns as $xmlns => $alias) {
-					foreach (iterator_to_array($prop->attributes($alias)) as $key => $v) {
-						$attributes[$xmlns . ':' . $key] = $value;
-					}
-				}
-
-				if ($prop->count() > 1) {
-					$text = '';
-
-					foreach ($prop->children() as $c) {
-						$text .= $c->asXML();
-					}
-				}
-				else {
-					$text = (string)$prop;
-				}
-
-				$this->getResourceProperties($uri)->set($name, $attributes ?: null, $text ?: null);
+		foreach ($properties as $name => $prop) {
+			if ($prop['action'] == 'set') {
+				$this->getResourceProperties($uri)->set($name, $prop['attributes'], $prop['content']);
 			}
-		}
-
-		if (isset($xml->remove)) {
-			foreach ($xml->remove as $prop) {
-				$prop = $prop->prop->children();
-				$ns = $prop->getNamespaces();
-				$name = current($ns) . ':' . $prop->getName();
+			else {
 				$this->getResourceProperties($uri)->remove($name);
 			}
 		}
