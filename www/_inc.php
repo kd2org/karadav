@@ -35,47 +35,6 @@ if (!file_exists(DB_FILE)) {
 	$db->exec('END;');
 }
 
-function get_directory_size(string $path): int
-{
-	$total = 0;
-	$path = rtrim($path, '/');
-
-	foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
-		if (is_dir($f)) {
-			$total += get_directory_size($f);
-		}
-		else {
-			$total += filesize($f);
-		}
-	}
-
-	return $total;
-}
-
-function get_directory_mtime(string $path): int
-{
-	$last = 0;
-	$path = rtrim($path, '/');
-
-	foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
-		if (is_dir($f)) {
-			$m = get_directory_mtime($f);
-
-			if ($m > $last) {
-				$last = $m;
-			}
-		}
-
-		$m = filemtime($f);
-
-		if ($m > $last) {
-			$last = $m;
-		}
-	}
-
-	return $last;
-}
-
 function html_head(string $title): void
 {
 	$title = htmlspecialchars($title);
@@ -97,7 +56,7 @@ function html_foot(): void
 {
 	echo '
 	<footer>
-		Powered by <a href="https://github.com/kd2.org/karadav/">KaraDAV</a>
+		Powered by <a href="https://github.com/kd2org/karadav/">KaraDAV</a>
 	</footer>
 	</body>
 	</html>';

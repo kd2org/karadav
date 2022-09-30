@@ -247,7 +247,7 @@ class Users
 		$used = $total = $free = 0;
 
 		if ($user) {
-			$used = get_directory_size($user->path);
+			$used = Storage::getDirectorySize($user->path);
 			$total = $user->quota;
 			$free = $user->quota - $used;
 		}
