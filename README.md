@@ -24,7 +24,7 @@ This server features:
 * Support for [RFC 3230](https://greenbytes.de/tech/webdav/rfc3230.xhtml) to get the MD5 digest hash of a file (to check integrity) on `HEAD` requests (only MD5 is supported so far)
 * Support for `Content-MD5` with `PUT` requests, see [dCache documentation for details](https://dcache.org/old/manuals/UserGuide-6.0/webdav.shtml#checksums)
 * Support for some of the [Microsoft proprietary properties](https://greenbytes.de/tech/webdav/webdavfaq.html)
-* Passes [Litmus compliance tests](https://github.com/tolsen/litmus) for basic, copymove, props
+* Passes most of the [Litmus compliance tests](https://github.com/tolsen/litmus)
 
 ## NextCloud compatibility
 
@@ -58,25 +58,37 @@ They are lightweight and easy to use in your own software to add support for Web
 
 ## Litmus compliance tests
 
+Tests were performed using litmus source code as of December 13, 2017 from [the Github repo](https://github.com/tolsen/litmus).
+
 ```
--> running `basic':                  
+-> running `http':
+ 0. init.................. pass
+ 1. begin................. pass
+ 2. expect100............. pass
+ 3. finish................ pass
+<- summary for `http': of 4 tests run: 4 passed, 0 failed. 100.0%
+
+-> running `basic':
  0. init.................. pass
  1. begin................. pass
  2. options............... pass
  3. put_get............... pass
  4. put_get_utf8_segment.. pass
- 5. put_no_parent......... pass
- 6. mkcol_over_plain...... pass
- 7. delete................ pass
- 8. delete_null........... pass
- 9. delete_fragment....... pass
-10. mkcol................. pass
+ 5. mkcol_over_plain...... pass
+ 6. delete................ pass
+ 7. delete_null........... pass
+ 8. delete_fragment....... pass
+ 9. mkcol................. pass
+10. mkcol_percent_encoded. pass
 11. mkcol_again........... pass
 12. delete_coll........... pass
 13. mkcol_no_parent....... pass
 14. mkcol_with_body....... pass
-15. finish................ pass
-<- summary for `basic': of 16 tests run: 16 passed, 0 failed. 100.0%
+15. mkcol_forbidden....... pass
+16. chk_ETag.............. pass
+17. finish................ pass
+<- summary for `basic': of 18 tests run: 18 passed, 0 failed. 100.0%
+
 -> running `copymove':
  0. init.................. pass
  1. begin................. pass
@@ -85,13 +97,26 @@ They are lightweight and easy to use in your own software to add support for Web
  4. copy_overwrite........ pass
  5. copy_nodestcoll....... pass
  6. copy_cleanup.......... pass
- 7. copy_coll............. pass
- 8. copy_shallow.......... pass
- 9. move.................. pass
-10. move_coll............. pass
-11. move_cleanup.......... pass
-12. finish................ pass
-<- summary for `copymove': of 13 tests run: 13 passed, 0 failed. 100.0%
+ 7. copy_content_check.... pass
+ 8. copy_coll_depth....... pass
+ 9. copy_coll............. pass
+10. depth_zero_copy....... pass
+11. copy_med_on_coll...... pass
+12. move.................. pass
+13. move_coll............. pass
+14. move_cleanup.......... pass
+15. move_content_check.... pass
+16. move_collection_check. pass
+17. finish................ pass
+<- summary for `copymove': of 18 tests run: 18 passed, 0 failed. 100.0%
+
+```
+
+With this litmus version, `props` and `locks` tests currently fail.
+
+But they mostly pass with litmus 0.13-3 supplied by Debian:
+
+```
 -> running `props':
  0. init.................. pass
  1. begin................. pass
@@ -124,8 +149,55 @@ They are lightweight and easy to use in your own software to add support for Web
 28. propcleanup........... pass
 29. finish................ pass
 <- summary for `props': of 30 tests run: 30 passed, 0 failed. 100.0%
-```
 
+-> running `locks':
+ 0. init.................. pass
+ 1. begin................. pass
+ 2. options............... pass
+ 3. precond............... pass
+ 4. init_locks............ pass
+ 5. put................... pass
+ 6. lock_excl............. pass
+ 7. discover.............. pass
+ 8. refresh............... pass
+ 9. notowner_modify....... pass
+10. notowner_lock......... pass
+11. owner_modify.......... pass
+12. notowner_modify....... pass
+13. notowner_lock......... pass
+14. copy.................. pass
+15. cond_put.............. pass
+16. fail_cond_put......... pass
+17. cond_put_with_not..... pass
+18. cond_put_corrupt_token WARNING: PUT failed with 400 not 423
+    ...................... pass (with 1 warning)
+19. complex_cond_put...... pass
+20. fail_complex_cond_put. pass
+21. unlock................ pass
+22. fail_cond_put_unlocked pass
+23. lock_shared........... pass
+24. notowner_modify....... pass
+25. notowner_lock......... FAIL (LOCK on locked resource)
+26. owner_modify.......... pass
+27. double_sharedlock..... FAIL (shared LOCK on locked resource:
+423 Locked)
+28. notowner_modify....... pass
+29. notowner_lock......... pass
+30. unlock................ pass
+31. prep_collection....... pass
+32. lock_collection....... pass
+33. owner_modify.......... FAIL (PROPPATCH on locked resouce on `/files/demo/litmus/lockcoll/lockme.txt': 423 Locked)
+34. notowner_modify....... pass
+35. refresh............... pass
+36. indirect_refresh...... pass
+37. unlock................ pass
+38. unmapped_lock......... WARNING: LOCK on unmapped url returned 200 not 201 (RFC4918:S7.3)
+    ...................... pass (with 1 warning)
+39. unlock................ pass
+40. finish................ pass
+<- summary for `locks': of 41 tests run: 38 passed, 3 failed. 92.7%
+-> 2 warnings were issued.
+````
 ## Author
 
 BohwaZ. Contact me on: IRC = bohwaz@irc.libera.chat / Mastodon = https://mamot.fr/@bohwaz / Twitter = @bohwaz
