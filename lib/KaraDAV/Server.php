@@ -19,7 +19,7 @@ class Server extends WebDAV_Server
 
 	public function route(?string $uri = null): bool
 	{
-		$nc = new NextCloud($this->users);
+		$nc = new NextCloud($this->users, sprintf(STORAGE_PATH, '_chunks'));
 
 		if ($r = $nc->route($uri)) {
 			if ($r['route'] == 'direct') {

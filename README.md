@@ -33,6 +33,7 @@ This server features:
 * Desktop app (tested on Debian)
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html)
 * Support for [Direct download API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
+* Support for [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
 
 ## WebDAV clients compatibility
 
@@ -44,7 +45,6 @@ This server features:
 This might get supported in future (maybe):
 
 * [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
-* [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
 * [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
 * [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html) (maybe?)
 * [WebDAV sharing](https://evertpot.com/webdav-caldav-carddav-sharing/)

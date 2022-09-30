@@ -4,6 +4,7 @@ namespace KaraDAV;
 
 use KD2\WebDAV\AbstractStorage;
 use KD2\WebDAV\Server as WebDAV_Server;
+use KD2\WebDAV\Exception as WebDAV_Exception;
 
 class Storage extends AbstractStorage
 {
@@ -91,7 +92,7 @@ class Storage extends AbstractStorage
 				return is_dir($target) ? 'collection' : '';
 			case 'DAV::getlastmodified':
 				if (!$uri && $depth == 0 && is_dir($target)) {
-					$mtime = get_directory_mtime($target);
+					$mtime = self::getDirectoryMTime($target);
 				}
 				else {
 					$mtime = filemtime($target);
@@ -108,7 +109,7 @@ class Storage extends AbstractStorage
 				return basename($target)[0] == '.';
 			case 'DAV::getetag':
 				if (!$uri && !$depth) {
-					$hash = get_directory_size($target) . get_directory_mtime($target);
+					$hash = self::getDirectorySize($target) . self::getDirectoryMTime($target);
 				}
 				else {
 					$hash = filemtime($target) . filesize($target);
@@ -123,12 +124,13 @@ class Storage extends AbstractStorage
 				return md5_file($target);
 			// NextCloud stuff
 			case Nextcloud::PROP_OC_ID:
-				return $this->nc_direct_id($uri);
+				$username = $this->users->current()->login;
+				return NextCloud::getDirectID($username, $uri);
 			case Nextcloud::PROP_OC_PERMISSIONS:
 				return implode('', [NextCloud::PERM_READ, NextCloud::PERM_WRITE, NextCloud::PERM_CREATE, NextCloud::PERM_DELETE, NextCloud::PERM_RENAME_MOVE]);
 			case Nextcloud::PROP_OC_SIZE:
 				if (is_dir($target)) {
-					return get_directory_size($target);
+					return self::getDirectorySize($target);
 				}
 				else {
 					return filesize($target);
@@ -137,12 +139,11 @@ class Storage extends AbstractStorage
 				break;
 		}
 
-		if (in_array($name, Server::NC_PROPERTIES) || in_array($name, Server::BASIC_PROPERTIES) || in_array($name, Server::EXTENDED_PROPERTIES)) {
+		if (in_array($name, NextCloud::NC_PROPERTIES) || in_array($name, Server::BASIC_PROPERTIES) || in_array($name, Server::EXTENDED_PROPERTIES)) {
 			return null;
 		}
 
-		return null;
-		//return $this->getResourceProperties($uri)->get($name);
+		return $this->getResourceProperties($uri)->get($name);
 	}
 
 	public function properties(string $uri, ?array $properties, int $depth): ?array
@@ -248,7 +249,7 @@ class Storage extends AbstractStorage
 			unlink($target);
 		}
 
-		//$this->getResourceProperties($uri)->clear();
+		$this->getResourceProperties($uri)->clear();
 	}
 
 	public function copymove(bool $move, string $uri, string $destination): bool
@@ -296,7 +297,7 @@ class Storage extends AbstractStorage
 		else {
 			$method($source, $target);
 
-			//$this->getResourceProperties($uri)->move($destination);
+			$this->getResourceProperties($uri)->move($destination);
 		}
 
 		return $overwritten;
@@ -365,7 +366,28 @@ class Storage extends AbstractStorage
 					throw new WebDAV_Exception('Empty xmlns', 400);
 				}
 
-				$this->getResourceProperties($uri)->set(key($ns), $prop->getName(), array_filter($ns, 'trim'), $prop->asXML());
+				$name = key($ns) . ':' . $prop->getName();
+
+				$attributes = iterator_to_array($prop->attributes());
+
+				foreach ($ns as $xmlns => $alias) {
+					foreach (iterator_to_array($prop->attributes($alias)) as $key => $v) {
+						$attributes[$xmlns . ':' . $key] = $value;
+					}
+				}
+
+				if ($prop->count() > 1) {
+					$text = '';
+
+					foreach ($prop->children() as $c) {
+						$text .= $c->asXML();
+					}
+				}
+				else {
+					$text = (string)$prop;
+				}
+
+				$this->getResourceProperties($uri)->set($name, $attributes ?: null, $text ?: null);
 			}
 		}
 
@@ -373,12 +395,54 @@ class Storage extends AbstractStorage
 			foreach ($xml->remove as $prop) {
 				$prop = $prop->prop->children();
 				$ns = $prop->getNamespaces();
-				$this->getResourceProperties($uri)->remove(current($ns), $prop->getName());
+				$name = current($ns) . ':' . $prop->getName();
+				$this->getResourceProperties($uri)->remove($name);
 			}
 		}
 
 		$db->exec('END');
 
 		return;
+	}
+
+	static public function getDirectorySize(string $path): int
+	{
+		$total = 0;
+		$path = rtrim($path, '/');
+
+		foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
+			if (is_dir($f)) {
+				$total += self::getDirectorySize($f);
+			}
+			else {
+				$total += filesize($f);
+			}
+		}
+
+		return $total;
+	}
+
+	static public function getDirectoryMTime(string $path): int
+	{
+		$last = 0;
+		$path = rtrim($path, '/');
+
+		foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
+			if (is_dir($f)) {
+				$m = self::getDirectoryMTime($f);
+
+				if ($m > $last) {
+					$last = $m;
+				}
+			}
+
+			$m = filemtime($f);
+
+			if ($m > $last) {
+				$last = $m;
+			}
+		}
+
+		return $last;
 	}
 }
