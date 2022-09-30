@@ -33,10 +33,9 @@ CREATE UNIQUE INDEX app_sessions_token ON app_sessions (token);
 CREATE TABLE properties (
 	user TEXT NOT NULL REFERENCES users(login) ON DELETE CASCADE,
 	uri TEXT NOT NULL,
-	ns_url TEXT NOT NULL,
 	name TEXT NOT NULL,
-	ns TEXT NOT NULL,
-	xml TEXT NOT NULL
+	attributes TEXT NULL,
+	xml TEXT NULL
 );
 
-CREATE UNIQUE INDEX properties_unique ON properties (user, uri, ns_url, name);
+CREATE UNIQUE INDEX properties_unique ON properties (user, uri, name);
