@@ -65,13 +65,21 @@ class Storage extends AbstractStorage
 
 	public function get(string $uri): ?array
 	{
-		if (!file_exists($this->users->current()->path . $uri)) {
+		$path = $this->users->current()->path . $uri;
+
+		if (!file_exists($path)) {
 			return null;
 		}
 
-		//return ['content' => file_get_contents($this->path . $uri)];
-		//return ['resource' => fopen($this->path . $uri, 'r')];
-		return ['path' => $this->users->current()->path . $uri];
+		// Recommended: Use X-SendFile to make things more efficient
+		// see https://tn123.org/mod_xsendfile/
+		// or https://www.nginx.com/resources/wiki/start/topics/examples/xsendfile/
+		if (ENABLE_XSENDFILE) {
+			header('X-SendFile: ' . $path);
+			exit;
+		}
+
+		return ['path' => $path];
 	}
 
 	public function exists(string $uri): bool
@@ -171,7 +179,7 @@ class Storage extends AbstractStorage
 		return $out;
 	}
 
-	public function put(string $uri, $pointer, ?string $hash): bool
+	public function put(string $uri, $pointer, ?string $hash, ?int $mtime): bool
 	{
 		if (preg_match(self::PUT_IGNORE_PATTERN, basename($uri))) {
 			return false;
@@ -225,6 +233,10 @@ class Storage extends AbstractStorage
 		}
 		else {
 			rename($tmp_file, $target);
+		}
+
+		if ($mtime) {
+			@touch($target, $mtime);
 		}
 
 		return $new;
@@ -384,6 +396,21 @@ class Storage extends AbstractStorage
 		}
 
 		return $total;
+	}
+
+	static public function deleteDirectory(string $path): void
+	{
+		foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
+			if (is_dir($f)) {
+				self::deleteDirectory($f);
+				@rmdir($f);
+			}
+			else {
+				@unlink($f);
+			}
+		}
+
+		@rmdir($path);
 	}
 
 	static public function getDirectoryMTime(string $path): int

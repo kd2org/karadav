@@ -14,6 +14,7 @@ class NextCloud extends WebDAV_NextCloud
 	{
 		$this->users = $users;
 		$this->temporary_chunks_path = $temporary_chunks_path;
+		$this->setRootURL(WWW_URL);
 	}
 
 	public function auth(?string $login, ?string $password): bool
@@ -132,7 +133,7 @@ class NextCloud extends WebDAV_NextCloud
 		Storage::deleteDirectory($path);
 	}
 
-	public function assembleChunks(string $login, string $name, string $target): bool
+	public function assembleChunks(string $login, string $name, string $target, ?int $mtime): array
 	{
 		$target = $this->users->current()->path . $target;
 		$parent = dirname($target);
@@ -162,7 +163,12 @@ class NextCloud extends WebDAV_NextCloud
 
 		fclose($out);
 		$this->deleteChunks($login, $name);
-		return !$exists;
+
+		if ($mtime) {
+			touch($target, $mtime);
+		}
+
+		return ['created' => !$exists, 'etag' => md5(filemtime($target) . filesize($target))];
 	}
 
 }

@@ -43,12 +43,19 @@ This server features:
 
 This might get supported in future (maybe):
 
-* [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
 * [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
 * [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html) (maybe?)
+* [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
 * [WebDAV sharing](https://evertpot.com/webdav-caldav-carddav-sharing/)
+
+This probably won't get supported anytime soon:
+
+* CalDAV/CardDAV support:
+  * this would require a [bunch of new stuff implemented](https://evertpot.com/227/)
+  * the only CalDAV test suite ([CavDAVtester](https://github.com/apple/ccs-caldavtester)) does not work anymore as it's written for Python 2
+  * for now the best option is to use [Baikal from Sabre/DAV](https://sabre.io/baikal/) for that
+  * Nice web clients to add to Baikal are [AgenDAV](https://github.com/agendav/agendav) and [InfCloud](https://inf-it.com/open-source/clients/infcloud/)
 * [Extended MKCOL](https://www.rfc-editor.org/rfc/rfc5689) if CalDAV support is implemented
-* CalDAV/CardDAV support: maybe, [why not](https://evertpot.com/227/), we'll see, in the mean time see [Sabre/DAV](https://sabre.io/dav/) for that.
 
 ## Dependencies
 

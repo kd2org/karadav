@@ -15,6 +15,12 @@ const STORAGE_PATH = __DIR__ . '/data/%s';
 const DB_FILE = __DIR__ . '/data/db.sqlite';
 
 /**
+ * Set to TRUE if you have X-SendFile module installed and configured
+ * see https://tn123.org/mod_xsendfile/
+ */
+const ENABLE_XSENDFILE = false;
+
+/**
  * WWW_URL is the complete URL of the root of this server
  * This code auto-detects it as well as it can
  * But you may have to assign something static instead, eg.:
