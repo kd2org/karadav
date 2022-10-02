@@ -26,11 +26,16 @@ This server features:
 * Support for some of the [Microsoft proprietary properties](https://greenbytes.de/tech/webdav/webdavfaq.html)
 * Passes most of the [Litmus compliance tests](https://github.com/tolsen/litmus)
 
-## NextCloud compatibility
+## NextCloud/ownCloud compatibility
 
-* Android app
-* Desktop app (tested on Debian)
-* [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html)
+This server should be compatible with ownCloud and NextCloud synchronization clients (desktop, mobile).
+
+It has been tested with:
+
+* ownCloud Desktop 2.5.1 and 2.11.1 (Debian)
+* NextCloud Desktop 3.1.1 and 3.6.0 (Debian)
+* NextCloud Android app
+* [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) 3.1.1 (Debian) *-- Note: make sure to pass options before parameters.*
 * Support for [Direct download API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
 * Support for [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
 
@@ -46,6 +51,7 @@ This might get supported in future (maybe):
 * [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
 * [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html) (maybe?)
 * [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
+* [Resumable upload via TUS](https://tus.io/protocols/resumable-upload.html)
 * [WebDAV sharing](https://evertpot.com/webdav-caldav-carddav-sharing/)
 
 This probably won't get supported anytime soon:
@@ -55,7 +61,7 @@ This probably won't get supported anytime soon:
   * the only CalDAV test suite ([CavDAVtester](https://github.com/apple/ccs-caldavtester)) does not work anymore as it's written for Python 2
   * for now the best option is to use [Baikal from Sabre/DAV](https://sabre.io/baikal/) for that
   * Nice web clients to add to Baikal are [AgenDAV](https://github.com/agendav/agendav) and [InfCloud](https://inf-it.com/open-source/clients/infcloud/)
-* [Extended MKCOL](https://www.rfc-editor.org/rfc/rfc5689) if CalDAV support is implemented
+* [Extended MKCOL](https://www.rfc-editor.org/rfc/rfc5689) required only if CalDAV support is implemented
 
 ## Dependencies
 

@@ -19,7 +19,12 @@ class NextCloud extends WebDAV_NextCloud
 
 	public function auth(?string $login, ?string $password): bool
 	{
-		$user = $this->users->appSessionLogin($login, $password);
+		$user = $this->users->login($login, $password);
+
+		if (!$user) {
+			// Try app session
+			$user = $this->users->appSessionLogin($login, $password);
+		}
 
 		if (!$user) {
 			return false;
