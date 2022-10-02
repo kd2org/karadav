@@ -121,7 +121,7 @@ iframe, .md_preview {
 	top: 2em;
 	left: 0;
 	width: calc(100vw);
-	height: calc(100vh);
+	height: calc(100% - 2em);
 	padding: 0;
 	margin: 0;
 	border: none;

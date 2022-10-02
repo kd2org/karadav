@@ -104,6 +104,12 @@ Array.from($('table').rows).forEach((tr) => {
 			else if (type.match(/^image\//)) {
 				dialog(file_name, `<img src="${file_url}" />`, false);
 			}
+			else if (type.match(/^audio\//)) {
+				dialog(file_name, `<audio controls="true" autoplay="true" src="${file_url}" />`, false);
+			}
+			else if (type.match(/^video\//)) {
+				dialog(file_name, `<video controls="true" autoplay="true" src="${file_url}" />`, false);
+			}
 			else {
 				dialog(file_name, `<iframe src="${file_url}" />`, false);
 			}
