@@ -35,6 +35,7 @@ It has been tested with:
 * ownCloud Desktop 2.5.1 and 2.11.1 (Debian)
 * NextCloud Desktop 3.1.1 and 3.6.0 (Debian)
 * NextCloud Android app 3.21.0 (F-Droid)
+* ownCloud Android app 2.21.2 (F-Droid)
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) 3.1.1 (Debian) *-- Note: make sure to pass options before parameters.*
 
 The following NextCloud specific features are supported:
