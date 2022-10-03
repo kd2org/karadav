@@ -28,16 +28,23 @@ This server features:
 
 ## NextCloud/ownCloud compatibility
 
-This server should be compatible with ownCloud and NextCloud synchronization clients (desktop, mobile).
+This server should be compatible with ownCloud and NextCloud synchronization clients (desktop, mobile, CLI).
 
 It has been tested with:
 
 * ownCloud Desktop 2.5.1 and 2.11.1 (Debian)
 * NextCloud Desktop 3.1.1 and 3.6.0 (Debian)
-* NextCloud Android app
+* NextCloud Android app 3.21.0 (F-Droid)
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) 3.1.1 (Debian) *-- Note: make sure to pass options before parameters.*
-* Support for [Direct download API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
-* Support for [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
+
+The following NextCloud specific features are supported:
+
+* [Direct download](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
+* [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
+* `X-OC-MTime` [header](https://gitlab.gnome.org/GNOME/gvfs/-/issues/637) to set file modification time
+* Login via app-specific passwords (necessary for NextCloud desktop and Android clients)
+* Thumbnail/preview of images and files
+* Workspace notes (`README.md` displayed on top of directory listing on Android app) and workspace notes editing
 
 ## WebDAV clients compatibility
 

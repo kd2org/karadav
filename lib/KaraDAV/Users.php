@@ -172,7 +172,7 @@ class Users
 		$session = $this->appSessionCreate();
 		$current = $this->current();
 
-		return sprintf(Server::NC_AUTH_REDIRECT_URL, WWW_URL, $current->login, $session->token . ':' . $session->password);
+		return sprintf(NextCloud::AUTH_REDIRECT_URL, WWW_URL, $current->login, $session->token . ':' . $session->password);
 	}
 
 	public function appSessionValidateToken(string $token): ?stdClass

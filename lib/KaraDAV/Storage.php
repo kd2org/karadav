@@ -128,9 +128,24 @@ class Storage extends AbstractStorage
 				return new \DateTime('@' . fileatime($target));
 			case 'DAV::creationdate':
 				return new \DateTime('@' . filectime($target));
-			case Server::PROP_DIGEST_MD5:
-				return md5_file($target);
 			// NextCloud stuff
+			case Nextcloud::PROP_NC_HAS_PREVIEW:
+			case Nextcloud::PROP_NC_IS_ENCRYPTED:
+				return 'false';
+			case Nextcloud::PROP_NC_RICH_WORKSPACE:
+				if (!is_dir($target)) {
+					return '';
+				}
+
+				$files = ['README.md', 'Readme.md', 'readme.md'];
+
+				foreach ($files as $f) {
+					if (file_exists($target . '/' . $f)) {
+						return file_get_contents($target . '/' . $f);
+					}
+				}
+
+				return '';
 			case Nextcloud::PROP_OC_ID:
 				$username = $this->users->current()->login;
 				return NextCloud::getDirectID($username, $uri);
@@ -147,7 +162,7 @@ class Storage extends AbstractStorage
 				break;
 		}
 
-		if (in_array($name, NextCloud::NC_PROPERTIES) || in_array($name, Server::BASIC_PROPERTIES) || in_array($name, Server::EXTENDED_PROPERTIES)) {
+		if (in_array($name, NextCloud::NC_PROPERTIES) || in_array($name, WebDAV::BASIC_PROPERTIES) || in_array($name, WebDAV::EXTENDED_PROPERTIES)) {
 			return null;
 		}
 
@@ -163,7 +178,7 @@ class Storage extends AbstractStorage
 		}
 
 		if (null === $properties) {
-			$properties = array_merge(Server::BASIC_PROPERTIES, ['DAV::getetag', Nextcloud::PROP_OC_ID]);
+			$properties = array_merge(WebDAV::BASIC_PROPERTIES, ['DAV::getetag', Nextcloud::PROP_OC_ID]);
 		}
 
 		$out = [];
@@ -357,7 +372,7 @@ class Storage extends AbstractStorage
 
 	public function setProperties(string $uri, string $body): void
 	{
-		$properties = Server::parsePropPatch($body);
+		$properties = WebDAV::parsePropPatch($body);
 
 		if (!count($properties)) {
 			return;
