@@ -6,6 +6,8 @@ require_once __DIR__ . '/_inc.php';
 
 $uri = strtok($_SERVER['REQUEST_URI'], '?');
 
+$s = new Server;
+
 if (PHP_SAPI == 'cli-server') {
 	if (is_file(__DIR__ . '/' . $uri)) {
 		return false;
@@ -16,10 +18,9 @@ if (PHP_SAPI == 'cli-server') {
 	}
 
 	$method = $_SERVER['REQUEST_METHOD'] ?? $_SERVER['REDIRECT_REQUEST_METHOD'];
-	file_put_contents('php://stderr', sprintf("%s %s\n", $method, $uri));
 
 	if ($method != 'GET' && $method != 'HEAD') {
-		file_put_contents('php://stderr', file_get_contents('php://input') . "\n");
+		$s->dav->log('%s', file_get_contents('php://input'));
 	}
 }
 
@@ -27,9 +28,17 @@ if (isset($_SERVER['REDIRECT_REQUEST_METHOD'])) {
 	$_SERVER['REQUEST_METHOD'] = $_SERVER['REDIRECT_REQUEST_METHOD'];
 }
 
-$s = new Server;
-
 if (!$s->route($uri)) {
+	if (PHP_SAPI == 'cli-server') {
+		$qs = $_SERVER['QUERY_STRING'] ?? null;
+		$s->dav->log("<= %s %s", $method, $uri . ($qs ? '?' : '') . $qs);
+		$s->dav->log('%s', print_r(apache_request_headers(), true));
+		$s->dav->log("=> Router fail: 404");
+	}
+
 	http_response_code(404);
 	echo '<h1>Invalid URL</h1>';
+}
+else {
+	$s->dav->log('=> %d %s %s', http_response_code(), print_r(headers_list(), true), print_r(apache_request_headers(), true));
 }

@@ -10,10 +10,11 @@ class NextCloud extends WebDAV_NextCloud
 	protected Users $users;
 	protected string $temporary_chunks_path;
 
-	public function __construct(Users $users, string $temporary_chunks_path)
+	public function __construct(WebDAV $server, Users $users)
 	{
+		$this->setServer($server);
 		$this->users = $users;
-		$this->temporary_chunks_path = $temporary_chunks_path;
+		$this->temporary_chunks_path =  sprintf(STORAGE_PATH, '_chunks');
 		$this->setRootURL(WWW_URL);
 	}
 
