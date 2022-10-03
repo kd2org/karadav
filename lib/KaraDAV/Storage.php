@@ -93,9 +93,11 @@ class Storage extends AbstractStorage
 
 		switch ($name) {
 			case 'DAV::getcontentlength':
-				return is_dir($target) ? 0 : filesize($target);
+				return is_dir($target) ? null : filesize($target);
 			case 'DAV::getcontenttype':
-				return mime_content_type($target);
+				// ownCloud app crashes if mimetype is provided for a directory
+				// https://github.com/owncloud/android/issues/3768
+				return is_dir($target) ? null : mime_content_type($target);
 			case 'DAV::resourcetype':
 				return is_dir($target) ? 'collection' : '';
 			case 'DAV::getlastmodified':
@@ -127,11 +129,24 @@ class Storage extends AbstractStorage
 			case 'DAV::lastaccessed':
 				return new \DateTime('@' . fileatime($target));
 			case 'DAV::creationdate':
+				// The ownCloud Android app doesn't like formatted dates, it makes it crash.
+				if (false !== stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'owncloud')) {
+					return filectime($target);
+				}
+
 				return new \DateTime('@' . filectime($target));
+			case WebDAV::PROP_DIGEST_MD5:
+				if (!is_file($target)) {
+					return null;
+				}
+
+				return md5_file($target);
 			// NextCloud stuff
 			case Nextcloud::PROP_NC_HAS_PREVIEW:
 			case Nextcloud::PROP_NC_IS_ENCRYPTED:
 				return 'false';
+			case NextCloud::PROP_OC_SHARETYPES:
+				return WebDAV::EMPTY_PROP_VALUE;
 			case Nextcloud::PROP_NC_RICH_WORKSPACE:
 				if (!is_dir($target)) {
 					return '';
@@ -151,6 +166,11 @@ class Storage extends AbstractStorage
 				return NextCloud::getDirectID($username, $uri);
 			case Nextcloud::PROP_OC_PERMISSIONS:
 				return implode('', [NextCloud::PERM_READ, NextCloud::PERM_WRITE, NextCloud::PERM_CREATE, NextCloud::PERM_DELETE, NextCloud::PERM_RENAME_MOVE]);
+			case 'DAV::quota-available-bytes':
+				return null;
+				return -3;
+			case 'DAV::quota-used-bytes':
+				return null;
 			case Nextcloud::PROP_OC_SIZE:
 				if (is_dir($target)) {
 					return self::getDirectorySize($target);
