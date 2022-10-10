@@ -61,3 +61,19 @@ function html_foot(): void
 	</body>
 	</html>';
 }
+
+function format_bytes(int $bytes, string $unit = 'B'): string
+{
+	if ($bytes >= 1024*1024*1024) {
+		return round($bytes / (1024*1024*1024), 1) . ' G' . $unit;
+	}
+	elseif ($bytes >= 1024*1024) {
+		return round($bytes / (1024*1024), 1) . ' M' . $unit;
+	}
+	elseif ($bytes >= 1024) {
+		return round($bytes / 1024, 1) . ' K' . $unit;
+	}
+	else {
+		return $bytes . ' ' . $unit;
+	}
+}

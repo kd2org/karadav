@@ -1,5 +1,5 @@
 Options -Indexes -Multiviews
-DirectoryIndex disabled
+DirectoryIndex index.php
 
 RewriteEngine On
 RewriteBase /
