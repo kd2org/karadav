@@ -17,6 +17,15 @@ class Server
 
 	public function route(?string $uri = null): bool
 	{
+		header('Access-Control-Allow-Origin: *', true);
+		$method = $_SERVER['REQUEST_METHOD'] ?? null;
+
+		// Always say YES to OPTIONS
+		if ($method == 'OPTIONS') {
+			$this->dav->http_options();
+			return true;
+		}
+
 		$nc = new NextCloud($this->dav, $this->users);
 
 		if ($r = $nc->route($uri)) {

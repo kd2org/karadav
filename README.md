@@ -8,8 +8,8 @@ Although this is a demo, this can be used as a simple but powerful file sharing 
 
 This server features:
 
-* User-friendly directory listings for file browsing with a web browser:
-	* Upload directly from browser
+* User-friendly directory listings for file browsing with a web browser, using [WebDAV Manager.js](https://github.com/kd2org/webdav-manager.js)
+	* Upload directly from browser, using paste, or drag and drop
 	* Rename
 	* Delete
 	* Create and edit text file
