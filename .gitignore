@@ -1,0 +1,8 @@
+.gitignore
+data/
+www/webdav.css
+www/webdav.js
+config.local.php
+error.log
+debug.log
+lib/KD2/
