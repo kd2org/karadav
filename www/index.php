@@ -19,9 +19,9 @@ if (!$user) {
 
 $quota = $users->quota($user);
 $server = new Server;
-$free = $server->format_bytes($quota->free);
-$used = $server->format_bytes($quota->used);
-$total = $server->format_bytes($quota->total);
+$free = format_bytes($quota->free);
+$used = format_bytes($quota->used);
+$total = format_bytes($quota->total);
 $www_url = WWW_URL;
 
 html_head('My files');
@@ -32,6 +32,7 @@ echo <<<EOF
 	<dd><a href="{$user->dav_url}"><tt>{$user->dav_url}</tt></a> (click to manage your files from your browser)</dd>
 	<dt>NextCloud URL</dt>
 	<dd><tt>{$www_url}</tt></dd>
+	<dd class="help">Use this URL to setup a NextCloud or ownCloud client to access your files.</dd>
 	<dt>Quota</dt>
 	<dd>Used {$used} out of {$total} (free: {$free})</dd>
 </dl>
