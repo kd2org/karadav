@@ -25,6 +25,7 @@ This server features:
 * Support for `Content-MD5` with `PUT` requests, see [dCache documentation for details](https://dcache.org/old/manuals/UserGuide-6.0/webdav.shtml#checksums)
 * Support for some of the [Microsoft proprietary properties](https://greenbytes.de/tech/webdav/webdavfaq.html)
 * Passes most of the [Litmus compliance tests](https://github.com/tolsen/litmus)
+* Supports WOPI, for editing and viewing of documents using OnlyOffice, Collabora Online or MS Office.
 
 ## NextCloud/ownCloud compatibility
 
@@ -52,6 +53,9 @@ The following NextCloud specific features are supported:
 * [FUSE webdavfs](https://github.com/miquels/webdavfs) is recommended for Linux
 * davfs2 is NOT recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
 
+## WOPI clients compatibility
+
+* Tested successfully with Collabora Development Edition (see [COLLABORA.md](COLLABORA.md))
 ## Future development
 
 This might get supported in future (maybe):
