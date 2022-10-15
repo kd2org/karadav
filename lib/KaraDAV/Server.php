@@ -2,6 +2,8 @@
 
 namespace KaraDAV;
 
+use KD2\WebDAV\WOPI;
+
 class Server
 {
 	public Users $users;
@@ -24,6 +26,15 @@ class Server
 		if ($method == 'OPTIONS') {
 			$this->dav->http_options();
 			return true;
+		}
+
+		if (WOPI_DISCOVERY_URL) {
+			$wopi = new WOPI;
+			$wopi->setServer($this->dav);
+
+			if ($wopi->route($uri)) {
+				return true;
+			}
 		}
 
 		$nc = new NextCloud($this->dav, $this->users);

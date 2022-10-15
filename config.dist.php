@@ -32,3 +32,10 @@ $port = !in_array($_SERVER['SERVER_PORT'], [80, 443]) ? ':' . $_SERVER['SERVER_P
 $root = '/';
 
 define('KaraDAV\WWW_URL', sprintf('http%s://%s%s%s', $https, $name, $port, $root));
+
+/**
+ * WOPI client discovery URL
+ * eg. http://onlyoffice.domain.tld/hosting/discovery for OnlyOffice
+ * If set to NULL, WOPI support is disabled
+ */
+const WOPI_DISCOVERY_URL = null;

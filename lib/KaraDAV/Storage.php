@@ -4,6 +4,7 @@ namespace KaraDAV;
 
 use KD2\WebDAV\AbstractStorage;
 use KD2\WebDAV\Server as WebDAV_Server;
+use KD2\WebDAV\WOPI;
 use KD2\WebDAV\Exception as WebDAV_Exception;
 
 class Storage extends AbstractStorage
@@ -142,8 +143,8 @@ class Storage extends AbstractStorage
 
 				return md5_file($target);
 			// NextCloud stuff
-			case Nextcloud::PROP_NC_HAS_PREVIEW:
-			case Nextcloud::PROP_NC_IS_ENCRYPTED:
+			case NextCloud::PROP_NC_HAS_PREVIEW:
+			case NextCloud::PROP_NC_IS_ENCRYPTED:
 				return 'false';
 			case NextCloud::PROP_OC_SHARETYPES:
 				return WebDAV::EMPTY_PROP_VALUE;
@@ -161,10 +162,10 @@ class Storage extends AbstractStorage
 				}
 
 				return '';
-			case Nextcloud::PROP_OC_ID:
+			case NextCloud::PROP_OC_ID:
 				$username = $this->users->current()->login;
 				return NextCloud::getDirectID($username, $uri);
-			case Nextcloud::PROP_OC_PERMISSIONS:
+			case NextCloud::PROP_OC_PERMISSIONS:
 				return implode('', [NextCloud::PERM_READ, NextCloud::PERM_WRITE, NextCloud::PERM_CREATE, NextCloud::PERM_DELETE, NextCloud::PERM_RENAME_MOVE]);
 			case 'DAV::quota-available-bytes':
 				return null;
@@ -178,6 +179,31 @@ class Storage extends AbstractStorage
 				else {
 					return filesize($target);
 				}
+			case WOPI::PROP_FILE_URL:
+				$id = gzcompress($uri);
+				$id = WOPI::base64_encode_url_safe($id);
+				return WWW_URL . 'wopi/files/' . $id;
+			case WOPI::PROP_TOKEN:
+				$p = $this->getResourceProperties($uri);
+				$token = $p->get($name)['xml'] ?? null;
+
+				// Check if token has expired, if so, then renew it
+				if ($token) {
+					$expiry = $p->get(WOPI::PROP_TOKEN_TTL);
+
+					if ($expiry < time() * 1000) {
+						$token = null;
+					}
+				}
+
+				// Create token and store it
+				if (!$token) {
+					$token = $this->createWopiToken($uri);
+					$p->set(WOPI::PROP_TOKEN, null, $token);
+					$p->set(WOPI::PROP_TOKEN_TTL, null, (time()+3600)*1000);
+				}
+
+				return $token;
 			default:
 				break;
 		}
@@ -187,6 +213,13 @@ class Storage extends AbstractStorage
 		}
 
 		return $this->getResourceProperties($uri)->get($name);
+	}
+
+	protected function createWopiToken(string $uri)
+	{
+		$login = $this->users->current()->login;
+		$bytes = substr(md5(random_bytes(10)), 0, 10);
+		return WOPI::base64_encode_url_safe(sprintf('%s:%s', sha1($login . $uri . $bytes), $bytes));
 	}
 
 	public function properties(string $uri, ?array $properties, int $depth): ?array
@@ -470,5 +503,30 @@ class Storage extends AbstractStorage
 		}
 
 		return $last;
+	}
+
+	public function getWopiURI(string $id, string $token): ?string
+	{
+		$id = WOPI::base64_decode_url_safe($id);
+		$uri = gzuncompress($id);
+		$token_decode = WOPI::base64_decode_url_safe($token);
+		$hash = strtok($token_decode, ':');
+		$bytes = strtok(false);
+
+		$r = DB::getInstance()->first('SELECT user, uri FROM properties WHERE name = ? AND xml = ?;', WOPI::PROP_TOKEN, $token);
+
+		if (!$r) {
+			return null;
+		}
+
+		if (!hash_equals(sha1($r->user . $r->uri . $bytes), $hash)) {
+			return null;
+		}
+
+		if (!$this->users->setCurrent($r->user)) {
+			return null;
+		}
+
+		return $r->uri;
 	}
 }
