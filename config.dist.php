@@ -39,3 +39,9 @@ define('KaraDAV\WWW_URL', sprintf('http%s://%s%s%s', $https, $name, $port, $root
  * If set to NULL, WOPI support is disabled
  */
 const WOPI_DISCOVERY_URL = null;
+
+/**
+ * Path to a log file (eg. __DIR__ . '/debug.log')
+ * This will log all HTTP requests and responses received by the server
+ */
+const LOG_FILE = null;

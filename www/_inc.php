@@ -77,3 +77,20 @@ function format_bytes(int $bytes, string $unit = 'B'): string
 		return $bytes . ' ' . $unit;
 	}
 }
+
+function http_log(string $message, ...$params): void
+{
+	if (PHP_SAPI != 'cli-server' && !LOG_FILE) {
+		return;
+	}
+
+	$msg = vsprintf($message, $params) . "\n\n";
+
+	if (PHP_SAPI == 'cli-server') {
+		file_put_contents('php://stderr', $msg);
+	}
+
+	if (LOG_FILE) {
+		file_put_contents(LOG_FILE, $msg, FILE_APPEND);
+	}
+}
