@@ -52,6 +52,7 @@ The following NextCloud specific features are supported:
 
 * [FUSE webdavfs](https://github.com/miquels/webdavfs) is recommended for Linux
 * davfs2 is NOT recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
+* Microsoft Windows native webclient (also called 'MiniRedir') is notoriously bad. We tested it successfully on Windows 10, but it is recommended to use [CyberDuck](https://cyberduck.io/download/) or [WinSCP](https://winscp.net/) instead, both are free software.
 
 ## WOPI clients compatibility
 

@@ -200,7 +200,7 @@ class Storage extends AbstractStorage
 				if (!$token) {
 					$token = $this->createWopiToken($uri);
 					$p->set(WOPI::PROP_TOKEN, null, $token);
-					$p->set(WOPI::PROP_TOKEN_TTL, null, (time()+3600)*1000);
+					$p->set(WOPI::PROP_TOKEN_TTL, null, (time()+3600*10)*1000);
 				}
 
 				return $token;
