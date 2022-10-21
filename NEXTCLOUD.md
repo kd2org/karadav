@@ -1,12 +1,10 @@
 # Implement a server compatible with NextCloud desktop and mobile apps
 
-FileRun
+Here are some random docs and thoughts on implementing a NextCloud-compatible WebDAV server.
 
-https://docs.nextcloud.com/server/19/developer_manual/client_apis/OCS/ocs-api-overview.html?highlight=capabilities
-https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-status-api.html
-https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/index.html
-
-The desktop client is the most annoying
+See also:
+* [NextCloud WebDAV API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/index.html)
+* [Capabilities](https://docs.nextcloud.com/server/19/developer_manual/client_apis/OCS/ocs-api-overview.html?highlight=capabilities)
 
 ## Two different login flows
 

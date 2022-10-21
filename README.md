@@ -1,31 +1,44 @@
 # KaraDAV - A lightweight WebDAV server, with NextCloud compatibility
 
-This is WebDAV server, allowing to easily set up a WebDAV file sharing server compatible with NextCloud clients with no depencies and high performance.
+This is simple and lighweight WebDAV server, allowing to easily set up a file sharing server compatible with WebDAV and NextCloud clients. It has no depencies and good performance.
 
-The only dependency is SQLite3 for the database.
+It is written in PHP (8+) The only dependency is SQLite3 for the database.
 
-Although this is a demo, this can be used as a simple but powerful file sharing server.
+Its original purpose was to serve as a demo and test for the KD2 WebDAV library, which we developed for [Paheko](http://paheko.cloud/), our non-profit management solution, but it can also be used as a simple but powerful file sharing server.
 
-This server features:
+## Features
 
-* User-friendly directory listings for file browsing with a web browser, using [WebDAV Manager.js](https://github.com/kd2org/webdav-manager.js)
-	* Upload directly from browser, using paste, or drag and drop
+* User-friendly directory listings for file browsing with a web browser, using our [WebDAV Manager.js](https://github.com/kd2org/webdav-manager.js) client
+	* Upload directly from browser, using paste or drag and drop
 	* Rename
 	* Delete
-	* Create and edit text file
+	* Create and edit text files
+	* Create directories
 	* MarkDown live preview
 	* Preview of images, text, MarkDown and PDF
+	* Editing of Office files using Collabora or OnlyOffice
 * WebDAV class 1, 2, 3 support, support for Etags
-* No database is required
+* No database sever is required
 * Multiple user accounts
-* Share files for users using WebDAV: delete, create, update, mkdir, get, list
+* Share files using WebDAV: delete, create, update, mkdir, get, list
 * Compatible with WebDAV clients
-* Support for HTTP ranges (partial download)
+* Support for HTTP ranges (partial download of files)
 * Support for [RFC 3230](https://greenbytes.de/tech/webdav/rfc3230.xhtml) to get the MD5 digest hash of a file (to check integrity) on `HEAD` requests (only MD5 is supported so far)
 * Support for `Content-MD5` with `PUT` requests, see [dCache documentation for details](https://dcache.org/old/manuals/UserGuide-6.0/webdav.shtml#checksums)
 * Support for some of the [Microsoft proprietary properties](https://greenbytes.de/tech/webdav/webdavfaq.html)
-* Passes most of the [Litmus compliance tests](https://github.com/tolsen/litmus)
+* Passes most of the [Litmus compliance tests](https://github.com/tolsen/litmus) (see below)
 * Supports WOPI, for editing and viewing of documents using OnlyOffice, Collabora Online or MS Office.
+
+### NextCloud/ownCloud features
+
+The following ownCloud/NextCloud specific features are supported:
+
+* [Direct download](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
+* [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
+* `X-OC-MTime` [header](https://gitlab.gnome.org/GNOME/gvfs/-/issues/637) to set file modification time
+* Login via app-specific passwords (necessary for NextCloud desktop and Android clients)
+* Thumbnail/preview of images and files
+* Workspace notes (`README.md` displayed on top of directory listing on Android app) and workspace notes editing
 
 ## NextCloud/ownCloud compatibility
 
@@ -39,14 +52,7 @@ It has been tested with:
 * ownCloud Android app 2.21.2 (F-Droid)
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) 3.1.1 (Debian) *-- Note: make sure to pass options before parameters.*
 
-The following NextCloud specific features are supported:
-
-* [Direct download](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
-* [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
-* `X-OC-MTime` [header](https://gitlab.gnome.org/GNOME/gvfs/-/issues/637) to set file modification time
-* Login via app-specific passwords (necessary for NextCloud desktop and Android clients)
-* Thumbnail/preview of images and files
-* Workspace notes (`README.md` displayed on top of directory listing on Android app) and workspace notes editing
+Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients.
 
 ## WebDAV clients compatibility
 
@@ -57,6 +63,7 @@ The following NextCloud specific features are supported:
 ## WOPI clients compatibility
 
 * Tested successfully with Collabora Development Edition (see [COLLABORA.md](COLLABORA.md))
+
 ## Future development
 
 This might get supported in future (maybe):
@@ -65,7 +72,7 @@ This might get supported in future (maybe):
 * [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html) (maybe?)
 * [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
 * [Resumable upload via TUS](https://tus.io/protocols/resumable-upload.html)
-* [WebDAV sharing](https://evertpot.com/webdav-caldav-carddav-sharing/)
+* [WebDAV sharing if it ever becomes a spec?](https://evertpot.com/webdav-caldav-carddav-sharing/)
 
 This probably won't get supported anytime soon:
 
@@ -82,9 +89,16 @@ This depends on the KD2\WebDAV and KD2\WebDAV_NextCloud classes from the [KD2FW 
 
 They are lightweight and easy to use in your own software to add support for WebDAV and NextCloud clients to your software.
 
+## Similar software
+
+* [Davros](https://github.com/mnutt/davros/) used to be compatible with NextCloud client [before version 2.5.0](https://github.com/owncloud/client/issues/6775)
+* [FileRun](https://filerun.com) is a proprietary solution compatible with the NextCloud Android app
+
 ## Litmus compliance tests
 
 Tests were performed using litmus source code as of December 13, 2017 from [the Github repo](https://github.com/tolsen/litmus).
+
+We are not aiming at 100% pass, as we are mainly targeting file sharing, so we are not currently trying to fix rare `PROPPATCH` issues, but pull requests are welcome.
 
 ```
 -> running `http':
@@ -223,7 +237,8 @@ But they mostly pass with litmus 0.13-3 supplied by Debian:
 40. finish................ pass
 <- summary for `locks': of 41 tests run: 38 passed, 3 failed. 92.7%
 -> 2 warnings were issued.
-````
+```
+
 ## Author
 
 BohwaZ. Contact me on: IRC = bohwaz@irc.libera.chat / Mastodon = https://mamot.fr/@bohwaz / Twitter = @bohwaz

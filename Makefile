@@ -1,10 +1,18 @@
+KD2FW_URL=https://fossil.kd2.org/kd2fw/doc/tip/src/lib/KD2/
+
+deps: js-deps php-deps
+
 js-deps:
 	wget -O www/webdav.js https://raw.githubusercontent.com/kd2org/webdav-manager.js/main/webdav.js
 	wget -O www/webdav.css https://raw.githubusercontent.com/kd2org/webdav-manager.js/main/webdav.css
 
 php-deps:
-	wget -O lib/KD2/WebDAV.php 'https://fossil.kd2.org/kd2fw/doc/tip/src/lib/KD2/WebDAV.php'
-	wget -O lib/KD2/WebDAV_NextCloud.php 'https://fossil.kd2.org/kd2fw/doc/tip/src/lib/KD2/WebDAV_NextCloud.php'
+	wget -O lib/KD2/ErrorManager.php '${KD2FW_URL}ErrorManager.php'
+	wget -O lib/KD2/WebDAV/Server.php '${KD2FW_URL}WebDAV/Server.php'
+	wget -O lib/KD2/WebDAV/AbstractStorage.php '${KD2FW_URL}WebDAV/AbstractStorage.php'
+	wget -O lib/KD2/WebDAV/FileStorage.php '${KD2FW_URL}WebDAV/FileStorage.php'
+	wget -O lib/KD2/WebDAV/NextCloud.php '${KD2FW_URL}WebDAV/NextCloud.php'
+	wget -O lib/KD2/WebDAV/WOPI.php '${KD2FW_URL}WebDAV/WOPI.php'
 
 server:
 	php -S 0.0.0.0:8080 -t www www/_router.php
