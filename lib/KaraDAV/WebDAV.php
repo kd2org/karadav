@@ -30,4 +30,9 @@ class WebDAV extends WebDAV_Server
 		header('Access-Control-Allow-Headers: Authorization, *');
 		header('Access-Control-Allow-Methods: GET,HEAD,PUT,DELETE,COPY,MOVE,PROPFIND,MKCOL,LOCK,UNLOCK');
 	}
+
+	public function log(string $message, ...$params)
+	{
+		http_log('DAV: ' . $message, ...$params);
+	}
 }
