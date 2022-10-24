@@ -31,6 +31,7 @@ Its original purpose was to serve as a demo and test for the KD2 WebDAV library,
 * Support for some of the [Microsoft proprietary properties](https://greenbytes.de/tech/webdav/webdavfaq.html)
 * Passes most of the [Litmus compliance tests](https://github.com/tolsen/litmus) (see below)
 * Supports WOPI, for editing and viewing of documents using OnlyOffice, Collabora Online or MS Office.
+* Support for LDAP
 * Good performance!
 
 ### NextCloud/ownCloud features

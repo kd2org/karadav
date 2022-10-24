@@ -42,6 +42,7 @@ html_head('Login');
 
 if ($error == -1) {
 	echo '<p class="info">You are logged in, you can close this window or tab and go back to the app.</p>';
+	html_foot();
 	exit;
 }
 

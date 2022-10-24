@@ -24,12 +24,14 @@ if (!file_exists(DB_FILE)) {
 	$db->exec('BEGIN;');
 	$db->exec(file_get_contents(__DIR__ . '/../schema.sql'));
 
-	@session_start();
-	$users = new Users;
-	$p = 'karadavdemo';
-	$users->create('demo', $p, 10, true);
-	$_SESSION['install_password'] = $p;
-	$users->login('demo', $p);
+	if (!LDAP::enabled()) {
+		@session_start();
+		$users = new Users;
+		$p = 'karadavdemo';
+		$users->create('demo', $p, 10, true);
+		$_SESSION['install_password'] = $p;
+		$users->login('demo', $p);
+	}
 
 	$db->exec('END;');
 }
