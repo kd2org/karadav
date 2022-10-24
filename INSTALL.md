@@ -29,4 +29,9 @@
 </Directory>
 ```
 
-## Interaction with LDAP
+# Using Docker
+
+```
+docker build -t karadav .
+docker run -d -t --name karadav -p 8080:8080 -v dav-data:/var/karadav/data karadav
+```
