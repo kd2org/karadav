@@ -251,7 +251,6 @@ abstract class NextCloud
 
 		$method = $_SERVER['REQUEST_METHOD'] ?? null;
 		$this->server->log('NC <= %s %s => routed to: %s', $method, $uri, $route);
-		//$this->server->log('Headers: %s', print_r(apache_request_headers(true)));
 
 		try {
 			$v = $this->{'nc_' . $route}($uri);
@@ -272,7 +271,9 @@ abstract class NextCloud
 		elseif (is_array($v)) {
 			http_response_code(200);
 			header('Content-Type: application/json', true);
-			echo json_encode($v, JSON_PRETTY_PRINT);
+			$json = json_encode($v, JSON_PRETTY_PRINT);
+			echo $json;
+			$this->server->log("NC => Body:\n%s", $json);
 		}
 
 		return true;
