@@ -26,7 +26,7 @@ class Storage extends AbstractStorage
 	{
 		// It is important to check also for a lock on parent directory as we support depth=1
 		$sql = 'SELECT scope FROM locks WHERE user = ? AND (uri = ? OR uri = ?)';
-		$params = [$this->users->current()->login, $uri, dirname($uri)];
+		$params = [$this->users->current()->id, $uri, dirname($uri)];
 
 		if ($token) {
 			$sql .= ' AND token = ?';
@@ -40,12 +40,12 @@ class Storage extends AbstractStorage
 
 	public function lock(string $uri, string $token, string $scope): void
 	{
-		DB::getInstance()->run('REPLACE INTO locks VALUES (?, ?, ?, ?, datetime(\'now\', \'+5 minutes\'));', $this->users->current()->login, $uri, $token, $scope);
+		DB::getInstance()->run('REPLACE INTO locks VALUES (?, ?, ?, ?, datetime(\'now\', \'+5 minutes\'));', $this->users->current()->id, $uri, $token, $scope);
 	}
 
 	public function unlock(string $uri, string $token): void
 	{
-		DB::getInstance()->run('DELETE FROM locks WHERE user = ? AND uri = ? AND token = ?;', $this->users->current()->login, $uri, $token);
+		DB::getInstance()->run('DELETE FROM locks WHERE user = ? AND uri = ? AND token = ?;', $this->users->current()->id, $uri, $token);
 	}
 
 	public function list(string $uri, ?array $properties): iterable
@@ -148,6 +148,8 @@ class Storage extends AbstractStorage
 				return 'false';
 			case NextCloud::PROP_OC_SHARETYPES:
 				return WebDAV::EMPTY_PROP_VALUE;
+			case NextCloud::PROP_OC_DOWNLOADURL:
+				return NextCloud::getDirectURL($uri, $this->users->current()->login);
 			case Nextcloud::PROP_NC_RICH_WORKSPACE:
 				if (!is_dir($target)) {
 					return '';
@@ -417,7 +419,7 @@ class Storage extends AbstractStorage
 	public function getResourceProperties(string $uri): Properties
 	{
 		if (!isset($this->properties[$uri])) {
-			$this->properties[$uri] = new Properties($this->users->current()->login, $uri);
+			$this->properties[$uri] = new Properties($this->users->current()->id, $uri);
 		}
 
 		return $this->properties[$uri];

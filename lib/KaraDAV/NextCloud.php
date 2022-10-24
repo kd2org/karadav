@@ -70,7 +70,7 @@ class NextCloud extends WebDAV_NextCloud
 			return null;
 		}
 
-		return ['login' => $session->user, 'password' => $session->password];
+		return ['login' => $session->user->login, 'password' => $session->password];
 	}
 
 	public function getLoginURL(?string $token): string
