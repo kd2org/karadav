@@ -24,17 +24,6 @@ class DB extends \SQLite3
 		parent::__construct(DB_FILE);
 	}
 
-	static public function getInstallPassword(): ?string
-	{
-		if (!isset($_COOKIE[session_name()])) {
-			return null;
-		}
-
-		@session_start();
-
-		return $_SESSION['install_password'] ?? null;
-	}
-
 	public function run(string $sql, ...$params)
 	{
 		$st = $this->prepare($sql);

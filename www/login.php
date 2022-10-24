@@ -5,7 +5,11 @@ namespace KaraDAV;
 require_once __DIR__ . '/_inc.php';
 
 $users = new Users;
-$install_password = DB::getInstallPassword();
+
+if (empty($_GET['nc']) && $users->current()) {
+	header('Location: ' . WWW_URL);
+	exit;
+}
 
 $error = 0;
 
@@ -37,18 +41,12 @@ if (!empty($_POST['login']) && !empty($_POST['password'])) {
 html_head('Login');
 
 if ($error == -1) {
-	echo '<p class="confirm">You are logged in, you can close this window or tab and go back to the app.</p>';
+	echo '<p class="info">You are logged in, you can close this window or tab and go back to the app.</p>';
 	exit;
 }
 
 if ($error) {
 	echo '<p class="error">Invalid login or password</p>';
-}
-
-if ($install_password) {
-	printf('<p class="info">Your default user is:<br />
-		demo / %1$s<br>
-		<em>(this is only visible by you and will disappear when you close your browser)</em></p>', $install_password);
 }
 
 echo '
@@ -67,8 +65,8 @@ echo '
 		<dd><input type="text" name="login" id="f_login" required autocapitalize="none" /></dd>
 		<dt><label for="f_password">Password</label></dt>
 		<dd><input type="password" name="password" id="f_password" required /></dd>
+		<dd><input type="submit" value="Connect me" /></dd>
 	</dl>
-	<p><input type="submit" value="Submit" /></p>
 </fieldset>
 </form>
 ';

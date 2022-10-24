@@ -17,12 +17,18 @@ class Users
 
 	public function list(): array
 	{
-		return iterator_to_array(DB::getInstance()->iterate('SELECT * FROM users ORDER BY login;'));
+		return array_map([$this, 'makeUserObjectGreatAgain'], iterator_to_array(DB::getInstance()->iterate('SELECT * FROM users ORDER BY login;')));
 	}
 
 	public function get(string $login): ?stdClass
 	{
 		$user = DB::getInstance()->first('SELECT * FROM users WHERE login = ?;', $login);
+		return $this->makeUserObjectGreatAgain($user);
+	}
+
+	public function getById(int $id): ?stdClass
+	{
+		$user = DB::getInstance()->first('SELECT * FROM users WHERE id = ?;', $id);
 		return $this->makeUserObjectGreatAgain($user);
 	}
 
@@ -42,19 +48,24 @@ class Users
 		return $user;
 	}
 
-	public function create(string $login, string $password)
+	public function create(string $login, string $password, int $quota = 0, bool $is_admin = false)
 	{
 		$login = strtolower(trim($login));
 		$hash = password_hash(trim($password), null);
-		DB::getInstance()->run('INSERT OR IGNORE INTO users (login, password) VALUES (?, ?);', $login, $hash);
+		DB::getInstance()->run('INSERT OR IGNORE INTO users (login, password, quota, is_admin) VALUES (?, ?, ?, ?);',
+			$login, $hash, $quota * 1024 * 1024, $is_admin ? 1 : 0);
 	}
 
-	public function edit(string $login, array $data)
+	public function edit(int $id, array $data)
 	{
 		$params = [];
 
-		if (isset($data['password'])) {
+		if (!empty($data['password'])) {
 			$params['password'] = password_hash(trim($data['password']), null);
+		}
+
+		if (!empty($data['login'])) {
+			$params['login'] = trim($data['login']);
 		}
 
 		if (isset($data['quota'])) {
@@ -68,9 +79,9 @@ class Users
 		$update = array_map(fn($k) => $k . ' = ?', array_keys($params));
 		$update = implode(', ', $update);
 		$params = array_values($params);
-		$params[] = $login;
+		$params[] = $id;
 
-		DB::getInstance()->run(sprintf('UPDATE users SET %s WHERE login = ?;', $update), ...$params);
+		DB::getInstance()->run(sprintf('UPDATE users SET %s WHERE id = ?;', $update), ...$params);
 	}
 
 	public function current(): ?stdClass
@@ -130,6 +141,11 @@ class Users
 		$_SESSION['user'] = $user;
 
 		return $user;
+	}
+
+	public function logout(): void
+	{
+		session_destroy();
 	}
 
 	public function appSessionCreate(?string $token = null): ?stdClass
@@ -249,9 +265,15 @@ class Users
 		if ($user) {
 			$used = Storage::getDirectorySize($user->path);
 			$total = $user->quota;
-			$free = $user->quota - $used;
+			$free = max(0, $total - $used);
 		}
 
 		return (object) compact('free', 'total', 'used');
+	}
+
+	public function delete(?stdClass $user)
+	{
+		Storage::deleteDirectory($user->path);
+		DB::getInstance()->run('DELETE FROM users WHERE id = ?;', $user->id);
 	}
 }

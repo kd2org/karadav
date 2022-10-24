@@ -26,13 +26,16 @@ if (!file_exists(DB_FILE)) {
 
 	@session_start();
 	$users = new Users;
-	$p = Users::generatePassword();
-	$users->create('demo', $p);
-	$users->edit('demo', ['quota' => 10]);
+	$p = 'karadavdemo';
+	$users->create('demo', $p, 10, true);
 	$_SESSION['install_password'] = $p;
 	$users->login('demo', $p);
 
 	$db->exec('END;');
+}
+
+if (isset($_COOKIE[session_name()]) && !isset($_SESSION)) {
+	@session_start();
 }
 
 function html_head(string $title): void
@@ -44,17 +47,24 @@ function html_head(string $title): void
 	<html>
 	<head>
 		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, target-densitydpi=device-dpi" />
 		<title>{$title}</title>
-		<link rel="stylesheet" type="text/css" href="/admin.css" />
+		<link rel="stylesheet" type="text/css" href="/ui.css" />
 	</head>
 	<body>
 	<h1>{$title}</h1>
+	<main>
 EOF;
+
+	if (isset($_SESSION['install_password'])) {
+		printf('<p class="info">Your server has been installed with a user named <tt>demo</tt> and the password <tt>%s</tt>, please change it.<br /><br />This message will disappear when you log out.</p>', htmlspecialchars($_SESSION['install_password']));
+	}
 }
 
 function html_foot(): void
 {
 	echo '
+	</main>
 	<footer>
 		Powered by <a href="https://github.com/kd2org/karadav/">KaraDAV</a>
 	</footer>

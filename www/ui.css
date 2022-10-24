@@ -1,0 +1,195 @@
+* { margin: 0; padding: 0; }
+
+body {
+	background: #222;
+	font-family: sans-serif;
+}
+
+body > h1 {
+	background: linear-gradient(to bottom, #005c97, #363795);
+	padding: 2rem;
+	text-align: center;
+	color: #fff;
+	font-size: 4rem;
+}
+
+a {
+	color: #005c97;
+}
+
+input[type=text], input[type=password], input[type=number] {
+	border: 1px solid #666;
+	padding: .5em;
+	border-radius: .5em;
+	min-width: 15em;
+	font-size: 1.2em;
+}
+
+input[size] {
+	min-width: 0;
+}
+
+input[type=submit], .btn {
+	border: none;
+	cursor: pointer;
+	padding: .5em;
+	border-radius: .5em;
+	background: linear-gradient(to bottom, #2c3e50, #3498db);
+	color: #fff;
+	font-size: 1.5em;
+	text-decoration: none;
+	display: inline-block;
+	margin: .5em 0;
+}
+
+input:focus {
+	box-shadow: 0 0 10px orange;
+	border-color: darkred;
+	outline: none;
+}
+
+input[type=submit]:hover, .btn:hover {
+	box-shadow: 0 0 10px orange;
+}
+
+h2.myfiles {
+	float: right;
+}
+
+h2 .btn {
+	margin: 0;
+	font-size: 1em;
+}
+
+main {
+	background: #fff;
+	border-radius: 1em;
+	padding: 2em;
+	max-width: 40em;
+	margin: 2rem auto;
+}
+
+fieldset {
+	text-align: center;
+	border: 3px solid #005c97;
+	border-radius: 1em;
+	padding: 2em;
+}
+
+legend {
+	font-size: 1.3em;
+	padding: 0 1em;
+}
+
+footer {
+	color: #999;
+	text-align: center;
+}
+
+footer a {
+	color: #fff;
+}
+
+dl dt {
+	font-weight: bold;
+	margin: .8em 0;
+	margin-top: 2em;
+}
+
+dl dd {
+	margin: .8em 0;
+}
+
+
+progress[value] {
+	appearance: none;
+	border: none;
+	width: 70%;
+	height: 20px;
+	background-color: #ddd;
+	border-radius: 3px;
+	box-shadow: 0 2px 3px rgba(0,0,0,.5) inset;
+	position: relative;
+}
+
+progress[value]::-webkit-progress-bar {
+	background-color: #ddd;
+	border-radius: 3px;
+	box-shadow: 0 2px 3px rgba(0,0,0,.5) inset;
+}
+
+progress[value]::-webkit-progress-value {
+	position: relative;
+	background-size: 35px 20px, 100% 100%, 100% 100%;
+	border-radius:3px;
+	background-image:
+	linear-gradient(135deg, transparent, transparent 33%, rgba(0,0,0,.1) 33%, rgba(0,0,0,.1) 66%, transparent 66%),
+	linear-gradient(to top, rgba(255, 255, 255, .25), rgba(0,0,0,.2)),
+	linear-gradient(to right, #0c9, #f44);
+}
+
+.btn.sm {
+	padding: .3em .5em;
+	font-size: 1em;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 1em 0;
+}
+
+table tbody tr:nth-child(even) {
+	background: #eee;
+}
+
+table th, table td {
+	text-align: center;
+	padding: .5em;
+}
+
+table thead {
+	background: #333;
+	color: #fff;
+}
+
+table progress[value] {
+	height: 10px;
+}
+
+p.info {
+	margin: 1em 0;
+	padding: .5em;
+	background: #cfc;
+	border-radius: .5em;
+	font-size: 1.2em;
+}
+
+
+p.error {
+	margin: 1em 0;
+	padding: .5em;
+	background: #fcc;
+	border-radius: .5em;
+	font-size: 1.3em;
+}
+
+p.info tt {
+	background: #666;
+	color: #fff;
+	padding: .2em;
+}
+
+@media screen and (max-width: 900px) {
+	main {
+		border-radius: 0;
+		margin-top: 0;
+		padding: 1em .5em;
+	}
+
+	h2.myfiles {
+		float: none;
+		margin: 1em 0;
+		text-align: center;
+	}
+}

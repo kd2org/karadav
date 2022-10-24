@@ -6,6 +6,8 @@ It is written in PHP (8+) The only dependency is SQLite3 for the database.
 
 Its original purpose was to serve as a demo and test for the KD2 WebDAV library, which we developed for [Paheko](http://paheko.cloud/), our non-profit management solution, but it can also be used as a simple but powerful file sharing server.
 
+![](scr_index.jpg)
+
 ## Features
 
 * User-friendly directory listings for file browsing with a web browser, using our [WebDAV Manager.js](https://github.com/kd2org/webdav-manager.js) client
@@ -18,8 +20,9 @@ Its original purpose was to serve as a demo and test for the KD2 WebDAV library,
 	* Preview of images, text, MarkDown and PDF
 	* Editing of Office files using Collabora or OnlyOffice
 * WebDAV class 1, 2, 3 support, support for Etags
-* No database sever is required
+* No database server is required (SQLite3 is used)
 * Multiple user accounts
+* Support for per-user quota
 * Share files using WebDAV: delete, create, update, mkdir, get, list
 * Compatible with WebDAV clients
 * Support for HTTP ranges (partial download of files)
@@ -39,6 +42,16 @@ The following ownCloud/NextCloud specific features are supported:
 * Login via app-specific passwords (necessary for NextCloud desktop and Android clients)
 * Thumbnail/preview of images and files
 * Workspace notes (`README.md` displayed on top of directory listing on Android app) and workspace notes editing
+
+## Screenshots
+
+### NextCloud login
+
+![](scr_login.jpg)
+
+### Files management
+
+![](https://raw.githubusercontent.com/kd2org/webdav-manager.js/main/scr_desktop.png)
 
 ## NextCloud/ownCloud compatibility
 
@@ -68,11 +81,9 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 
 This might get supported in future (maybe):
 
-* [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
-* [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html) (maybe?)
-* [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
-* [Resumable upload via TUS](https://tus.io/protocols/resumable-upload.html)
-* [WebDAV sharing if it ever becomes a spec?](https://evertpot.com/webdav-caldav-carddav-sharing/)
+* Probably: [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
+* Maybe: [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html)
+* Maybe: NextCloud files versioning (see [API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/versions.html), [versioning pattern](https://docs.nextcloud.com/server/latest/user_manual/en/files/version_control.html), [code](https://github.com/nextcloud/server/blob/master/apps/files_versions/lib/Storage.php))
 
 This probably won't get supported anytime soon:
 
@@ -82,12 +93,15 @@ This probably won't get supported anytime soon:
   * for now the best option is to use [Baikal from Sabre/DAV](https://sabre.io/baikal/) for that
   * Nice web clients to add to Baikal are [AgenDAV](https://github.com/agendav/agendav) and [InfCloud](https://inf-it.com/open-source/clients/infcloud/)
 * [Extended MKCOL](https://www.rfc-editor.org/rfc/rfc5689) required only if CalDAV support is implemented
+* [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
+* [Resumable upload via TUS](https://tus.io/protocols/resumable-upload.html)
+* [WebDAV sharing if it ever becomes a spec?](https://evertpot.com/webdav-caldav-carddav-sharing/)
 
 ## Dependencies
 
 This depends on the KD2\WebDAV and KD2\WebDAV_NextCloud classes from the [KD2FW package](https://fossil.kd2.org/kd2fw/), which are packaged in this repository.
 
-They are lightweight and easy to use in your own software to add support for WebDAV and NextCloud clients to your software.
+They are lightweight and easy to use in your own software to add support for WebDAV and NextCloud clients to your software. Contact us for a commercial license.
 
 ## Similar software
 
@@ -241,7 +255,7 @@ But they mostly pass with litmus 0.13-3 supplied by Debian:
 
 ## Author
 
-BohwaZ. Contact me on: IRC = bohwaz@irc.libera.chat / Mastodon = https://mamot.fr/@bohwaz / Twitter = @bohwaz
+Paheko.cloud / BohwaZ. Contact me on: IRC = bohwaz@irc.libera.chat / Mastodon = https://mamot.fr/@bohwaz / Twitter = @bohwaz
 
 ## License
 
