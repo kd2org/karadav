@@ -7,6 +7,7 @@ js-deps:
 	wget -O www/webdav.css https://raw.githubusercontent.com/kd2org/webdav-manager.js/main/webdav.css
 
 php-deps:
+	mkdir lib/KD2/WebDAV
 	wget -O lib/KD2/ErrorManager.php '${KD2FW_URL}ErrorManager.php'
 	wget -O lib/KD2/WebDAV/Server.php '${KD2FW_URL}WebDAV/Server.php'
 	wget -O lib/KD2/WebDAV/AbstractStorage.php '${KD2FW_URL}WebDAV/AbstractStorage.php'
