@@ -67,17 +67,18 @@ It has been tested with:
 * ownCloud Android app 2.21.2 (F-Droid)
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) 3.1.1 (Debian) *-- Note: make sure to pass options before parameters.*
 
-We recommend the ownCloud apps, as they are more stable and lighter :)
+**We recommend the ownCloud apps**, as they are more stable and lighter :)
 
 Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients.
 
 ## WebDAV clients compatibility
 
-* [FUSE webdavfs](https://github.com/miquels/webdavfs) is recommended for Linux
+* [FUSE webdavfs](https://github.com/miquels/webdavfs) is **recommended** for Linux
 * davfs2 is NOT recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
 * Microsoft Windows native webclient (also called 'MiniRedir') is notoriously bad. We tested it successfully on Windows 10, but it is recommended to use [CyberDuck](https://cyberduck.io/download/) or [WinSCP](https://winscp.net/) instead, both are free software.
 * Tested with Dolphin (KDE)
 * Tested with Thunar (GTK/GNOME)
+* Tested with [RCX](https://f-droid.org/en/packages/io.github.x0b.rcx/) on Android **(recommended)**
 
 ## WOPI clients compatibility
 
