@@ -6,7 +6,7 @@ It is written in PHP (8+) The only dependency is SQLite3 for the database.
 
 Its original purpose was to serve as a demo and test for the KD2 WebDAV library, which we developed for [Paheko](http://paheko.cloud/), our non-profit management solution, but it can also be used as a simple but powerful file sharing server.
 
-![](scr_index.jpg)
+![](doc/scr_index.jpg)
 
 ## Features
 
@@ -45,13 +45,13 @@ The following ownCloud/NextCloud specific features are supported:
 
 ## Screenshots
 
-### NextCloud login
-
-![](scr_login.jpg)
-
-### Files management
+### Files management using the Web UI
 
 ![](https://raw.githubusercontent.com/kd2org/webdav-manager.js/main/scr_desktop.png)
+
+### Login from NextCloud client
+
+![](doc/scr_login.jpg)
 
 ## NextCloud/ownCloud compatibility
 
@@ -75,7 +75,7 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 
 ## WOPI clients compatibility
 
-* Tested successfully with Collabora Development Edition (see [COLLABORA.md](COLLABORA.md))
+* Tested successfully with Collabora Development Edition (see [COLLABORA.md](doc/COLLABORA.md))
 
 ## Future development
 
@@ -96,6 +96,10 @@ This probably won't get supported anytime soon:
 * [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
 * [Resumable upload via TUS](https://tus.io/protocols/resumable-upload.html)
 * [WebDAV sharing if it ever becomes a spec?](https://evertpot.com/webdav-caldav-carddav-sharing/)
+
+## Install instructions
+
+See [specific install documentation](doc/INSTALL.md).
 
 ## Dependencies
 

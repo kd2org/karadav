@@ -15,15 +15,11 @@ const STORAGE_PATH = __DIR__ . '/data/%s';
 const DB_FILE = __DIR__ . '/data/db.sqlite';
 
 /**
- * Set to TRUE if you have X-SendFile module installed and configured
- * see https://tn123.org/mod_xsendfile/
- */
-const ENABLE_XSENDFILE = false;
-
-/**
  * WWW_URL is the complete URL of the root of this server
+ *
  * This code auto-detects it as well as it can
- * But you may have to assign something static instead, eg.:
+ * But you may have to assign something static instead, for example:
+ *
  * const WWW_URL = 'https://dav.website.example/';
  */
 $https = (!empty($_SERVER['HTTPS']) || $_SERVER['SERVER_PORT'] == 443) ? 's' : '';
@@ -45,3 +41,9 @@ const WOPI_DISCOVERY_URL = null;
  * This will log all HTTP requests and responses received by the server
  */
 const LOG_FILE = null;
+
+/**
+ * Set to TRUE if you have X-SendFile module installed and configured
+ * see https://tn123.org/mod_xsendfile/
+ */
+const ENABLE_XSENDFILE = false;
