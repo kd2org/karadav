@@ -606,7 +606,7 @@ class Server
 		// Find all properties
 		// Allow for empty namespace, see Litmus FAQ for propnullns
 		// https://github.com/tolsen/litmus/blob/master/FAQ
-		preg_match_all('!<(?:([\w-]+):)?([\w-]+)|<([\w-]+)[^>]*xmlns="([^"]*)"!', $match[2], $match, PREG_SET_ORDER);
+		preg_match_all('!<(?:([\w-]+):)([\w-]+)|<([\w-]+)[^>]*xmlns="([^"]*)"!', $match[2], $match, PREG_SET_ORDER);
 
 		$properties = [];
 
