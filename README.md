@@ -31,6 +31,7 @@ Its original purpose was to serve as a demo and test for the KD2 WebDAV library,
 * Support for some of the [Microsoft proprietary properties](https://greenbytes.de/tech/webdav/webdavfaq.html)
 * Passes most of the [Litmus compliance tests](https://github.com/tolsen/litmus) (see below)
 * Supports WOPI, for editing and viewing of documents using OnlyOffice, Collabora Online or MS Office.
+* Good performance!
 
 ### NextCloud/ownCloud features
 
@@ -111,6 +112,26 @@ They are lightweight and easy to use in your own software to add support for Web
 
 * [Davros](https://github.com/mnutt/davros/) used to be compatible with NextCloud client [before version 2.5.0](https://github.com/owncloud/client/issues/6775)
 * [FileRun](https://filerun.com) is a proprietary solution compatible with the NextCloud Android app
+
+## Performance
+
+I created 300 small random files, totalling 5.5 MB.
+
+Then I timed KaraDAV, mod_dav and NextCloud (24) (all installed on my laptop, with Apache 2.4) with various WebDAV clients doing those tasks:
+
+* Copy 300 small files to the WebDAV share
+* Refresh the directory (press F5)
+* Delete all 300 selected files
+
+KaraDAV performance was very close to mod_dav, and NextCloud performance was incredibly poor.
+
+| Client | KaraDAV | NextCloud | mod_dav |
+| --- | --- | --- | --- |
+| Dolphin (KDE) | 5 seconds | 1 minute 15 seconds | 3 seconds |
+| Thunar (GTK) | 5 seconds | 1 minute 50 seconds | 5 seconds |
+| WebDAV Manager.js | 4 seconds (no delete) | -- | -- |
+
+At the time of this test, WebDAV Manager.js didn't have the ability to select and delete multiple files at once, so the time shown is only for copy and refresh.
 
 ## Litmus compliance tests
 
