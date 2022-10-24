@@ -704,22 +704,22 @@ const WebDAVNavigator = (url, options) => {
 		document.body.classList.remove('dragging');
 		dragcounter = 0;
 
-		let items = e.dataTransfer.items;
+		const files = [...e.dataTransfer.items].map(item => item.getAsFile());
 
-		if (!items.length) return;
+		if (!files.length) return;
 
 		animateLoading();
 
 		(async () => {
-			for (var i = 0; i < items.length; i++) {
-				var item = items[i];
-				if (item.kind != 'file') return;
-				var f = item.getAsFile();
+			for (var i = 0; i < files.length; i++) {
+				var f = files[i]
 				await req('PUT', current_url + encodeURIComponent(f.name), f);
 			}
 
-			stopLoading();
-			reloadListing();
+			window.setTimeout(() => {
+				stopLoading();
+				reloadListing();
+			}, 500);
 		})();
 	});
 };
