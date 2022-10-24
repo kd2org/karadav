@@ -2,7 +2,7 @@
 
 This is simple and lighweight WebDAV server, allowing to easily set up a file sharing server compatible with WebDAV and NextCloud clients. It has no depencies and good performance.
 
-It is written in PHP (8+) The only dependency is SQLite3 for the database.
+It is written in PHP (8+). The only dependency is SQLite3 for the database.
 
 Its original purpose was to serve as a demo and test for the KD2 WebDAV library, which we developed for [Paheko](http://paheko.cloud/), our non-profit management solution, but it can also be used as a simple but powerful file sharing server.
 
@@ -67,6 +67,8 @@ It has been tested with:
 * ownCloud Android app 2.21.2 (F-Droid)
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) 3.1.1 (Debian) *-- Note: make sure to pass options before parameters.*
 
+We recommend the ownCloud apps, as they are more stable and lighter :)
+
 Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients.
 
 ## WebDAV clients compatibility
@@ -74,6 +76,8 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 * [FUSE webdavfs](https://github.com/miquels/webdavfs) is recommended for Linux
 * davfs2 is NOT recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
 * Microsoft Windows native webclient (also called 'MiniRedir') is notoriously bad. We tested it successfully on Windows 10, but it is recommended to use [CyberDuck](https://cyberduck.io/download/) or [WinSCP](https://winscp.net/) instead, both are free software.
+* Tested with Dolphin (KDE)
+* Tested with Thunar (GTK/GNOME)
 
 ## WOPI clients compatibility
 
@@ -113,6 +117,10 @@ They are lightweight and easy to use in your own software to add support for Web
 
 * [Davros](https://github.com/mnutt/davros/) used to be compatible with NextCloud client [before version 2.5.0](https://github.com/owncloud/client/issues/6775)
 * [FileRun](https://filerun.com) is a proprietary solution compatible with the NextCloud Android app
+
+Might also be useful:
+
+* [DrivinCloudOpen](https://github.com/bohwaz/drivinCloudOpen) is a defunct open-source Android WebDAV client that is easy to use
 
 ## Performance
 
