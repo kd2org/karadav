@@ -3,6 +3,11 @@
 namespace KaraDAV;
 
 /**
+ * Default quota for new users (in MB)
+ */
+const DEFAULT_QUOTA = 200;
+
+/**
  * Users file storage path
  * %s is replaced by the login name of the user
  */
@@ -47,3 +52,28 @@ const LOG_FILE = null;
  * see https://tn123.org/mod_xsendfile/
  */
 const ENABLE_XSENDFILE = false;
+
+/**
+ * LDAP server configuration
+ *
+ * To use a LDAP server for login, fill those details.
+ *
+ * All users logging in will be created locally and have the default quota.
+ */
+const LDAP_HOST = null;
+//const LDAP_URI = '127.0.0.1';
+
+const LDAP_LOGIN = null;
+//const LDAP_LOGIN = 'uid=%s,ou=users,dc=yunohost,dc=org';
+
+const LDAP_BASE = null;
+//const LDAP_BASE = 'dc=yunohost,dc=org';
+
+const LDAP_DISPLAY_NAME = null;
+//const LDAP_DISPLAY_NAME = 'displayname';
+
+const LDAP_FIND_USER = null;
+//const LDAP_FIND_USER = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.main,ou=permission,dc=yunohost,dc=org))';
+
+const LDAP_FIND_IS_ADMIN = null;
+//const LDAP_FIND_IS_ADMIN = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.admin.main,ou=permission,dc=yunohost,dc=org))';

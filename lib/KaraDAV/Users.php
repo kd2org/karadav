@@ -20,9 +20,29 @@ class Users
 		return array_map([$this, 'makeUserObjectGreatAgain'], iterator_to_array(DB::getInstance()->iterate('SELECT * FROM users ORDER BY login;')));
 	}
 
+	public function fetch(string $login): ?stdClass
+	{
+		return DB::getInstance()->first('SELECT * FROM users WHERE login = ?;', $login);
+	}
+
 	public function get(string $login): ?stdClass
 	{
-		$user = DB::getInstance()->first('SELECT * FROM users WHERE login = ?;', $login);
+		$user = $this->fetch($login);
+
+		if (!$user && LDAP::enabled() && LDAP::checkUser($login)) {
+			$this->create($login, self::generatePassword(), DEFAULT_QUOTA);
+			$user = $this->fetch($login);
+
+			if (!$user) {
+				throw new \LogicException('User does not exist after getting created?');
+			}
+
+			$user->is_admin = LDAP::checkIsAdmin($login);
+		}
+		elseif (!$user) {
+			return null;
+		}
+
 		return $this->makeUserObjectGreatAgain($user);
 	}
 
@@ -133,7 +153,12 @@ class Users
 			return null;
 		}
 
-		if (!password_verify(trim($password), $user->password)) {
+		if (LDAP::enabled()) {
+			if (!LDAP::checkPassword($login, $password)) {
+				return null;
+			}
+		}
+		elseif (!password_verify(trim($password), $user->password)) {
 			return null;
 		}
 
@@ -178,7 +203,7 @@ class Users
 
 		DB::getInstance()->run(
 			'INSERT OR IGNORE INTO app_sessions (user, password, expiry, token) VALUES (?, ?, datetime(\'now\', ?), ?);',
-			$current->login, $hash, $expiry, $token);
+			$current->id, $hash, $expiry, $token);
 
 		return (object) compact('password', 'token');
 	}
@@ -206,7 +231,7 @@ class Users
 		// The app password contains the user password hash
 		// this way we can invalidate all sessions if we change
 		// the user password
-		$user = $this->get($session->user);
+		$user = $this->getById($session->user);
 		$hash = password_hash($session->password . $user->password, null);
 		$session->token = self::generatePassword();
 		$session->password = $session->token . ':' . $session->password;
@@ -216,6 +241,7 @@ class Users
 			WHERE token = ?;',
 			$session->token, $hash, $token);
 
+		$session->user = $user;
 		return $session;
 	}
 
@@ -238,7 +264,7 @@ class Users
 		$password = strtok('');
 
 		$user = DB::getInstance()->first('SELECT s.password AS app_hash, u.*
-			FROM app_sessions s INNER JOIN users u ON u.login = s.user
+			FROM app_sessions s INNER JOIN users u ON u.id = s.user
 			WHERE s.token = ? AND s.expiry > datetime();', $token);
 
 		if (!$user) {
