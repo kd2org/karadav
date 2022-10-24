@@ -4,13 +4,13 @@ namespace KaraDAV;
 
 class Properties
 {
-	protected string $user;
+	protected int $user;
 	protected string $uri;
 	protected array $properties = [];
 
 	protected bool $loaded = false;
 
-	public function __construct(string $user, string $uri) {
+	public function __construct(int $user, string $uri) {
 		$this->user = $user;
 		$this->uri = $uri;
 	}
