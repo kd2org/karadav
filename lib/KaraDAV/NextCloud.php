@@ -98,9 +98,11 @@ class NextCloud extends WebDAV_NextCloud
 	{
 		$expire = time() - 36*3600;
 
-		foreach (glob($this->temporary_chunks_path . '/*/*/*') as $file) {
-			if (filemtime($file) < $expire) {
-				Storage::deleteDirectory(dirname($file));
+		foreach (glob($this->temporary_chunks_path . '/*/*') as $dir) {
+			$first_file = current(glob($dir . '/*'));
+
+			if (filemtime($first_file) < $expire) {
+				Storage::deleteDirectory($dir);
 			}
 		}
 	}
@@ -152,7 +154,7 @@ class NextCloud extends WebDAV_NextCloud
 		$exists = file_exists($target);
 
 		if ($exists && is_dir($target)) {
-
+			throw new WebDAV_Exception('Target exists and is a directory', 409);
 		}
 
 		$out = fopen($target, 'wb');
