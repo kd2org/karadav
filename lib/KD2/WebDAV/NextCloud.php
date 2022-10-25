@@ -49,6 +49,7 @@ abstract class NextCloud
 	const PROP_OC_SHARETYPES = self::OC_NAMESPACE . ':share-types';
 	const PROP_NC_NOTE = self::NC_NAMESPACE . ':note';
 	const PROP_NC_IS_ENCRYPTED = self::NC_NAMESPACE . ':is-encrypted';
+	const PROP_NC_DDC = self::NC_NAMESPACE . ':dDC';
 
 	const NC_PROPERTIES = [
 		self::PROP_OC_ID,
@@ -59,6 +60,7 @@ abstract class NextCloud
 		self::PROP_NC_HAS_PREVIEW,
 		self::PROP_NC_NOTE,
 		self::PROP_NC_IS_ENCRYPTED,
+		self::PROP_NC_DDC,
 	];
 
 	protected string $root_url;
@@ -664,9 +666,9 @@ abstract class NextCloud
 	}
 
 	/**
-	 * Called when removing an account from Android pap
+	 * Called when removing an account from Android app
 	 */
-	protected function nc_app_password(): void
+	protected function nc_delete_app_password(): void
 	{
 		$method = $_SERVER['REQUEST_METHOD'] ?? null;
 

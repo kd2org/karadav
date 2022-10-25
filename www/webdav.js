@@ -147,6 +147,8 @@ const WebDAVNavigator = (url, options) => {
 				}
 			});
 		});
+
+		reloadListing();
 	};
 
 	const wopi_getEditURL = (name, mime) => {
@@ -634,11 +636,15 @@ const WebDAVNavigator = (url, options) => {
 
 	const wopi_discovery_url = options.wopi_discovery_url || null;
 
-	wopi_init();
-
 	document.querySelector('html').innerHTML = html_tpl;
 
-	reloadListing();
+	if (wopi_discovery_url) {
+		// Wait for WOPI discovery before creating the list
+		wopi_init();
+	}
+	else {
+		reloadListing();
+	}
 
 	window.addEventListener('paste', (e) => {
 		let items = e.clipboardData.items;
