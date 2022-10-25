@@ -1,6 +1,6 @@
 # KaraDAV - A lightweight WebDAV server, with NextCloud compatibility
 
-This is simple and lighweight WebDAV server, allowing to easily set up a file sharing server compatible with WebDAV and NextCloud clients. It has no depencies and good performance.
+This is a simple and lighweight WebDAV server, allowing to easily set up a file sharing server compatible with WebDAV and NextCloud clients. It has no depencies and good performance.
 
 It is written in PHP (8+). The only dependency is SQLite3 for the database.
 
