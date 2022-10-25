@@ -3,7 +3,6 @@
 namespace KaraDAV;
 
 use KD2\WebDAV\AbstractStorage;
-use KD2\WebDAV\Server as WebDAV_Server;
 use KD2\WebDAV\WOPI;
 use KD2\WebDAV\Exception as WebDAV_Exception;
 
@@ -130,11 +129,6 @@ class Storage extends AbstractStorage
 			case 'DAV::lastaccessed':
 				return new \DateTime('@' . fileatime($target));
 			case 'DAV::creationdate':
-				// The ownCloud Android app doesn't like formatted dates, it makes it crash.
-				if (false !== stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'owncloud')) {
-					return filectime($target);
-				}
-
 				return new \DateTime('@' . filectime($target));
 			case WebDAV::PROP_DIGEST_MD5:
 				if (!is_file($target)) {
