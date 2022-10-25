@@ -742,6 +742,14 @@ class Server
 				$alias = $root_namespaces[$ns] ?? null;
 				$attributes = '';
 
+				// The ownCloud Android app doesn't like formatted dates, it makes it crash.
+				// so force it to have a timestamp
+				if ($name == 'DAV::creationdate'
+					&& ($value instanceof \DateTimeInterface)
+					&& false !== stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'owncloud')) {
+					$value = $value->getTimestamp();
+				}
+
 				if ($name == 'DAV::resourcetype' && $value == 'collection') {
 					$value = '<d:collection />';
 				}

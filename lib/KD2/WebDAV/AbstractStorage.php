@@ -105,7 +105,9 @@ abstract class AbstractStorage
 	 * @param  array $properties List of properties requested by client (see ::properties)
 	 * @return iterable An array or other iterable (eg. a generator)
 	 * where each item has a key string containing the name of the resource (eg. file name),
-	 * and the value being an array of properties, or NULL
+	 * and the value being an array of properties, or NULL.
+	 *
+	 * If the array value IS NULL, then a subsequent call to properties() will be issued for each element.
 	 */
 	abstract public function list(string $uri, array $properties): iterable;
 

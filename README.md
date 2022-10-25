@@ -36,6 +36,8 @@ Its original purpose was to serve as a demo and test for the KD2 WebDAV library,
 
 ### NextCloud/ownCloud features
 
+KaraDAV is compatible with ownCloud and NextCloud clients, because on Android there is not much nice WebDAV clients, and on desktop their clients allow for two-way sync, which no other WebDAV client provides.
+
 The following ownCloud/NextCloud specific features are supported:
 
 * [Direct download](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
