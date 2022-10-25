@@ -84,3 +84,5 @@ Reload the apache configuration, and launch `docker-compose up`.
 Lastly, in KaraDAV's `config.local.php` set `WOPI_DISCOVERY_URL` to `http://docs.karadav.localhost/hosting/discovery`.
 
 Now you should be able to edit ODS/ODT/etc. files from the web UI using Collabora.
+
+See also [this alternative docker image](https://github.com/tiredofit/docker-collabora-online).
