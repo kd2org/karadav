@@ -179,27 +179,6 @@ class Storage extends AbstractStorage
 				$id = gzcompress($uri);
 				$id = WOPI::base64_encode_url_safe($id);
 				return WWW_URL . 'wopi/files/' . $id;
-			case WOPI::PROP_TOKEN:
-				$p = $this->getResourceProperties($uri);
-				$token = $p->get($name)['xml'] ?? null;
-
-				// Check if token has expired, if so, then renew it
-				if ($token) {
-					$expiry = $p->get(WOPI::PROP_TOKEN_TTL);
-
-					if ($expiry < time() * 1000) {
-						$token = null;
-					}
-				}
-
-				// Create token and store it
-				if (!$token) {
-					$token = $this->createWopiToken($uri);
-					$p->set(WOPI::PROP_TOKEN, null, $token);
-					$p->set(WOPI::PROP_TOKEN_TTL, null, (time()+3600*10)*1000);
-				}
-
-				return $token;
 			default:
 				break;
 		}
@@ -209,13 +188,6 @@ class Storage extends AbstractStorage
 		}
 
 		return $this->getResourceProperties($uri)->get($name);
-	}
-
-	protected function createWopiToken(string $uri)
-	{
-		$login = $this->users->current()->login;
-		$bytes = substr(md5(random_bytes(10)), 0, 10);
-		return WOPI::base64_encode_url_safe(sprintf('%s:%s', sha1($login . $uri . $bytes), $bytes));
 	}
 
 	public function properties(string $uri, ?array $properties, int $depth): ?array
@@ -231,6 +203,12 @@ class Storage extends AbstractStorage
 		}
 
 		$out = [];
+
+		// Generate a new token for WOPI, and provide also TTL
+		if (in_array(WOPI::PROP_TOKEN, $properties)) {
+			$out = $this->createWopiToken($uri);
+			unset($properties[WOPI::PROP_TOKEN], $properties[WOPI::PROP_TOKEN_TTL]);
+		}
 
 		foreach ($properties as $name) {
 			$v = $this->get_file_property($uri, $name, $depth);
@@ -501,28 +479,46 @@ class Storage extends AbstractStorage
 		return $last;
 	}
 
+	protected function createWopiToken(string $uri)
+	{
+		$user = $this->users->current();
+		$ttl = time()+(3600*10);
+
+		// Use the user password as a server secret
+		$hash = sha1($user->password . $uri . $ttl);
+		$data = sprintf('%s_%s_%s', $hash, $ttl, $user->login);
+
+		return [
+			WOPI::PROP_TOKEN => WOPI::base64_encode_url_safe($data),
+			WOPI::PROP_TOKEN_TTL => $ttl * 1000,
+		];
+	}
+
 	public function getWopiURI(string $id, string $token): ?string
 	{
 		$id = WOPI::base64_decode_url_safe($id);
 		$uri = gzuncompress($id);
 		$token_decode = WOPI::base64_decode_url_safe($token);
-		$hash = strtok($token_decode, ':');
-		$bytes = strtok(false);
+		$hash = strtok($token_decode, '_');
+		$ttl = strtok('_');
+		$login = strtok(false);
 
-		$r = DB::getInstance()->first('SELECT user, uri FROM properties WHERE name = ? AND xml = ?;', WOPI::PROP_TOKEN, $token);
-
-		if (!$r) {
+		if ($ttl < time()) {
 			return null;
 		}
 
-		if (!hash_equals(sha1($r->user . $r->uri . $bytes), $hash)) {
+		if (!$this->users->setCurrent($login)) {
 			return null;
 		}
 
-		if (!$this->users->setCurrent($r->user)) {
+		$user = $this->users->current();
+
+		$check = sha1($user->password . $uri . $ttl);
+
+		if (!hash_equals($check, $hash)) {
 			return null;
 		}
 
-		return $r->uri;
+		return $uri;
 	}
 }
