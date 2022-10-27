@@ -243,10 +243,6 @@ class Storage extends AbstractStorage
 		$size = 0;
 		$quota = $this->users->quota($this->users->current());
 
-		if (!$new) {
-			$size -= filesize($target);
-		}
-
 		$tmp_file = '.tmp.' . sha1($target);
 		$out = fopen($tmp_file, 'w');
 
