@@ -29,6 +29,35 @@
 </Directory>
 ```
 
+## Security issues
+
+* Do not expose the `data` directory on your webserver, or your app database might be leaked, as well as your users data.
+* Do not set the virtual host document root to the root of KaraDAV instead of the `www` directory. Please use a dedicated virtual host, or an `Alias`.
+
+## Using per-user local UID/GID for user data
+
+This would be useful if you want to have a different UNIX user for each of your users data directory, to keep them separate.
+
+You'll need to install `apache2-mpm-itk` ([official website](http://mpm-itk.sesse.net)) and set up your virtualhost like that:
+
+```
+<VirtualHost *:80>
+	ServerName karadav.localhost
+
+	SetEnvIf Request_URI (.+) ITKUID=www-data ITKGID=www-data
+	SetEnvIf Request_URI ^/files/([a-z]+)/ ITKUID=$1 ITKGID=$1
+
+	# Do not allow root to be used as the ITK UID/GID
+	SetEnvIf ITKUID ^root$ ITKUID=www-data
+	SetEnvIf ITKGID ^root$ ITKGID=www-data
+
+	AssignUserIDExpr %{reqenv:ITKUID}
+	AssignGroupIDExpr %{reqenv:ITKGID}
+
+	DocumentRoot /home/bohwaz/git/karadav/www
+</VirtualHost>
+```
+
 # Using Docker
 
 ```
