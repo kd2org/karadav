@@ -13,7 +13,7 @@ if (empty($_GET['nc']) && $users->current()) {
 
 $error = 0;
 
-if (!empty($_POST['login']) && !empty($_POST['password'])) {
+if (!empty($_POST['login']) && !empty($_POST['password']) && csrf_check()) {
 	if ($users->login($_POST['login'], $_POST['password'])) {
 		$url = null;
 
@@ -55,8 +55,10 @@ echo '
 
 if (isset($_GET['nc'])) {
 	printf('<input type="hidden" name="nc" value="%s" />', htmlspecialchars($_GET['nc']));
-	echo '<p class="info">The NextCloud app is trying to access your data. Please login to continue.</p>';
+	echo '<p class="info">An external application is trying to access your data. Please login to continue and allow access.</p>';
 }
+
+echo html_csrf();
 
 echo '
 <fieldset>
