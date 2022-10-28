@@ -42,6 +42,12 @@ define('KaraDAV\WWW_URL', sprintf('http%s://%s%s%s', $https, $name, $port, $root
 const WOPI_DISCOVERY_URL = null;
 
 /**
+ * Set this to TRUE if you want 'Access-Control-Allow-Origin' header to be set to '*'
+ * and allow remote JS clients to make WebDAV requests.
+ */
+const ACCESS_CONTROL_ALL = false;
+
+/**
  * Path to a log file (eg. __DIR__ . '/debug.log')
  * This will log all HTTP requests and responses received by the server
  */
