@@ -25,10 +25,12 @@ class WebDAV extends WebDAV_Server
 	{
 		parent::http_options();
 
-		header('Access-Control-Allow-Origin: *');
-		header('Access-Control-Allow-Credentials: true');
-		header('Access-Control-Allow-Headers: Authorization, *');
-		header('Access-Control-Allow-Methods: GET,HEAD,PUT,DELETE,COPY,MOVE,PROPFIND,MKCOL,LOCK,UNLOCK');
+		if (ACCESS_CONTROL_ALL) {
+			header('Access-Control-Allow-Origin: *');
+			header('Access-Control-Allow-Credentials: true');
+			header('Access-Control-Allow-Headers: Authorization, *');
+			header('Access-Control-Allow-Methods: GET,HEAD,PUT,DELETE,COPY,MOVE,PROPFIND,MKCOL,LOCK,UNLOCK');
+		}
 	}
 
 	public function log(string $message, ...$params)

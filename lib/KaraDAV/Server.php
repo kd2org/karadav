@@ -19,7 +19,6 @@ class Server
 
 	public function route(?string $uri = null): bool
 	{
-		header('Access-Control-Allow-Origin: *', true);
 		$method = $_SERVER['REQUEST_METHOD'] ?? null;
 
 		// Always say YES to OPTIONS
