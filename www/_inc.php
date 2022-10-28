@@ -25,19 +25,14 @@ if (!file_exists(DB_FILE)) {
 	$db->exec(file_get_contents(__DIR__ . '/../schema.sql'));
 
 	if (!LDAP::enabled()) {
-		@session_start();
 		$users = new Users;
 		$p = 'karadavdemo';
 		$users->create('demo', $p, 10, true);
-		$_SESSION['install_password'] = $p;
 		$users->login('demo', $p);
+		$_SESSION['install_password'] = $p;
 	}
 
 	$db->exec('END;');
-}
-
-if (isset($_COOKIE[session_name()]) && !isset($_SESSION)) {
-	@session_start();
 }
 
 function html_head(string $title): void
@@ -100,5 +95,47 @@ function http_log(string $message, ...$params): void
 
 	if (LOG_FILE) {
 		file_put_contents(LOG_FILE, $msg, FILE_APPEND);
+	}
+}
+
+function html_csrf()
+{
+	$expire = time() + 1800;
+	$random = random_bytes(10);
+	$action = $_SERVER['REQUEST_URI'];
+	$token = hash_hmac('sha256', $expire . $random . $action, STORAGE_PATH . session_id());
+
+	return sprintf('<input type="hidden" name="_c_" value="%s:%s:%s" />', $token, base64_encode($random), $expire);
+}
+
+function csrf_check(): bool
+{
+	if (empty($_POST['_c_'])) {
+		return false;
+	}
+
+	$verify = strtok($_POST['_c_'], ':');
+	$random = base64_decode(strtok(':'));
+	$expire = strtok(false);
+
+	if ($expire < time()) {
+		return false;
+	}
+
+	$action = $_SERVER['REQUEST_URI'];
+
+	$token = hash_hmac('sha256', $expire . $random . $action, STORAGE_PATH . session_id());
+
+	return hash_equals($token, $verify);
+}
+
+function html_csrf_error()
+{
+	if (empty($_POST['_c_'])) {
+		return;
+	}
+
+	if (!csrf_check()) {
+		echo '<p class="error">Sorry, but the form expired, please submit it again.</p>';
 	}
 }

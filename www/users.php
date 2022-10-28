@@ -31,12 +31,12 @@ elseif (isset($_GET['create']) && !$ldap) {
 	$create = true;
 }
 
-if ($create && !empty($_POST['create']) && !empty($_POST['login']) && !empty($_POST['password'])) {
+if ($create && !empty($_POST['create']) && !empty($_POST['login']) && !empty($_POST['password']) && csrf_check()) {
 	$users->create(trim($_POST['login']), trim($_POST['password']));
 	header('Location: ' . WWW_URL . 'users.php');
 	exit;
 }
-elseif ($edit && !empty($_POST['save']) && !empty($_POST['login'])) {
+elseif ($edit && !empty($_POST['save']) && !empty($_POST['login']) && csrf_check()) {
 	if (!$ldap && empty($_POST['is_admin']) && $user->id == $me->id) {
 		die("You cannot remove yourself from admins, ask another admin to do it.");
 	}
@@ -56,7 +56,7 @@ elseif ($edit && !empty($_POST['save']) && !empty($_POST['login'])) {
 	header('Location: ' . WWW_URL . 'users.php');
 	exit;
 }
-elseif ($delete && !empty($_POST['delete'])) {
+elseif ($delete && !empty($_POST['delete']) && csrf_check()) {
 	$users->delete($user);
 	header('Location: ' . WWW_URL . 'users.php');
 	exit;
@@ -64,9 +64,13 @@ elseif ($delete && !empty($_POST['delete'])) {
 
 html_head('Manage users');
 
+html_csrf_error();
+
 if ($create) {
+	$csrf = html_csrf();
 	echo <<<EOF
 	<form method="post" action="">
+	{$csrf}
 	<fieldset>
 		<legend>Create a new user</legend>
 		<dl>
@@ -77,14 +81,17 @@ if ($create) {
 			<dd><input type="submit" name="create" value="Create" /></dd>
 		</dl>
 	</fieldset>
+	</form>
 EOF;
 }
 elseif ($edit) {
+	$csrf = html_csrf();
 	$login = htmlspecialchars($user->login);
 	$is_admin = $user->is_admin ? 'checked="checked"' : '';
 	$quota = $user ? round($user->quota / 1024 / 1024) : DEFAULT_QUOTA;
 
 	echo '<form method="post" action="">
+	' . $csrf . '
 	<fieldset>
 		<legend>Edit user</legend>
 		<dl>';
@@ -106,17 +113,21 @@ elseif ($edit) {
 			<!--<dd>Set to -1 to have unlimited space</dd>-->
 			<dd><input type="submit" name="save" value="Save" /></dd>
 		</dl>
-	</fieldset>';
+	</fieldset>
+	</form>';
 }
 elseif ($delete) {
+	$csrf = html_csrf();
 	$login = htmlspecialchars($user->login);
 	echo <<<EOF
 	<form method="post" action="">
+	{$csrf}
 	<fieldset>
 		<legend>Delete user</legend>
 		<h2>Do you want to delete the user "{$login}" and all their files?</h2>
 		<dd><input type="submit" name="delete" value="Yes, delete" /></dd>
 	</fieldset>
+	</form>
 EOF;
 }
 else {

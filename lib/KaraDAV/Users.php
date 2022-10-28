@@ -8,6 +8,14 @@ class Users
 {
 	protected ?stdClass $current = null;
 
+	public function __construct()
+	{
+		if (!session_id()) {
+			// Protect the cookie : CSRF/JS stealing the cookie
+			session_set_cookie_params(['samesite' => 'Lax', 'httponly' => true]);
+		}
+	}
+
 	static public function generatePassword(): string
 	{
 		$password = base64_encode(random_bytes(16));
