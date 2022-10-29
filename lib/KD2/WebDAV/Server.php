@@ -631,6 +631,10 @@ class Server
 
 		$body = file_get_contents('php://input');
 
+		if (false !== strpos($body, '<!DOCTYPE ')) {
+			throw new Exception('Invalid XML', 400);
+		}
+
 		$this->log('Requested depth: %s', $depth);
 
 		// We don't really care about having a correct XML string,
@@ -822,6 +826,10 @@ class Server
 
 	static public function parsePropPatch(string $body): array
 	{
+		if (false !== strpos($body, '<!DOCTYPE ')) {
+			throw new Exception('Invalid XML', 400);
+		}
+
 		$xml = @simplexml_load_string($body);
 
 		if (false === $xml) {
@@ -1213,5 +1221,17 @@ class Server
 		header('Content-Type: application/xml; charset=utf-8', true);
 
 		printf('<?xml version="1.0" encoding="utf-8"?><d:error xmlns:d="DAV:" xmlns:s="http://sabredav.org/ns"><s:message>%s</s:message></d:error>', htmlspecialchars($e->getMessage(), ENT_XML1));
+	}
+
+	/**
+	 * Utility function to create HMAC hash of data, useful for NextCloud and WOPI
+	 */
+	static public function hmac(array $data, string $key = '')
+	{
+		// Protect against length attacks by pre-hashing data
+		$data = array_map('sha1', $data);
+		$data = implode(':', $details);
+
+		return hash_hmac('sha1', $data, sha1($key));
 	}
 }

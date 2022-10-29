@@ -37,4 +37,13 @@ class WebDAV extends WebDAV_Server
 	{
 		http_log('DAV: ' . $message, ...$params);
 	}
+
+	/**
+	 * Utility function to create HMAC hash of data, useful for NextCloud and WOPI
+	 */
+	static public function hmac(array $data, string $key = '')
+	{
+		$key = SECRET_KEY . sha1($key);
+		return parent::hmac($data, $key);
+	}
 }

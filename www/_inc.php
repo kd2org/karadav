@@ -12,11 +12,31 @@ spl_autoload_register(function ($class) {
 ErrorManager::enable(ErrorManager::DEVELOPMENT);
 ErrorManager::setLogFile(__DIR__ . '/../error.log');
 
-if (!file_exists(__DIR__ . '/../config.local.php')) {
+$cfg_file = __DIR__ . '/../config.local.php';
+
+if (!file_exists($cfg_file)) {
 	die('This server is not configured yet. Please copy config.dist.php to config.local.php and edit it.');
 }
 
-require __DIR__ . '/../config.local.php';
+require $cfg_file;
+
+// Create random secret key
+if (!defined('KaraDAV\SECRET_KEY')) {
+	$cfg = file_get_contents($cfg_file);
+
+	if (false == strpos($cfg, 'SECRET_KEY')) {
+		$secret = base64_encode(random_bytes(16));
+		define('KaraDAV\SECRET_KEY', $secret);
+
+		$c = sprintf("\n\n// Randomly generated secret key, please change only if necessary\nconst SECRET_KEY = %s;\n\n",
+			var_export($secret, true));
+
+		$cfg = preg_replace('/\?>\s*$|$/', $c, $cfg, 1);
+
+		file_put_contents($cfg_file, $cfg);
+		unset($secret, $cfg_file, $cfg);
+	}
+}
 
 // Init database
 if (!file_exists(DB_FILE)) {
