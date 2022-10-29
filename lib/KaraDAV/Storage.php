@@ -481,7 +481,7 @@ class Storage extends AbstractStorage
 		$ttl = time()+(3600*10);
 
 		// Use the user password as a server secret
-		$hash = sha1($user->password . $uri . $ttl);
+		$hash = hash_hmac('sha1', $ttl . "\0" . $uri, $user->password);
 		$data = sprintf('%s_%s_%s', $hash, $ttl, $user->login);
 
 		return [
@@ -496,7 +496,7 @@ class Storage extends AbstractStorage
 		$uri = gzuncompress($id);
 		$token_decode = WOPI::base64_decode_url_safe($token);
 		$hash = strtok($token_decode, '_');
-		$ttl = strtok('_');
+		$ttl = (int) strtok('_');
 		$login = strtok(false);
 
 		if ($ttl < time()) {
@@ -509,7 +509,7 @@ class Storage extends AbstractStorage
 
 		$user = $this->users->current();
 
-		$check = sha1($user->password . $uri . $ttl);
+		$check = hash_hmac('sha1', $ttl . "\0" . $uri, $user->password);
 
 		if (!hash_equals($check, $hash)) {
 			return null;
