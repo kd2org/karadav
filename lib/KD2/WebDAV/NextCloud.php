@@ -564,6 +564,10 @@ abstract class NextCloud
 			throw new Exception('Invalid URI', 400);
 		}
 
+		if (false !== strpos($uri, '..')) {
+			throw new Exception(sprintf('Invalid URI: "%s"', $uri), 403);
+		}
+
 		$expire = (int) strtok($_GET['h'], ':');
 		$hash = strtok('');
 		$expire_seconds = $expire * 3600 + strtotime('2022-09-01');
