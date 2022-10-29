@@ -294,6 +294,12 @@ But they mostly pass with litmus 0.13-3 supplied by Debian:
 
 Paheko.cloud / BohwaZ. Contact me on: IRC = bohwaz@irc.libera.chat / Mastodon = https://mamot.fr/@bohwaz / Twitter = @bohwaz
 
+### Contributors
+
+Thank you:
+
+* Cédric Picard, for the security report
+
 ## License
 
 This software and its dependencies are available in open source with the AGPL v3 license. This requires you to share all your source code if you include this in your software. This is voluntary.

@@ -83,3 +83,13 @@ const LDAP_FIND_USER = null;
 
 const LDAP_FIND_IS_ADMIN = null;
 //const LDAP_FIND_IS_ADMIN = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.admin.main,ou=permission,dc=yunohost,dc=org))';
+
+
+/**
+ * Randomly generated secret key
+ * Usually you won't need to fill this constant. A random secret key will be generated
+ * and written to this file when the first access is made.
+ * But if you don't allow your web server to write to this file, then please use a true
+ * random bytes generator to create a ~30 bytes random key and put it in this constant :)
+ */
+//const SECRET_KEY = 'verySECRETstringHEREplease';
