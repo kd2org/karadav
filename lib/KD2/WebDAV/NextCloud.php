@@ -501,7 +501,7 @@ abstract class NextCloud
 	{
 		$uri = trim($uri, '/');
 		$expire = intval((time() - strtotime('2022-09-01'))/3600) + 8; // 8 hours
-		$hash = $expire . ':' . sha1($user . $uri . $expire . $this->getDirectDownloadSecret($uri, $user));
+		$hash = $expire . ':' . hash_hmac('sha1', $user . "\0" . $expire . "\0" . $uri, $this->getDirectDownloadSecret($uri, $user));
 
 		$uri = rawurlencode($uri);
 		$uri = str_replace('%2F', '/', $uri);
@@ -564,7 +564,7 @@ abstract class NextCloud
 			throw new Exception('Invalid URI', 400);
 		}
 
-		$expire = strtok($_GET['h'], ':');
+		$expire = (int) strtok($_GET['h'], ':');
 		$hash = strtok('');
 		$expire_seconds = $expire * 3600 + strtotime('2022-09-01');
 
@@ -573,7 +573,7 @@ abstract class NextCloud
 			throw new Exception('Link has expired', 401);
 		}
 
-		$verify = sha1($user . $uri . $expire . $this->getDirectDownloadSecret($uri, $user));
+		$verify = hash_hmac('sha1', $user . "\0" . $expire . "\0" . $uri, $this->getDirectDownloadSecret($uri, $user));
 
 		// Check if the provided hash is correct
 		if (!hash_equals($verify, $hash)) {
