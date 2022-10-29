@@ -481,8 +481,8 @@ class Storage extends AbstractStorage
 		$ttl = time()+(3600*10);
 
 		// Use the user password as a server secret
-		$hash = hash_hmac('sha1', $ttl . "\0" . $uri, $user->password);
-		$data = sprintf('%s_%s_%s', $hash, $ttl, $user->login);
+		$check = WebDAV::hash(compact('ttl', 'uri'), $user->password);
+		$data = sprintf('%s_%s_%s', $check, $ttl, $user->login);
 
 		return [
 			WOPI::PROP_TOKEN => WOPI::base64_encode_url_safe($data),
@@ -509,7 +509,7 @@ class Storage extends AbstractStorage
 
 		$user = $this->users->current();
 
-		$check = hash_hmac('sha1', $ttl . "\0" . $uri, $user->password);
+		$check = WebDAV::hash(compact('ttl', 'uri'), $user->password);
 
 		if (!hash_equals($check, $hash)) {
 			return null;

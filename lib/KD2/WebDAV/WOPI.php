@@ -190,7 +190,11 @@ class WOPI
 			}
 		}
 
-		$xml = simplexml_load_string($r);
+		if (false !== strpos($r, '<!DOCTYPE ')) {
+			throw new \RuntimeException('Invalid XML returned by discovery');
+		}
+
+		$xml = @simplexml_load_string($r);
 
 		if (!is_object($xml)) {
 			throw new \RuntimeException('Invalid XML returned by discovery');

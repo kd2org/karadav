@@ -501,7 +501,8 @@ abstract class NextCloud
 	{
 		$uri = trim($uri, '/');
 		$expire = intval((time() - strtotime('2022-09-01'))/3600) + 8; // 8 hours
-		$hash = $expire . ':' . hash_hmac('sha1', $user . "\0" . $expire . "\0" . $uri, $this->getDirectDownloadSecret($uri, $user));
+		$hash = Server::hmac([$user, $expire, $uri], $this->getDirectDownloadSecret($uri, $user));
+		$hash = $expire . ':' . $hash;
 
 		$uri = rawurlencode($uri);
 		$uri = str_replace('%2F', '/', $uri);
@@ -577,7 +578,7 @@ abstract class NextCloud
 			throw new Exception('Link has expired', 401);
 		}
 
-		$verify = hash_hmac('sha1', $user . "\0" . $expire . "\0" . $uri, $this->getDirectDownloadSecret($uri, $user));
+		$verify = Server::hmac([$user, $expire, $uri], $this->getDirectDownloadSecret($uri, $user));
 
 		// Check if the provided hash is correct
 		if (!hash_equals($verify, $hash)) {

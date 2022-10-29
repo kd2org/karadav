@@ -91,7 +91,7 @@ class NextCloud extends WebDAV_NextCloud
 			throw new WebDAV_Exception('No user with that name', 401);
 		}
 
-		return hash('sha256', $uri . $user->login . $user->password);
+		return WebDAV::hmac([$uri, $user->login, $user->password]);
 	}
 
 	protected function cleanChunks(): void
