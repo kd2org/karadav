@@ -26,14 +26,22 @@ if (!defined('KaraDAV\SECRET_KEY')) {
 
 	if (false == strpos($cfg, 'SECRET_KEY')) {
 		$secret = base64_encode(random_bytes(16));
-		define('KaraDAV\SECRET_KEY', $secret);
 
 		$c = sprintf("\n\n// Randomly generated secret key, please change only if necessary\nconst SECRET_KEY = %s;\n\n",
 			var_export($secret, true));
 
+		if (!is_writeable($cfg_file)) {
+			echo "<h2>Configuration missing</h2>";
+			echo "<h4>KaraDAV cannot write to <tt>config.local.php</tt></h4>";
+			echo "<p>Please append the following code to the <tt>config.local.php</tt> file:</p>";
+			printf('<textarea onclick="this.select();" cols="70" rows="5">%s</textarea>', htmlspecialchars($c));
+			exit(1);
+		}
+
 		$cfg = preg_replace('/\?>\s*$|$/', $c, $cfg, 1);
 
 		file_put_contents($cfg_file, $cfg);
+		define('KaraDAV\SECRET_KEY', $secret);
 		unset($secret, $cfg_file, $cfg);
 	}
 }
