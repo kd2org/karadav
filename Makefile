@@ -1,4 +1,6 @@
 KD2FW_URL=https://fossil.kd2.org/kd2fw/doc/tip/src/lib/KD2/
+INSTALL_PATH=/var/lib/karadav
+INSTALL_USER=www-data
 
 deps: js-deps php-deps
 
@@ -16,3 +18,12 @@ php-deps:
 
 server:
 	php -S 0.0.0.0:8080 -t www www/_router.php
+
+install: deps
+	mkdir -p ${INSTALL_PATH}
+	mkdir ${INSTALL_PATH}/data
+	cp -r lib www ${INSTALL_PATH}
+	cp schema.sql ${INSTALL_PATH}/schema.sql
+	cp config.dist.php ${INSTALL_PATH}/config.local.php
+	chown -R ${INSTALL_USER}:${INSTALL_USER} ${INSTALL_PATH}
+
