@@ -2,7 +2,7 @@ FROM alpine:edge
 LABEL Maintainer="BohwaZ <https://bohwaz.net/>" \
       Description="KaraDAV file sharing server"
 
-RUN apk --no-cache add php81 php81-curl php81-ctype php81-opcache php81-simplexml php81-session php81-sqlite3
+RUN apk --no-cache add php81 php81-curl php81-ctype php81-opcache php81-simplexml php81-session php81-sqlite3 php81-fileinfo
 ENV PHP_CLI_SERVER_WORKERS=4
 
 # Setup document root
