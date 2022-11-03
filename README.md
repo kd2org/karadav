@@ -75,12 +75,22 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 
 ## WebDAV clients compatibility
 
+Here is a list of clients tested with KaraDAV:
+
+### Desktop
+
 * [FUSE webdavfs](https://github.com/miquels/webdavfs) is **recommended** for Linux
 * davfs2 is NOT recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
 * Microsoft Windows native webclient (also called 'MiniRedir') is notoriously bad. We tested it successfully on Windows 10, but it is recommended to use [CyberDuck](https://cyberduck.io/download/) or [WinSCP](https://winscp.net/) instead, both are free software.
-* Tested with Dolphin (KDE)
-* Tested with Thunar (GTK/GNOME)
-* Tested with [RCX](https://f-droid.org/en/packages/io.github.x0b.rcx/) on Android **(recommended)**
+* Dolphin (KDE)
+* Thunar (GTK/GNOME)
+* [rclone](https://rclone.org/webdav/) on Linux
+
+### Android
+
+* **Recommended** [RCX](https://f-droid.org/en/packages/io.github.x0b.rcx/)
+* [DAVx⁵](https://www.davx5.com/), see [the manual](https://manual.davx5.com/webdav_mounts.html) for how to set up a WebDAV mount
+* [X-Plore](https://www.lonelycatgames.com/apps/xplore)
 
 ## WOPI clients compatibility
 
