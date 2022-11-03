@@ -5,7 +5,8 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-ExecStart=/usr/bin/php8.1 -S 0.0.0.0:8080 -t /var/lib/karadav/www /var/lib/karadav/www/_router.php
+Environment="PHP_CLI_SERVER_WORKERS=3"
+ExecStart=/usr/bin/php -S 0.0.0.0:8080 -t /var/lib/karadav/www /var/lib/karadav/www/_router.php
 Restart=on-failure
 
 [Install]
