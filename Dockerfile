@@ -24,4 +24,7 @@ COPY --chown=nobody config.dist.php /var/karadav/config.local.php
 
 EXPOSE 8080
 
+VOLUME ["/var/karadav/data"]
+
+ENV PHP_CLI_SERVER_WORKERS=3
 CMD ["php", "-S", "0.0.0.0:8080", "-t", "www", "www/_router.php"]
