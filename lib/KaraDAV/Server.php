@@ -8,13 +8,16 @@ class Server
 {
 	public Users $users;
 	public WebDAV $dav;
+	public NextCloud $nc;
 
 	public function __construct()
 	{
 		$users = new Users;
 		$this->users = new Users;
 		$this->dav = new WebDAV;
-		$this->dav->setStorage(new Storage($this->users));
+		$this->nc = new NextCloud($this->users);
+		$storage = new Storage($this->users, $this->nc);
+		$this->dav->setStorage($storage);
 	}
 
 	public function route(?string $uri = null): bool
@@ -36,9 +39,9 @@ class Server
 			}
 		}
 
-		$nc = new NextCloud($this->dav, $this->users);
+		$this->nc->setServer($this->dav);
 
-		if ($r = $nc->route($uri)) {
+		if ($r = $this->nc->route($uri)) {
 			// NextCloud route already replied something, stop here
 			return true;
 		}

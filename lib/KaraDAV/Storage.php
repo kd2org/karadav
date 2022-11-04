@@ -9,6 +9,7 @@ use KD2\WebDAV\Exception as WebDAV_Exception;
 class Storage extends AbstractStorage
 {
 	protected Users $users;
+	protected NextCloud $nextcloud;
 
 	/**
 	 * These file names will be ignored when doing a PUT
@@ -16,9 +17,10 @@ class Storage extends AbstractStorage
 	 */
 	const PUT_IGNORE_PATTERN = '!^~(?:lock\.|^\._)|^(?:\.DS_Store|Thumbs\.db|desktop\.ini)$!';
 
-	public function __construct(Users $users)
+	public function __construct(Users $users, NextCloud $nextcloud)
 	{
 		$this->users = $users;
+		$this->nextcloud = $nextcloud;
 	}
 
 	public function getLock(string $uri, ?string $token = null): ?string
@@ -143,7 +145,7 @@ class Storage extends AbstractStorage
 			case NextCloud::PROP_OC_SHARETYPES:
 				return WebDAV::EMPTY_PROP_VALUE;
 			case NextCloud::PROP_OC_DOWNLOADURL:
-				return NextCloud::getDirectURL($uri, $this->users->current()->login);
+				return $this->nextcloud->getDirectURL($uri, $this->users->current()->login);
 			case Nextcloud::PROP_NC_RICH_WORKSPACE:
 				if (!is_dir($target)) {
 					return '';
