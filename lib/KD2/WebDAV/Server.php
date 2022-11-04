@@ -1230,7 +1230,7 @@ class Server
 	{
 		// Protect against length attacks by pre-hashing data
 		$data = array_map('sha1', $data);
-		$data = implode(':', $details);
+		$data = implode(':', $data);
 
 		return hash_hmac('sha1', $data, sha1($key));
 	}

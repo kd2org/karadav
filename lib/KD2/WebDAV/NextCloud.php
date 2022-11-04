@@ -497,7 +497,7 @@ abstract class NextCloud
 		]);
 	}
 
-	protected function getDirectURL(string $uri, string $user)
+	public function getDirectURL(string $uri, string $user)
 	{
 		$uri = trim($uri, '/');
 		$expire = intval((time() - strtotime('2022-09-01'))/3600) + 8; // 8 hours
