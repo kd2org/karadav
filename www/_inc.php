@@ -46,6 +46,15 @@ if (!defined('KaraDAV\SECRET_KEY')) {
 	}
 }
 
+if (!defined('KaraDAV\WWW_URL')) {
+	$https = (!empty($_SERVER['HTTPS']) || $_SERVER['SERVER_PORT'] == 443) ? 's' : '';
+	$name = $_SERVER['SERVER_NAME'];
+	$port = !in_array($_SERVER['SERVER_PORT'], [80, 443]) ? ':' . $_SERVER['SERVER_PORT'] : '';
+	$root = '/';
+
+	define('KaraDAV\WWW_URL', sprintf('http%s://%s%s%s', $https, $name, $port, $root));
+}
+
 // Init database
 if (!file_exists(DB_FILE)) {
 	$db = DB::getInstance();
