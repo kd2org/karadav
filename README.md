@@ -82,6 +82,7 @@ Here is a list of clients tested with KaraDAV:
 * [FUSE webdavfs](https://github.com/miquels/webdavfs) is **recommended** for Linux
 * davfs2 is NOT recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
 * Microsoft Windows native webclient (also called 'MiniRedir') is notoriously bad. We tested it successfully on Windows 10, but it is recommended to use [CyberDuck](https://cyberduck.io/download/) or [WinSCP](https://winscp.net/) instead, both are free software.
+* CyberDuck (Windows) version 8.5.0
 * Dolphin (KDE)
 * Thunar (GTK/GNOME)
 * [rclone](https://rclone.org/webdav/) on Linux
@@ -102,7 +103,12 @@ This might get supported in future (maybe):
 
 * Probably: [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
 * Maybe: [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html)
-* Maybe: NextCloud files versioning (see [API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/versions.html), [versioning pattern](https://docs.nextcloud.com/server/latest/user_manual/en/files/version_control.html), [code](https://github.com/nextcloud/server/blob/master/apps/files_versions/lib/Storage.php))
+* Maybe: NextCloud files versioning
+	* [NextCloud API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/versions.html)
+	* [NextCloud versioning pattern](https://docs.nextcloud.com/server/latest/user_manual/en/files/version_control.html)
+	* [NextCloud implementation](https://github.com/nextcloud/server/blob/master/apps/files_versions/lib/Storage.php))
+	* [Mercurial revlog](https://www.mercurial-scm.org/wiki/Revlog)
+	* [Eric Sink on SCM versioning](https://ericsink.com/scm/scm_repositories.html)
 
 This probably won't get supported anytime soon:
 

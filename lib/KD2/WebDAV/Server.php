@@ -606,17 +606,23 @@ class Server
 		// Find all properties
 		// Allow for empty namespace, see Litmus FAQ for propnullns
 		// https://github.com/tolsen/litmus/blob/master/FAQ
-		preg_match_all('!<(?:([\w-]+):)([\w-]+)|<([\w-]+)[^>]*xmlns="([^"]*)"!', $match[2], $match, PREG_SET_ORDER);
+		preg_match_all('!<([\w-]+)[^>]*xmlns="([^"]*)"|<(?:([\w-]+):)?([\w-]+)!', $match[2], $match, PREG_SET_ORDER);
 
 		$properties = [];
 
 		foreach ($match as $found) {
-			$url = $found[4] ?? (array_search($found[1], $ns) ?: $default_ns);
-			$name = isset($found[4]) ? $found[3] : $found[2];
+			if (isset($found[4])) {
+				$url = array_search($found[3], $ns) ?: $default_ns;
+				$name = $found[4];
+			}
+			else {
+				$url = $found[2];
+				$name = $found[1];
+			}
 
 			$properties[$url . ':' . $name] = [
 				'name' => $name,
-				'ns_alias' => $found[1],
+				'ns_alias' => $found[3] ?: null,
 				'ns_url' => $url,
 			];
 		}
