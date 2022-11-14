@@ -352,6 +352,11 @@ class Server
 			throw new Exception('File Not Found', 404);
 		}
 
+		// If the file was returned to the client by the storage backend, stop here
+		if (!empty($file['stop'])) {
+			return null;
+		}
+
 		if (!isset($file['content']) && !isset($file['resource']) && !isset($file['path'])) {
 			throw new \RuntimeException('Invalid file array returned by ::get()');
 		}
@@ -359,15 +364,7 @@ class Server
 		$length = $start = $end = null;
 		$gzip = false;
 
-		if (isset($_SERVER['HTTP_ACCEPT_ENCODING'])
-			&& false !== strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')
-			// Don't compress already compressed content
-			&& !preg_match('/\.(?:mp4|m4a|zip|docx|xlsx|ods|odt|odp|7z|gz|webm|ogg|mp3|ogm|flac|ogv|mkv)$/', $uri)) {
-			$gzip = true;
-			header('Content-Encoding: gzip', true);
-		}
-
-		if (!$gzip && isset($_SERVER['HTTP_RANGE'])
+		if (isset($_SERVER['HTTP_RANGE'])
 			&& preg_match('/^bytes=(\d*)-(\d*)$/i', $_SERVER['HTTP_RANGE'], $match)
 			&& $match[1] . $match[2] !== '') {
 			$start = $match[1] === '' ? null : (int) $match[1];
@@ -377,7 +374,30 @@ class Server
 				throw new Exception('Start range cannot be satisfied', 416);
 			}
 
+			if (isset($props['DAV::getcontentlength']) && $start > $props['DAV::getcontentlength']) {
+				throw new Exception('End range cannot be satisfied', 416);
+			}
+
 			$this->log('HTTP Range requested: %s-%s', $start, $end);
+		}
+		elseif (isset($_SERVER['HTTP_ACCEPT_ENCODING'])
+			&& false !== strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')
+			// Don't compress already compressed content
+			&& !preg_match('/\.(?:mp4|m4a|zip|docx|xlsx|ods|odt|odp|7z|gz|bz2|rar|webm|ogg|mp3|ogm|flac|ogv|mkv|avi)$/i', $uri)) {
+			$gzip = true;
+			header('Content-Encoding: gzip', true);
+		}
+
+		// Try to avoid common issues with output buffering and stuff
+		if (function_exists('apache_setenv'))
+		{
+			@apache_setenv('no-gzip', 1);
+		}
+
+		@ini_set('zlib.output_compression', 'Off');
+
+		if (@ob_get_length()) {
+			@ob_clean();
 		}
 
 		if (isset($file['content'])) {
@@ -479,6 +499,7 @@ class Server
 			$l = $end !== null ? min(8192, $end) : 8192;
 
 			echo fread($file['resource'], $l);
+			flush();
 
 			if (null !== $end) {
 				$end -= 8192;
