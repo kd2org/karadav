@@ -260,6 +260,18 @@ abstract class NextCloud
 		catch (Exception $e) {
 			$this->server->log('NC => %d - %s', $e->getCode(), $e->getMessage());
 			http_response_code($e->getCode());
+
+			if ($route == 'direct') {
+				// Do not return any error message for the direct API endpoint.
+				// If you return anything, the client will consider it is part of the file
+				// and will generate a corrupted file!
+				// so if you return a 20-byte long error message, the client
+				// will do a normal GET on the regular URL, but with 'Range: bytes=20-'!
+				// see https://github.com/nextcloud/desktop/issues/5170
+				header('X-Error: ' . $e->getMessage());
+				return true;
+			}
+
 			echo json_encode(['error' => $e->getMessage()]);
 			return true;
 		}
@@ -329,7 +341,7 @@ abstract class NextCloud
 		// Android app is using "/remote.php/dav/files/user//" as root
 		// so let's alias that as well
 		// ownCloud Android is requesting just /dav/files/
-		if (preg_match('!^' . preg_quote($base_uri, '!') . 'files/(?:[a-z]+/+)?!', $uri, $match)) {
+		if (preg_match('!^' . preg_quote($base_uri, '!') . 'files/(?:[^/]+/+)?!', $uri, $match)) {
 			$base_uri = $match[0];
 		}
 
