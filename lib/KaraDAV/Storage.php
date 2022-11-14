@@ -78,7 +78,7 @@ class Storage extends AbstractStorage
 		// or https://www.nginx.com/resources/wiki/start/topics/examples/xsendfile/
 		if (ENABLE_XSENDFILE) {
 			header('X-SendFile: ' . $path);
-			exit;
+			return ['stop' => true];
 		}
 
 		return ['path' => $path];

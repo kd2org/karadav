@@ -57,6 +57,8 @@ After you have set up the sync you get a bunch of requests:
 
 ### Etags are mandatory
 
+If you don't provide an etag, eg. for a directory, the app will fail to sync with a message about missing data.
+
 ### Don't use text/xml
 
 > PROPFIND reply is not XML formatted

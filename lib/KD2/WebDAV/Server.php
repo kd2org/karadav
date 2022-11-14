@@ -123,7 +123,7 @@ class Server
 			table { border-collapse: collapse; }
 			th, td { padding: .5em; text-align: left; border: 2px solid #ccc; }
 			span { font-size: 40px; line-height: 40px; }
-			</style>', $this->base_uri);
+			</style>', '/' . ltrim($this->base_uri, '/'));
 
 		$out .= sprintf('<title>%s</title></head><body><h1>%1$s</h1><table>', htmlspecialchars($uri ? str_replace('/', ' / ', $uri) . ' - Files' : 'Files'));
 
@@ -622,7 +622,7 @@ class Server
 
 			$properties[$url . ':' . $name] = [
 				'name' => $name,
-				'ns_alias' => $found[3] ?: null,
+				'ns_alias' => $found[3] ?? null,
 				'ns_url' => $url,
 			];
 		}
@@ -646,6 +646,10 @@ class Server
 		// We don't really care about having a correct XML string,
 		// but we can get better WebDAV compliance if we do
 		if (isset($_SERVER['HTTP_X_LITMUS'])) {
+			if (false !== strpos($body, '<!DOCTYPE ')) {
+				throw new Exception('Invalid XML', 400);
+			}
+
 			$xml = @simplexml_load_string($body);
 
 			if ($e = libxml_get_last_error()) {
@@ -759,6 +763,12 @@ class Server
 					&& false !== stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'owncloud')) {
 					$value = $value->getTimestamp();
 				}
+				// ownCloud app crashes if mimetype is provided for a directory
+				// https://github.com/owncloud/android/issues/3768
+				elseif ($name == 'DAV::getcontenttype'
+					&& ($item['DAV::resourcetype'] ?? null) == 'collection') {
+					$value = null;
+				}
 
 				if ($name == 'DAV::resourcetype' && $value == 'collection') {
 					$value = '<d:collection />';
@@ -767,6 +777,9 @@ class Server
 					$value = '"' . $value . '"';
 				}
 				elseif ($value instanceof \DateTimeInterface) {
+					// Change value to GMT
+					$value = clone $value;
+					$value->setTimezone(new \DateTimeZone('GMT'));
 					$value = $value->format(DATE_RFC7231);
 				}
 				elseif (is_array($value)) {
