@@ -31,6 +31,10 @@ Those endpoints are requested by the clients and one or the other client will fa
 
 ## Desktop client
 
+### Direct download endpoint cannot return anything if it failed
+
+See https://github.com/nextcloud/desktop/issues/5170
+
 ### Requests performed
 
 This is when you are adding a new server to the client:
@@ -67,6 +71,7 @@ https://github.com/nextcloud/desktop/issues/4873
 
 ### Custom WebDAV properties
 
+```
 // from lib/private/Files/Storage/DAV.php in NextCloud
 // and apps/dav/lib/Connector/Sabre/Node.php
 // R = Shareable
@@ -78,12 +83,15 @@ https://github.com/nextcloud/desktop/issues/4873
 // Files only:
 // W = Write (Update)
 // CK = Create/Update
+```
 
+```
 <oc:id>%s</oc:id>
 <oc:size>0</oc:size>
 <oc:downloadURL></oc:downloadURL>
 <oc:permissions>%s</oc:permissions>
 <oc:share-types/>
+```
 
 ## Use a proxy with desktop client
 
