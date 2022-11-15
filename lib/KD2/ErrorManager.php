@@ -43,6 +43,7 @@ class ErrorManager
 	 */
 	const PRODUCTION = 1;
 	const DEVELOPMENT = 2;
+	const CLI_DEVELOPMENT = 4;
 
 	/**
 	 * Term colors
@@ -269,11 +270,22 @@ class ErrorManager
 
 		$html_report = null;
 
-		if (self::$enabled != self::PRODUCTION || self::$email_errors) {
+		if (self::$enabled & self::DEVELOPMENT || self::$email_errors) {
 			$html_report = self::htmlReport($report);
 		}
 
-		if (PHP_SAPI == 'cli' || 0 === strpos($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl/'))
+		$is_curl = 0 === strpos($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl/');
+		$is_cli = PHP_SAPI == 'cli';
+
+		if (!$is_cli) {
+			http_response_code(500);
+		}
+
+		if ($is_curl && !headers_sent()) {
+			header('Content-Type: text/plain; charset=utf-8', true);
+		}
+
+		if (($is_cli || $is_curl) && (self::$enabled & self::DEVELOPMENT || self::$enabled & self::CLI_DEVELOPMENT))
 		{
 			foreach ($report->errors as $e)
 			{
@@ -315,7 +327,11 @@ class ErrorManager
 				}
 			}
 		}
-		else if (self::$enabled == self::PRODUCTION)
+		else if (($is_cli || $is_curl) && self::$enabled & self::PRODUCTION) {
+			self::termPrint(' /!\\ An internal server error occurred ', self::RED);
+			self::termPrint(' Error reference was: ' . $report->context->id, self::YELLOW);
+		}
+		else if (self::$enabled & self::PRODUCTION)
 		{
 			self::htmlProduction($report);
 		}
@@ -520,7 +536,7 @@ class ErrorManager
 			'date'         => date(DATE_ATOM),
 			'os'           => PHP_OS,
 			'language'     => 'PHP ' . PHP_VERSION,
-			'environment'  => self::$enabled == self::DEVELOPMENT ? 'development' : 'production:' . self::$enabled,
+			'environment'  => self::$enabled & self::DEVELOPMENT ? 'development' : 'production:' . self::$enabled,
 			'php_sapi'     => PHP_SAPI,
 			'remote_ip'    => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null,
 			'http_method'  => isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : null,
@@ -718,6 +734,8 @@ class ErrorManager
 	/**
 	 * Enable error manager
 	 * @param  integer $type Type of error management (ErrorManager::PRODUCTION or ErrorManager::DEVELOPMENT)
+	 * You can also use ErrorManager::PRODUCTION | ErrorManager::CLI_DEVELOPMENT to get error messages in CLI but still hide errors
+	 * on web front-end.
 	 * @return void
 	 */
 	static public function enable($type = self::DEVELOPMENT)
@@ -734,9 +752,9 @@ class ErrorManager
 		ini_set('log_errors', false);
 		ini_set('html_errors', false);
 		ini_set('zend.exception_ignore_args', false); // We want to get the args in exceptions (since PHP 7.4)
-		error_reporting($type == self::DEVELOPMENT ? -1 : E_ALL & ~E_DEPRECATED & ~E_STRICT);
+		error_reporting($type & self::DEVELOPMENT ? -1 : E_ALL & ~E_DEPRECATED & ~E_STRICT);
 
-		if ($type == self::DEVELOPMENT && PHP_SAPI != 'cli')
+		if ($type & self::DEVELOPMENT && PHP_SAPI != 'cli')
 		{
 			self::setHtmlHeader('<!DOCTYPE html><meta charset="utf-8" /><style type="text/css">
 			body { font-family: sans-serif; } * { margin: 0; padding: 0; }
@@ -760,7 +778,7 @@ class ErrorManager
 
 		set_error_handler([__CLASS__, 'errorHandler']);
 
-		if ($type == self::DEVELOPMENT)
+		if ($type & self::DEVELOPMENT)
 		{
 			self::startTimer('_global');
 		}

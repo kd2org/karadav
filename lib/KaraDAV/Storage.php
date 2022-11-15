@@ -51,11 +51,11 @@ class Storage extends AbstractStorage
 
 	public function list(string $uri, ?array $properties): iterable
 	{
-		$dirs = glob($this->users->current()->path . $uri . '/*', \GLOB_ONLYDIR);
+		$dirs = self::glob($this->users->current()->path . $uri, '/*', \GLOB_ONLYDIR);
 		$dirs = array_map('basename', $dirs);
 		natcasesort($dirs);
 
-		$files = glob($this->users->current()->path . $uri . '/*');
+		$files = self::glob($this->users->current()->path . $uri, '/*');
 		$files = array_map('basename', $files);
 		$files = array_diff($files, $dirs);
 		natcasesort($files);
@@ -291,7 +291,7 @@ class Storage extends AbstractStorage
 		}
 
 		if (is_dir($target)) {
-			foreach (glob($target . '/*') as $file) {
+			foreach (self::glob($target, '/*') as $file) {
 				$this->delete(substr($file, strlen($this->users->current()->path)));
 			}
 
@@ -421,12 +421,18 @@ class Storage extends AbstractStorage
 		return;
 	}
 
+	static protected function glob(string $path, string $pattern = '', int $flags = 0): array
+	{
+		$path = preg_replace('/[\*\?\[\]]/', '\\\\$0', $path);
+		return glob($path . $pattern, $flags);
+	}
+
 	static public function getDirectorySize(string $path): int
 	{
 		$total = 0;
 		$path = rtrim($path, '/');
 
-		foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
+		foreach (self::glob($path, '/*', GLOB_NOSORT) as $f) {
 			if (is_dir($f)) {
 				$total += self::getDirectorySize($f);
 			}
@@ -440,7 +446,7 @@ class Storage extends AbstractStorage
 
 	static public function deleteDirectory(string $path): void
 	{
-		foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
+		foreach (self::glob($path, '/*', GLOB_NOSORT) as $f) {
 			if (is_dir($f)) {
 				self::deleteDirectory($f);
 				@rmdir($f);
@@ -458,7 +464,7 @@ class Storage extends AbstractStorage
 		$last = 0;
 		$path = rtrim($path, '/');
 
-		foreach (glob($path . '/*', GLOB_NOSORT) as $f) {
+		foreach (self::glob($path, '/*', GLOB_NOSORT) as $f) {
 			if (is_dir($f)) {
 				$m = self::getDirectoryMTime($f);
 

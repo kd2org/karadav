@@ -63,6 +63,7 @@ abstract class NextCloud
 		self::PROP_NC_DDC,
 	];
 
+	protected string $prefix = '';
 	protected string $root_url;
 	protected Server $server;
 	protected AbstractStorage $storage;
@@ -326,6 +327,8 @@ abstract class NextCloud
 	{
 		$this->requireAuth();
 
+		$base_uri = null;
+
 		// Find out which route we are using and replace URI
 		foreach (self::ROUTES as $route => $method) {
 			if ($method != 'webdav') {
@@ -338,12 +341,18 @@ abstract class NextCloud
 			}
 		}
 
+		if (!$base_uri) {
+			throw new Exception('Invalid WebDAV URL', 404);
+		}
+
 		// Android app is using "/remote.php/dav/files/user//" as root
 		// so let's alias that as well
 		// ownCloud Android is requesting just /dav/files/
 		if (preg_match('!^' . preg_quote($base_uri, '!') . 'files/(?:[^/]+/+)?!', $uri, $match)) {
 			$base_uri = $match[0];
 		}
+
+		$this->server->prefix = $this->prefix;
 
 		$this->server->setBaseURI($base_uri);
 		$this->server->route($uri);
