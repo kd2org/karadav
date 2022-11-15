@@ -92,6 +92,11 @@ class Server
 	 */
 	public string $original_uri;
 
+	/**
+	 * Prefix, if you want to force some clients inside a path, eg. '/documents/'
+	 */
+	public string $prefix = '';
+
 	protected AbstractStorage $storage;
 
 	public function setStorage(AbstractStorage $storage)
@@ -107,6 +112,15 @@ class Server
 	public function setBaseURI(string $uri): void
 	{
 		$this->base_uri = rtrim($uri, '/') . '/';
+	}
+
+	protected function _prefix(string $uri): string
+	{
+		if (!$this->prefix) {
+			return $uri;
+		}
+
+		return rtrim(rtrim($this->prefix, '/') . '/' . ltrim($uri, '/'), '/');
 	}
 
 	protected function html_directory(string $uri, iterable $list): ?string
@@ -187,6 +201,8 @@ class Server
 			throw new Exception('We can only delete to infinity', 400);
 		}
 
+		$uri = $this->_prefix($uri);
+
 		$this->checkLock($uri);
 
 		$this->storage->delete($uri);
@@ -233,6 +249,8 @@ class Server
 			$hash = bin2hex(base64_decode($_SERVER['HTTP_CONTENT_MD5']));
 		}
 
+		$uri = $this->_prefix($uri);
+
 		$this->checkLock($uri);
 
 		if (!empty($_SERVER['HTTP_IF_MATCH'])) {
@@ -271,6 +289,8 @@ class Server
 
 	public function http_head(string $uri, array &$props = []): ?string
 	{
+		$uri = $this->_prefix($uri);
+
 		$requested_props = self::BASIC_PROPERTIES;
 		$requested_props[] = 'DAV::getetag';
 
@@ -324,6 +344,8 @@ class Server
 	{
 		$props = [];
 		$this->http_head($uri, $props);
+
+		$uri = $this->_prefix($uri);
 
 		$is_collection = !empty($props['DAV::resourcetype']) && $props['DAV::resourcetype'] == 'collection';
 		$out = '';
@@ -523,6 +545,8 @@ class Server
 
 	protected function _http_copymove(string $uri, string $method): ?string
 	{
+		$uri = $this->_prefix($uri);
+
 		$destination = $_SERVER['HTTP_DESTINATION'] ?? null;
 		$depth = $_SERVER['HTTP_DEPTH'] ?? 1;
 
@@ -581,6 +605,7 @@ class Server
 			throw new Exception('Unsupported body for MKCOL', 415);
 		}
 
+		$uri = $this->_prefix($uri);
 		$this->storage->mkcol($uri);
 
 		http_response_code(201);
@@ -656,6 +681,7 @@ class Server
 		// We only support depth of 0 and 1
 		$depth = isset($_SERVER['HTTP_DEPTH']) && empty($_SERVER['HTTP_DEPTH']) ? 0 : 1;
 
+		$uri = $this->_prefix($uri);
 		$body = file_get_contents('php://input');
 
 		if (false !== strpos($body, '<!DOCTYPE ')) {
@@ -756,7 +782,12 @@ class Server
 		foreach ($items as $uri => $item) {
 			$e = '<d:response>';
 
-			$path = '/' . str_replace('%2F', '/', rawurlencode(trim($this->base_uri . $uri, '/')));
+			if ($this->prefix) {
+				$uri = substr($uri, strlen($this->prefix));
+			}
+
+			$uri = trim(rtrim($this->base_uri, '/') . '/' . ltrim($uri, '/'), '/');
+			$path = '/' . str_replace('%2F', '/', rawurlencode($uri));
 
 			if (($item['DAV::resourcetype'] ?? null) == 'collection') {
 				$path .= '/';
@@ -929,6 +960,7 @@ class Server
 
 	public function http_proppatch(string $uri): ?string
 	{
+		$uri = $this->_prefix($uri);
 		$this->checkLock($uri);
 
 		$body = file_get_contents('php://input');
@@ -948,6 +980,7 @@ class Server
 
 	public function http_lock(string $uri): ?string
 	{
+		$uri = $this->_prefix($uri);
 		// We don't use this currently, but maybe later?
 		//$depth = !empty($this->_SERVER['HTTP_DEPTH']) ? 1 : 0;
 		//$timeout = isset($_SERVER['HTTP_TIMEOUT']) ? explode(',', $_SERVER['HTTP_TIMEOUT']) : [];
@@ -1039,6 +1072,7 @@ class Server
 
 	public function http_unlock(string $uri): ?string
 	{
+		$uri = $this->_prefix($uri);
 		$token = $this->getLockToken();
 
 		if (!$token) {
@@ -1169,6 +1203,7 @@ class Server
 		}
 
 		$uri = substr($uri, strlen($this->base_uri));
+		$uri = $this->_prefix($uri);
 		return $uri;
 	}
 
