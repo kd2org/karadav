@@ -1,3 +1,8 @@
+## 0.3.4
+
+* Security fix
+* Fix issues with directories containing brackets in their names
+
 ## 0.3.3
 
 * Get around more NextCloud desktop client bugs
