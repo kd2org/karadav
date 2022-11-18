@@ -272,7 +272,8 @@ class Storage extends AbstractStorage
 			throw new WebDAV_Exception('The data sent does not match the supplied MD5 hash', 400);
 		}
 		else {
-			rename($tmp_file, $target);
+			copy($tmp_file, $target);
+			@unlink($tmp_file);
 		}
 
 		if ($mtime) {
