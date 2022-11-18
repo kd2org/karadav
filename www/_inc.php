@@ -9,7 +9,13 @@ spl_autoload_register(function ($class) {
     require_once __DIR__ . '/../lib/' . $class . '.php';
 });
 
-ErrorManager::enable(ErrorManager::DEVELOPMENT);
+if ($RUN_MODE == 'production') {
+        ErrorManager::enable(ErrorManager::PRODUCTION);
+}
+else {
+        ErrorManager::enable(ErrorManager::DEVELOPMENT);
+}
+
 ErrorManager::setLogFile(__DIR__ . '/../error.log');
 
 $cfg_file = __DIR__ . '/../config.local.php';
