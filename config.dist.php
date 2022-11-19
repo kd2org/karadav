@@ -85,7 +85,7 @@ const LDAP_FIND_IS_ADMIN = null;
  * In production mode, errors are logged but not returned to callers.
  * In development mode, errors are logged as well as returned to callers.
  */
-const RUN_MODE = 'development'
+const RUN_MODE = 'development';
 
 /**
  * Randomly generated secret key
