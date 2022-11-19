@@ -9,7 +9,7 @@ spl_autoload_register(function ($class) {
     require_once __DIR__ . '/../lib/' . $class . '.php';
 });
 
-if ($RUN_MODE == 'production') {
+if (RUN_MODE == 'production') {
         ErrorManager::enable(ErrorManager::PRODUCTION);
 }
 else {
