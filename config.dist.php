@@ -79,6 +79,13 @@ const LDAP_FIND_USER = null;
 const LDAP_FIND_IS_ADMIN = null;
 //const LDAP_FIND_IS_ADMIN = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.admin.main,ou=permission,dc=yunohost,dc=org))';
 
+/**
+ * Run mode dictates whether errors are returned to callers.
+ *
+ * In production mode, errors are logged but not returned to callers.
+ * In development mode, errors are logged as well as returned to callers.
+ */
+const RUN_MODE = 'development';
 
 /**
  * Randomly generated secret key
