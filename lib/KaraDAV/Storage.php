@@ -99,7 +99,7 @@ class Storage extends AbstractStorage
 			case 'DAV::getcontenttype':
 				// ownCloud app crashes if mimetype is provided for a directory
 				// https://github.com/owncloud/android/issues/3768
-				return is_dir($target) ? null : mime_content_type($target);
+				return is_dir($target) ? null : @mime_content_type($target);
 			case 'DAV::resourcetype':
 				return is_dir($target) ? 'collection' : '';
 			case 'DAV::getlastmodified':
@@ -164,7 +164,17 @@ class Storage extends AbstractStorage
 				$username = $this->users->current()->login;
 				return NextCloud::getDirectID($username, $uri);
 			case NextCloud::PROP_OC_PERMISSIONS:
-				return implode('', [NextCloud::PERM_READ, NextCloud::PERM_WRITE, NextCloud::PERM_CREATE, NextCloud::PERM_DELETE, NextCloud::PERM_RENAME_MOVE]);
+				$permissions = [];
+
+				if (is_writeable($target)) {
+					$permissions = [NextCloud::PERM_WRITE, NextCloud::PERM_CREATE, NextCloud::PERM_DELETE, NextCloud::PERM_RENAME_MOVE];
+				}
+
+				if (is_readable($target)) {
+					$permissions[] = NextCloud::PERM_READ;
+				}
+
+				return implode('', $permissions);
 			case 'DAV::quota-available-bytes':
 				return null;
 				return -3;
