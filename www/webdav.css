@@ -41,6 +41,10 @@ th, td {
 	border: 2px solid var(--g2-color);
 }
 
+th {
+	word-break: break-all;
+}
+
 td.thumb {
 	width: 5%;
 }
