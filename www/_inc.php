@@ -9,7 +9,6 @@ spl_autoload_register(function ($class) {
     require_once __DIR__ . '/../lib/' . $class . '.php';
 });
 
-ErrorManager::enable(ErrorManager::DEVELOPMENT);
 ErrorManager::setLogFile(__DIR__ . '/../error.log');
 
 $cfg_file = __DIR__ . '/../config.local.php';
@@ -19,6 +18,13 @@ if (!file_exists($cfg_file)) {
 }
 
 require $cfg_file;
+
+if (RUN_MODE == 'production') {
+        ErrorManager::enable(ErrorManager::PRODUCTION);
+}
+else {
+        ErrorManager::enable(ErrorManager::DEVELOPMENT);
+}
 
 // Create random secret key
 if (!defined('KaraDAV\SECRET_KEY')) {
