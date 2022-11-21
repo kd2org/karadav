@@ -1,3 +1,8 @@
+## 0.3.5
+
+* Add ERRORS_SHOW configuration constant to allow hiding PHP errors details
+* Expose all ErrorManager options: add ERRORS_LOG, ERRORS_EMAIL, ERRORS_REPORT_URL constants to configure the path to the error log, an email address that should receive the errors, and a errbit/airbrake compatible API endpoint to sent the error reports to.
+
 ## 0.3.4
 
 * Security fix

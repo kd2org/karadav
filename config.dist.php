@@ -80,12 +80,44 @@ const LDAP_FIND_IS_ADMIN = null;
 //const LDAP_FIND_IS_ADMIN = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.admin.main,ou=permission,dc=yunohost,dc=org))';
 
 /**
- * Run mode dictates whether errors are returned to callers.
+ * Show PHP errors details to users?
+ * If set to TRUE, full error messages and source code will be displayed to visitors.
+ * If set to FALSE, just a generic "an error happened" message will be displayed.
  *
- * In production mode, errors are logged but not returned to callers.
- * In development mode, errors are logged as well as returned to callers.
+ * It is recommended to set this to FALSE in production.
+ * Default: TRUE
+ *
+ * @var bool
  */
-const RUN_MODE = 'development';
+const ERRORS_SHOW = true;
+
+/**
+ * Send PHP errors to this email address
+ * The email will contain
+ * Default: NULL (errors are not sent by email)
+ *
+ * @var string|null
+ */
+const ERRORS_EMAIL = null;
+
+/**
+ * Log PHP errors in this file.
+ * Default: ROOT/error.log
+ *
+ * @var string
+ */
+const ERRORS_LOG = __DIR__ . '/error.log';
+
+/**
+ * Send errors reports to this errbit/airbrake compatible API endpoint
+ * Default: NULL
+ * Example: 'https://user:password@
+ *
+ * @var string|null
+ * @see https://errbit.com/images/error_summary.png
+ * @see https://airbrake.io/docs/api/#create-notice-v3
+ */
+const ERRORS_REPORT_URL = null;
 
 /**
  * Randomly generated secret key
