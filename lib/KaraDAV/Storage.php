@@ -73,6 +73,10 @@ class Storage extends AbstractStorage
 			return null;
 		}
 
+		if (!is_readable($path)) {
+			throw new WebDAV_Exception('You don\'t have the right to read this file', 403);
+		}
+
 		// Recommended: Use X-SendFile to make things more efficient
 		// see https://tn123.org/mod_xsendfile/
 		// or https://www.nginx.com/resources/wiki/start/topics/examples/xsendfile/
@@ -251,6 +255,11 @@ class Storage extends AbstractStorage
 		}
 
 		$new = !file_exists($target);
+
+		if ((!$new && !is_writeable($target)) || ($new && !is_writeable($parent))) {
+			throw new WebDAV_Exception('You don\'t have the rights to write to this file', 403);
+		}
+
 		$delete = false;
 		$size = 0;
 		$quota = $this->users->quota($this->users->current());
@@ -347,6 +356,10 @@ class Storage extends AbstractStorage
 		if ($method == 'copy' && is_dir($source)) {
 			@mkdir($target, 0770, true);
 
+			if (!is_dir($target)) {
+				throw new WebDAV_Exception('Target directory could not be created', 409);
+			}
+
 			foreach ($iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source), \RecursiveIteratorIterator::SELF_FIRST) as $item)
 			{
 				if ($item->isDir()) {
@@ -392,9 +405,12 @@ class Storage extends AbstractStorage
 			throw new WebDAV_Exception('The parent directory does not exist', 409);
 		}
 
+		if (!is_writeable($parent)) {
+			throw new WebDAV_Exception('You don\'t have the right to create a directory here', 403);
+		}
+
 		mkdir($target, 0770);
 	}
-
 
 	public function getResourceProperties(string $uri): Properties
 	{
