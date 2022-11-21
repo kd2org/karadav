@@ -19,11 +19,27 @@ if (!file_exists($cfg_file)) {
 
 require $cfg_file;
 
-if (RUN_MODE == 'production') {
-        ErrorManager::enable(ErrorManager::PRODUCTION);
+if (!defined('KaraDAV\ERRORS_SHOW')) {
+	define('KaraDAV\ERRORS_SHOW', true);
+}
+
+if (!ERRORS_SHOW) {
+	ErrorManager::enable(ErrorManager::PRODUCTION);
 }
 else {
-        ErrorManager::enable(ErrorManager::DEVELOPMENT);
+	ErrorManager::enable(ErrorManager::DEVELOPMENT);
+}
+
+if (defined('KaraDAV\ERRORS_EMAIL') && ERRORS_EMAIL) {
+	ErrorManager::setEmail(ERRORS_EMAIL);
+}
+
+if (defined('KaraDAV\ERRORS_LOG') && ERRORS_LOG) {
+	ErrorManager::setLogFile(ERRORS_LOG);
+}
+
+if (defined('KaraDAV\ERRORS_REPORT_URL') && ERRORS_REPORT_URL) {
+	ErrorManager::setRemoteReporting(ERRORS_REPORT_URL, true);
 }
 
 // Create random secret key
