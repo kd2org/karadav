@@ -515,7 +515,7 @@ class Storage extends AbstractStorage
 		$ttl = time()+(3600*10);
 
 		// Use the user password as a server secret
-		$check = WebDAV::hash(compact('ttl', 'uri'), $user->password);
+		$check = WebDAV::hmac(compact('ttl', 'uri'), $user->password);
 		$data = sprintf('%s_%s_%s', $check, $ttl, $user->login);
 
 		return [
@@ -543,7 +543,7 @@ class Storage extends AbstractStorage
 
 		$user = $this->users->current();
 
-		$check = WebDAV::hash(compact('ttl', 'uri'), $user->password);
+		$check = WebDAV::hmac(compact('ttl', 'uri'), $user->password);
 
 		if (!hash_equals($check, $hash)) {
 			return null;
