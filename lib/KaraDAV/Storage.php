@@ -264,7 +264,17 @@ class Storage extends AbstractStorage
 		$size = 0;
 		$quota = $this->users->quota($this->users->current());
 
-		$tmp_file = '.tmp.' . sha1($target);
+		$tmp_dir = sprintf(STORAGE_PATH, '_tmp');
+
+		if (!file_exists($tmp_dir)) {
+			@mkdir($tmp_dir, 0777, true);
+		}
+
+		if (!is_writeable($tmp_dir)) {
+			throw new \RuntimeException('Cannot write to temporary storage path: ' . $tmp_dir);
+		}
+
+		$tmp_file = $tmp_dir . sha1($target);
 		$out = fopen($tmp_file, 'w');
 
 		while (!feof($pointer)) {
