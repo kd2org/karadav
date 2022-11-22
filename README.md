@@ -19,6 +19,7 @@ Its original purpose was to serve as a demo and test for the KD2 WebDAV library,
 	* MarkDown live preview
 	* Preview of images, text, MarkDown and PDF
 	* Editing of Office files using Collabora or OnlyOffice
+	* Download all files from a directory
 * WebDAV class 1, 2, 3 support, support for Etags
 * No database server is required (SQLite3 is used)
 * Multiple user accounts

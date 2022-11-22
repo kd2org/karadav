@@ -789,7 +789,7 @@ class Server
 			$uri = trim(rtrim($this->base_uri, '/') . '/' . ltrim($uri, '/'), '/');
 			$path = '/' . str_replace('%2F', '/', rawurlencode($uri));
 
-			if (($item['DAV::resourcetype'] ?? null) == 'collection') {
+			if (($item['DAV::resourcetype'] ?? null) == 'collection' && $path != '/') {
 				$path .= '/';
 			}
 

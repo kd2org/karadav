@@ -38,6 +38,7 @@ const WebDAVNavigator = (url, options) => {
 				<option value="date">${_('Sort by date')}</option>
 				<option value="size">${_('Sort by size')}</option>
 			</select>
+			<input type="button" class="download_all" value="${_('Download all files')}" />
 		</div>
 		<table>%table%</table>`;
 
@@ -47,7 +48,7 @@ const WebDAVNavigator = (url, options) => {
 			<input class="uploadfile" type="button" value="${_('Upload file')}" />`;
 
 	const dir_row_tpl = `<tr data-permissions="%permissions%"><td class="thumb"><span class="icon dir"><b>%icon%</b></span></td><th colspan="2"><a href="%uri%">%name%</a></th><td>%modified%</td><td class="buttons"><div></div></td></tr>`;
-	const file_row_tpl = `<tr data-permissions="%permissions%" data-mime="%mime%"><td class="thumb"><span class="icon %icon%"><b>%icon%</b></span></td><th><a href="%uri%">%name%</a></th><td class="size">%size%</td><td>%modified%</td><td class="buttons"><div><a href="%uri%" download class="btn">${_('Download')}</a></div></td></tr>`;
+	const file_row_tpl = `<tr data-permissions="%permissions%" data-mime="%mime%" data-size="%size%"><td class="thumb"><span class="icon %icon%"><b>%icon%</b></span></td><th><a href="%uri%">%name%</a></th><td class="size">%size_bytes%</td><td>%modified%</td><td class="buttons"><div><a href="%uri%" download class="btn">${_('Download')}</a></div></td></tr>`;
 
 	const propfind_tpl = `<?xml version="1.0" encoding="UTF-8"?>
 		<D:propfind xmlns:D="DAV:" xmlns:oc="http://owncloud.org/ns">
@@ -97,17 +98,6 @@ const WebDAVNavigator = (url, options) => {
 		return false;
 	};
 
-	const get_url = async (url) => {
-		if (temp_object_url) {
-			window.URL.revokeObjectURL(temp_object_url);
-		}
-
-		return req('GET', url).then(r => r.blob()).then(blob => {
-			temp_object_url = window.URL.createObjectURL(blob);
-			return temp_object_url;
-		});
-	}
-
 	const req = (method, url, body, headers) => {
 		if (!headers) {
 			headers = {};
@@ -118,6 +108,52 @@ const WebDAVNavigator = (url, options) => {
 		}
 
 		return fetch(url, {method, body, headers});
+	};
+
+	const xhr = (method, url, progress_callback) => {
+		var xhr = new XMLHttpRequest();
+		current_xhr = xhr;
+		xhr.responseType = 'blob';
+		var p = new Promise((resolve, reject) => {
+			xhr.open(method, url);
+			xhr.onload = function () {
+				if (this.status >= 200 && this.status < 300) {
+					resolve(xhr.response);
+				} else {
+					reject({
+						status: this.status,
+						statusText: xhr.statusText
+					});
+				}
+			};
+			xhr.onerror = function () {
+				reject({
+					status: this.status,
+					statusText: xhr.statusText
+				});
+			};
+			xhr.onprogress = progress_callback;
+			xhr.send();
+		});
+		return p;
+	};
+
+	const get_url = async (url) => {
+		var progress = (e) => {
+			var p = $('progress');
+			if (!p || e.loaded <= 0) return;
+			p.value = e.loaded;
+			$('.progress_bytes').innerHTML = formatBytes(e.loaded);
+		};
+
+		if (temp_object_url) {
+			window.URL.revokeObjectURL(temp_object_url);
+		}
+
+		return await xhr('GET', url, progress).then(blob => {
+			temp_object_url = window.URL.createObjectURL(blob);
+			return temp_object_url;
+		});
 	};
 
 	const wopi_init = async () => {
@@ -221,6 +257,17 @@ const WebDAVNavigator = (url, options) => {
 	};
 
 	const closeDialog = (e) => {
+		if (!$('body').classList.contains('dialog')) {
+			return;
+		}
+
+		if (current_xhr) {
+			current_xhr.abort();
+			current_xhr = null;
+		}
+
+		window.onbeforeunload = null;
+
 		$('body').classList.remove('dialog');
 		if (!$('dialog')) return;
 		$('dialog').remove();
@@ -228,16 +275,43 @@ const WebDAVNavigator = (url, options) => {
 		evt = null;
 	};
 
-	const download = async (name, url) => {
-		var url = await get_url(url);
+	const download = async (name, size, url) => {
+		window.onbeforeunload = () => {
+			if (current_xhr) {
+				current_xhr.abort();
+			}
+
+			return true;
+		};
+
+		openDialog(`<p class="spinner"><span></span></p>
+			<h3>${html(name)}</h3>
+			<progress max="${size}"></progress>
+			<p><span class="progress_bytes"></span> / ${formatBytes(size)}</p>`, false);
+
+		await get_url(url);
 		const a = document.createElement('a');
 		a.style.display = 'none';
-		a.href = url;
+		a.href = temp_object_url;
 		a.download = name;
 		document.body.appendChild(a);
 		a.click();
-		window.URL.revokeObjectURL(url);
+		window.URL.revokeObjectURL(temp_object_url);
 		a.remove();
+
+		closeDialog();
+		window.onbeforeunload = null;
+	};
+
+	const download_all = async () => {
+		for (var i = 0; i < items.length; i++) {
+			var item = items[i];
+			if (item.is_dir) {
+				continue;
+			}
+
+			await download(item.name, item.size, item.uri)
+		}
 	};
 
 	const preview = (type, url) => {
@@ -354,7 +428,7 @@ const WebDAVNavigator = (url, options) => {
 	const buildListing = (uri, xml) => {
 		uri = normalizeURL(uri);
 
-		var items = [[], []];
+		items = [[], []];
 		var title = null;
 		var root_permissions = null;
 
@@ -442,7 +516,7 @@ const WebDAVNavigator = (url, options) => {
 			}
 
 			var row = item.is_dir ? dir_row_tpl : file_row_tpl;
-			item.size = item.size !== null ? formatBytes(item.size).replace(/ /g, '&nbsp;') : null;
+			item.size_bytes = item.size !== null ? formatBytes(item.size).replace(/ /g, '&nbsp;') : null;
 			item.icon = item.is_dir ? '&#x1F4C1;' : (item.uri.indexOf('.') > 0 ? item.uri.replace(/^.*\.(\w+)$/, '$1').toUpperCase() : '');
 			item.modified = item.modified !== null ? formatDate(item.modified) : null;
 			item.name = html(item.name);
@@ -459,6 +533,13 @@ const WebDAVNavigator = (url, options) => {
 			window.localStorage.setItem('sort_order', sort_order);
 			reloadListing();
 		};
+
+		if (!items.length) {
+			$('.download_all').disabled = true;
+		}
+		else {
+			$('.download_all').onclick = download_all;
+		}
 
 		if (!root_permissions || root_permissions.indexOf('CK') != -1) {
 			$('.upload').insertAdjacentHTML('afterbegin', create_buttons);
@@ -518,6 +599,7 @@ const WebDAVNavigator = (url, options) => {
 			var mime = !dir ? tr.getAttribute('data-mime') : 'dir';
 			var buttons = $$('td.buttons div');
 			var permissions = tr.getAttribute('data-permissions');
+			var size = tr.getAttribute('data-size');
 
 			if (permissions == 'null') {
 				permissions = null;
@@ -541,7 +623,7 @@ const WebDAVNavigator = (url, options) => {
 			// This is to get around CORS when not on the same domain
 			if (user && password && (a = tr.querySelector('a[download]'))) {
 				a.onclick = () => {
-					download(file_name, url);
+					download(file_name, size, url);
 					return false;
 				};
 			}
@@ -615,7 +697,7 @@ const WebDAVNavigator = (url, options) => {
 				$$('a').onclick = () => { wopi_open(file_url, view_url); return false; };
 			}
 			else if (user && password && !dir) {
-				$$('a').onclick = () => { download(file_name, file_url); return false; };
+				$$('a').onclick = () => { download(file_name, size, file_url); return false; };
 			}
 			else {
 				$$('a').download = file_name;
@@ -670,6 +752,8 @@ const WebDAVNavigator = (url, options) => {
 		});
 	};
 
+	var items = [[], []];
+	var current_xhr = null;
 	var current_url = url;
 	var base_url = url;
 	const user = options.user || null;
