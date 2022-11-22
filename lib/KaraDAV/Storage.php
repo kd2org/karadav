@@ -264,7 +264,7 @@ class Storage extends AbstractStorage
 		$size = 0;
 		$quota = $this->users->quota($this->users->current());
 
-		$tmp_file = '.tmp.' . sha1($target);
+		$tmp_file = '/tmp/.tmp.' . sha1($target);
 		$out = fopen($tmp_file, 'w');
 
 		while (!feof($pointer)) {
