@@ -309,11 +309,12 @@ input[name=rename], input[name=paste_name] {
 	width: 0;
 	height: 0;
 	border: none;
-	display: flex;
+	align-items: center;
+	justify-content: center;
 	opacity: 0;
 }
 
-.loading .bg::after {
+.loading .bg::after, .spinner span::after {
 	display: block;
 	content: " ";
 	width: 70px;
@@ -336,6 +337,17 @@ input[name=rename], input[name=paste_name] {
 	position: absolute;
 }
 
+.spinner {
+	align-items: center;
+	justify-content: center;
+	display: flex;
+}
+
+.spinner span::after {
+	width: 30px;
+	height: 30px;
+}
+
 .loading .bg, .dragging .bg, .dialog .bg {
 	backdrop-filter: blur(5px);
 	background: rgba(0, 0, 0, 0.5);
@@ -346,6 +358,11 @@ input[name=rename], input[name=paste_name] {
 
 dialog {
 	transition: all .3s;
+}
+
+progress {
+	height: 2em;
+	width: 90%;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
