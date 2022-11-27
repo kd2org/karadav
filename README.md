@@ -87,6 +87,7 @@ Here is a list of clients tested with KaraDAV:
 * Dolphin (KDE)
 * Thunar (GTK/GNOME)
 * [rclone](https://rclone.org/webdav/) on Linux
+* [csync](https://csync.org/) on Linux. This is a library offering two-way sync, it is used by the ownCloud client, but it has a command-line client. Just replace `http` with `owncloud`, and `https` with `ownclouds` in URL, eg. `csync /home/bohwaz/sync ownclouds://karadav.example/files/bohwaz/`
 
 ### Android
 
