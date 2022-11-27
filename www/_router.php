@@ -4,7 +4,7 @@ namespace KaraDAV;
 
 require_once __DIR__ . '/_inc.php';
 
-$uri = strtok($_SERVER['REQUEST_URI'], '?');
+$uri = parse_url($_SERVER['REQUEST_URI'], \PHP_URL_PATH);
 
 $s = new Server;
 
