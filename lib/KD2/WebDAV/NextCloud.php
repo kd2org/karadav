@@ -6,28 +6,29 @@ abstract class NextCloud
 {
 	/**
 	 * File permissions for NextCloud clients
-	 * from lib/private/Files/Storage/DAV.php
-	 * and apps/dav/lib/Connector/Sabre/Node.php
-	 * in NextCloud
+	 * https://doc.owncloud.com/desktop/next/appendices/architecture.html#server-side-permissions
 	 *
 	 * R = Shareable
 	 * S = Shared
 	 * M = Mounted
 	 * D = Delete
 	 * G = Readable
-	 * NV = Renameable/moveable
-	 * Files only:
-	 * W = Write (Update)
-	 * CK = Create/Update
+	 * N = Can rename
+	 * V = Can move
+	 * W = Can Write (Update)
+	 * C = Can create file in folder
+	 * K = Can create folder (mkdir)
 	 */
 	const PERM_READ = 'G';
 	const PERM_SHARE = 'R';
 	const PERM_SHARED = 'S';
 	const PERM_MOUNTED = 'M';
 	const PERM_DELETE = 'D';
-	const PERM_RENAME_MOVE = 'NV';
+	const PERM_RENAME = 'N';
+	const PERM_MOVE = 'V';
 	const PERM_WRITE = 'W';
-	const PERM_CREATE = 'CK';
+	const PERM_CREATE = 'C';
+	const PERM_MKDIR = 'K';
 
 	const NC_NAMESPACE = 'http://nextcloud.org/ns';
 	const OC_NAMESPACE = 'http://owncloud.org/ns';
@@ -208,8 +209,9 @@ abstract class NextCloud
 		'ocs/v1.php/cloud/user' => 'user',
 		'ocs/v1.php/config' => 'config',
 		'ocs/v2.php/apps/files_sharing/api/v1/shares' => 'shares',
-		'ocs/v2.php/apps/user_status/api/v1/predefined_statuses' => 'empty',
+		'ocs/v2.php/apps/user_status' => 'empty',
 		'ocs/v2.php/core/navigation/apps' => 'empty',
+		'index.php/avatar' => 'avatar',
 		'ocs/v2.php/apps/dav/api/v1/direct' => 'direct_url',
 		'remote.php/direct/' => 'direct',
 	];
@@ -505,6 +507,11 @@ abstract class NextCloud
 	protected function nc_empty(): array
 	{
 		return $this->nc_ocs([]);
+	}
+
+	protected function nc_avatar(): ?array
+	{
+		throw new Exception('Not implemented', 404);
 	}
 
 	protected function nc_config(): array

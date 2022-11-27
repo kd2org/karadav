@@ -171,7 +171,7 @@ class Storage extends AbstractStorage
 				$permissions = [];
 
 				if (is_writeable($target)) {
-					$permissions = [NextCloud::PERM_WRITE, NextCloud::PERM_CREATE, NextCloud::PERM_DELETE, NextCloud::PERM_RENAME_MOVE];
+					$permissions = [NextCloud::PERM_WRITE, NextCloud::PERM_CREATE, NextCloud::PERM_DELETE, NextCloud::PERM_RENAME, NextCloud::PERM_MOVE, NextCloud::PERM_MKDIR];
 				}
 
 				if (is_readable($target)) {
