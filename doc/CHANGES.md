@@ -1,3 +1,7 @@
+## 0.3.6
+
+* Fix division by zero error when quota is zero
+
 ## 0.3.5
 
 * Add ERRORS_SHOW configuration constant to allow hiding PHP errors details

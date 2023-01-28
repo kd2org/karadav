@@ -27,7 +27,7 @@ $server = new Server;
 $free = format_bytes($quota->free);
 $used = format_bytes($quota->used);
 $total = format_bytes($quota->total);
-$percent = floor(($quota->used / $quota->total)*100) . '%';
+$percent = $quota->total ? floor(($quota->used / $quota->total)*100) . '%' : '100%';
 $www_url = WWW_URL;
 $username = htmlspecialchars($user->login);
 
