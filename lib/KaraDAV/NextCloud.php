@@ -134,6 +134,14 @@ class NextCloud extends WebDAV_NextCloud
 		fclose($pointer);
 	}
 
+	public function listChunks(string $login, string $name): array
+	{
+		$path = $this->temporary_chunks_path . '/' . $name;
+		$list = glob($path . '/*');
+		$list = array_map(fn($a) => str_replace($path . '/', '', $a), $list);
+		return $list;
+	}
+
 	public function deleteChunks(string $login, string $name): void
 	{
 		$path = $this->temporary_chunks_path . '/' . $login . '/' . $name;
