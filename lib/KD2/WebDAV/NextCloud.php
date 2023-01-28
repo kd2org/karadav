@@ -175,6 +175,47 @@ abstract class NextCloud
 
 	abstract public function assembleChunks(string $login, string $name, string $target, ?int $mtime): array;
 
+	abstract public function listChunks(string $login, string $name): array;
+
+	/**
+	 * Thumbnail API
+	 * @param string $uri URI path to the file we want a thumbnail for
+	 * @param int $width
+	 * @param int $height
+	 * @param bool $crop TRUE if a cropped image is desired
+	 * @param bool $preview TRUE if the thumbnail is for preview (in NextCloud Android, see below)
+	 */
+	public function serveThumbnail(string $uri, int $width, int $height, bool $crop = false, bool $preview = false): void
+	{
+		if (!preg_match('/\.(?:jpe?g|gif|png|webp)$/', $uri)) {
+			http_response_code(404);
+			return;
+		}
+
+		// We don't support thumbnails, but you are free to generate cropped thumbnails and send them to the HTTP client
+		if (!$preview) {
+			http_response_code(404);
+			return;
+		}
+		// On Android, the app is annoying and asks to download the image
+		// every time ("no resized image available") if no preview is available.
+		// So to avoid that you can just redirect to the file if it's not too large
+		// But you are free to extend this method and resize the image on the fly instead.
+		else {
+			$size = $this->server->getStorage()->properties($uri, ['DAV::getcontentlength'], 0);
+			$size = count($size) ? current($size) : null;
+
+			if ($size > 1024*1024 || !$size) {
+				http_response_code(404);
+				return;
+			}
+
+			$url = '/remote.php/dav/files/' . $uri;
+			$this->server->log('=> Preview: redirect to %s', $url);
+			header('Location: ' . $url);
+		}
+	}
+
 	// END OF ABSTRACT METHODS
 
 	/**
@@ -186,6 +227,9 @@ abstract class NextCloud
 		// https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html
 		'remote.php/webdav/uploads/' => 'chunked',
 		'remote.php/dav/uploads/' => 'chunked',
+
+		// There's just 3 or 4 different endpoints for avatars, this is ridiculous
+		'remote.php/dav/avatars/' => 'avatar',
 
 		// Main routes
 		'remote.php/webdav/' => 'webdav', // desktop client
@@ -214,9 +258,19 @@ abstract class NextCloud
 		'index.php/avatar' => 'avatar',
 		'ocs/v2.php/apps/dav/api/v1/direct' => 'direct_url',
 		'remote.php/direct/' => 'direct',
+		'avatars/' => 'avatar',
 	];
 
 	const AUTH_REDIRECT_URL = 'nc://login/server:%s&user:%s&password:%s';
+
+	// *Every* different NextCloud/ownCloud app uses a different root path
+	// this is ridiculous.
+	// NC Desktop: /remote.php/dav/files/user// (note the double slash at the end)
+	// NC iOS: /remote.php/dav/files/user (note the missing end slash)
+	// ownCloud Android: /remote.php/dav/files/ (note the missing user part)
+	// -> only at first, then it queries the correct path, WTF
+	// See also https://github.com/nextcloud/server/issues/25867
+	const WEBDAV_BASE_REGEXP = '~^.*remote\.php/(?:webdav/|dav/files/(?:(?:(?!/).)+(?:/+|$)|/*$))~';
 
 	public function setRootURL(string $url)
 	{
@@ -241,6 +295,8 @@ abstract class NextCloud
 			$uri = $_SERVER['REQUEST_URI'] ?? '/';
 		}
 
+		$uri = parse_url($uri, PHP_URL_PATH);
+
 		$uri = ltrim($uri, '/');
 		$uri = rawurldecode($uri);
 
@@ -251,8 +307,6 @@ abstract class NextCloud
 		}
 
 		$route = current($route);
-
-		header('Access-Control-Allow-Origin: *', true);
 
 		$method = $_SERVER['REQUEST_METHOD'] ?? null;
 		$this->server->log('NC <= %s %s => routed to: %s', $method, $uri, $route);
@@ -293,6 +347,8 @@ abstract class NextCloud
 			$this->server->log("NC => Body:\n%s", $json);
 		}
 
+		$this->server->log('NC Sent response: %d', http_response_code());
+
 		return true;
 	}
 
@@ -329,6 +385,17 @@ abstract class NextCloud
 	{
 		$this->requireAuth();
 
+		$method = $_SERVER['REQUEST_METHOD'] ?? '';
+
+		// ownCloud-Android is using a different preview API
+		// remote.php/dav/files/user/name.jpg?x=224&y=224&c=&preview=1
+		if (!empty($_GET['preview'])) {
+			$x = (int) $_GET['x'] ?? 0;
+			$y = (int) $_GET['y'] ?? 0;
+			$this->serveThumbnail($uri, $x, $y, $x == $y);
+			return;
+		}
+
 		$base_uri = null;
 
 		// Find out which route we are using and replace URI
@@ -347,11 +414,10 @@ abstract class NextCloud
 			throw new Exception('Invalid WebDAV URL', 404);
 		}
 
-		// Android app is using "/remote.php/dav/files/user//" as root
-		// so let's alias that as well
-		// ownCloud Android is requesting just /dav/files/
-		if (preg_match('!^' . preg_quote($base_uri, '!') . 'files/(?:[^/]+/+)?!', $uri, $match)) {
-			$base_uri = $match[0];
+		$ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+
+		if (preg_match(self::WEBDAV_BASE_REGEXP, $uri, $match)) {
+			$base_uri = rtrim($match[0], '/') . '/';
 		}
 
 		$this->server->prefix = $this->prefix;
@@ -362,14 +428,23 @@ abstract class NextCloud
 
 	public function nc_status(): array
 	{
+		if (stristr($_SERVER['HTTP_USER_AGENT'], 'owncloud')) {
+			$name = 'ownCloud';
+			$version = '10.11.0';
+		}
+		else {
+			$name = 'NextCloud';
+			$version = '24.0.4';
+		}
+
 		return [
 			'installed'       => true,
 			'maintenance'     => false,
 			'needsDbUpgrade'  => false,
-			'version'         => '24.0.4.1',
-			'versionstring'   => '24.0.4',
+			'version'         => $version,
+			'versionstring'   => $version,
 			'edition'         => '',
-			'productname'     => 'NextCloud',
+			'productname'     => $name,
 			'extendedSupport' => false,
 		];
 	}
@@ -483,10 +558,10 @@ abstract class NextCloud
 		$user = $this->getUserName() ?? 'null';
 
 		return $this->nc_ocs([
-			'id' => $user,
+			'id' => sha1($user),
 			'enabled' => true,
 			'email' => null,
-			'storageLocation' => '/secret/whoknows/' . $user,
+			'storageLocation' => '/secret/whoknows/' . sha1($user),
 			'role' => '',
 			'display-name' => $user,
 			'quota' => [
@@ -509,7 +584,7 @@ abstract class NextCloud
 		return $this->nc_ocs([]);
 	}
 
-	protected function nc_avatar(): ?array
+	protected function nc_avatar(): void
 	{
 		throw new Exception('Not implemented', 404);
 	}
@@ -647,29 +722,10 @@ abstract class NextCloud
 		$height = $_GET['y'] ?? null;
 		$crop = !($_GET['a'] ?? null);
 
-		if (!preg_match('/\.(?:jpe?g|gif|png|webp)$/', $uri)) {
-			http_response_code(404);
-			return;
-		}
-
-		// On Android, the app is annoying and asks to download the image
-		// every time ("no resized image available").
-		// So to avoid that we will just redirect to the file if it is not too big.
-		// But you are free to extend this method and resize the image on the fly
-		$url = str_replace('%2F', '/', rawurlencode(rawurldecode($_GET['file'] ?? '')));
+		$url = str_replace('%2F', '/', rawurldecode($_GET['file'] ?? ''));
 		$url = ltrim($url, '/');
 
-		$size = current($this->storage->properties($url, ['DAV::getcontentlenth'], 0));
-
-		// 1 MB is a large image
-		if ($size > 1024*1024) {
-			http_response_code(404);
-			return;
-		}
-
-		$url = '/remote.php/dav/files/' . $url;
-		$this->server->log('=> Preview: redirect to %s', $url);
-		header('Location: ' . $url);
+		$this->serveThumbnail($url, (int) $width, (int) $height, $crop, true);
 	}
 
 	protected function nc_thumbnail(string $uri): void
@@ -680,8 +736,7 @@ abstract class NextCloud
 
 		list($width, $height, $uri) = array_pad(explode('/', $uri, 3), 3, null);
 
-		// We don't support this feature, but you are free to generate cropped thumbnails here
-		http_response_code(404);
+		$this->serveThumbnail($uri, (int)$width, (int)$height, $width == $height);
 	}
 
 	/**
@@ -736,7 +791,7 @@ abstract class NextCloud
 		}
 		elseif ($method == 'MOVE') {
 			$dest = $_SERVER['HTTP_DESTINATION'];
-			$dest = preg_replace('!^.*/remote.php/(?:web)?dav/(?:files/)?[^/]*/!', '', $dest);
+			$dest = preg_replace(self::WEBDAV_BASE_REGEXP, '', $dest);
 			$dest = trim(rawurldecode($dest), '/');
 
 			if (false !== strpos($dest, '..') || false !== strpos($dest, '//')) {
@@ -757,6 +812,8 @@ abstract class NextCloud
 				header(sprintf('OC-ETag: "%s"', $return['etag']));
 			}
 
+			$this->server->log("=> Chunks assembled to: %s", $dest);
+
 			if (!empty($return['created'])) {
 				http_response_code(201);
 			}
@@ -766,6 +823,26 @@ abstract class NextCloud
 		}
 		elseif ($method == 'DELETE' && !$part) {
 			$this->deleteChunks($login, $dir);
+			$this->server->log("=> Deleted chunks");
+		}
+		elseif ($method == 'PROPFIND') {
+			header('HTTP/1.1 207 Multi-Status', true);
+			$out = '<?xml version="1.0" encoding="utf-8"?>' . PHP_EOL;
+			$out .= '<d:multistatus xmlns:d="DAV:">' . PHP_EOL;
+
+			foreach ($this->listChunks($login, $dir) as $chunk) {
+				$out .= '<d:response>' . PHP_EOL;
+				$chunk = '/' . $uri . '/' . $chunk;
+				$out .= sprintf('<d:href>%s</d:href>', htmlspecialchars($chunk, ENT_XML1)) . PHP_EOL;
+				$out .= '<d:propstat><d:prop><d:getcontenttype>application/octet-stream</d:getcontenttype><d:resoucetype/></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>' . PHP_EOL;
+				$out .= '</d:response>' . PHP_EOL;
+			}
+
+			$out .= '</d:multistatus>';
+
+			echo $out;
+
+			$this->server->log("=> Body:\n%s", $out);
 		}
 		else {
 			throw new Exception('Invalid method for chunked upload', 400);

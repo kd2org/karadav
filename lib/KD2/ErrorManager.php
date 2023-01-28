@@ -247,11 +247,8 @@ class ErrorManager
 			}
 		}
 
-		$report = self::makeReport($e);
-		$log = sprintf('=========== Error ref. %s ===========', $report->context->id)
-			. PHP_EOL . PHP_EOL . (string) $e . PHP_EOL . PHP_EOL
-			. '<errorReport>' . PHP_EOL . json_encode($report, \JSON_PRETTY_PRINT)
-			. PHP_EOL . '</errorReport>' . PHP_EOL;
+		extract(self::buildExceptionReport($e, false));
+		unset($e);
 
 		// Log exception to file
 		if (ini_get('log_errors'))
@@ -259,19 +256,10 @@ class ErrorManager
 			error_log($log);
 		}
 
-		$exception_title = $e->getMessage();
-		unset($e);
-
 		// Disable any output if it was buffering
 		if (ob_get_level())
 		{
 			ob_end_clean();
-		}
-
-		$html_report = null;
-
-		if (self::$enabled & self::DEVELOPMENT || self::$email_errors) {
-			$html_report = self::htmlReport($report);
 		}
 
 		$is_curl = 0 === strpos($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl/');
@@ -348,7 +336,7 @@ class ErrorManager
 
 		// Log exception to email
 		if (self::$email_errors) {
-			self::sendEmail($exception_title, $report, $log, $html_report);
+			self::sendEmail($title, $report, $log, $html_report);
 		}
 
 		// Send report to URL
@@ -359,6 +347,21 @@ class ErrorManager
 		if ($exit)
 		{
 			exit(1);
+		}
+	}
+
+	static public function reportExceptionSilent(\Throwable $e): void
+	{
+		extract(self::buildExceptionReport($e));
+
+		// Log exception to file
+		if (ini_get('log_errors'))
+		{
+			error_log($log);
+		}
+
+		if (self::$email_errors) {
+			self::sendEmail($title, $report, $log, $html_report);
 		}
 	}
 
@@ -417,6 +420,25 @@ class ErrorManager
 		}
 
 		return $file;
+	}
+
+	static public function buildExceptionReport(\Throwable $e, bool $force_html = false): array
+	{
+		$report = self::makeReport($e);
+		$log = sprintf('=========== Error ref. %s ===========', $report->context->id)
+			. PHP_EOL . PHP_EOL . (string) $e . PHP_EOL . PHP_EOL
+			. '<errorReport>' . PHP_EOL . json_encode($report, \JSON_PRETTY_PRINT)
+			. PHP_EOL . '</errorReport>' . PHP_EOL;
+
+		$html_report = null;
+
+		if ($force_html || self::$enabled & self::DEVELOPMENT || self::$email_errors) {
+			$html_report = self::htmlReport($report);
+		}
+
+		$title = $e->getMessage();
+
+		return compact('report', 'log', 'html_report', 'title');
 	}
 
 	/**
@@ -743,6 +765,7 @@ class ErrorManager
 		if (self::$enabled)
 			return true;
 
+		self::$context['request_started'] = $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true);
 
 		self::$enabled = $type;
 
@@ -800,8 +823,6 @@ class ErrorManager
 				self::$context[$a] = $_SERVER[$b];
 			}
 		}
-
-		self::$context['request_started'] = microtime(true);
 	}
 
 	/**

@@ -26,10 +26,16 @@ class WOPI
 	const PROP_TOKEN = self::NS . ':token';
 	const PROP_TOKEN_TTL = self::NS . ':token-ttl';
 	const PROP_READ_ONLY = self::NS . ':ReadOnly';
-	const PROP_USER_NAME = self::NS . ':FriendlyUserName';
+	const PROP_USER_NAME = self::NS . ':UserFriendlyName';
+	const PROP_USER_ID = self::NS . ':UserId';
 
 	protected AbstractStorage $storage;
 	protected Server $server;
+
+	public function setStorage(AbstractStorage $storage)
+	{
+		$this->storage = $storage;
+	}
 
 	public function setServer(Server $server)
 	{
@@ -88,20 +94,26 @@ class WOPI
 
 			$this->server->log('WOPI: => Found doc_uri: %s', $uri);
 
-
+			// GetFile
 			if ($action == 'contents' && $method == 'GET') {
+				$this->server->log('WOPI: => GetFile');
 				$this->server->http_get($uri);
 			}
+			// PutFile
 			elseif ($action == 'contents' && $method == 'POST') {
+				$this->server->log('WOPI: => PutFile');
 				$this->server->http_put($uri);
 			}
+			// CheckFileInfo
 			elseif (!$action && $method == 'GET') {
+				$this->server->log('WOPI: => CheckFileInfo');
 				$this->getInfo($uri);
 			}
 			else {
 				throw new Exception('Invalid URI', 404);
 			}
 
+			$this->server->log('WOPI: <= 200');
 			http_response_code(200); // This is required for Collabora
 		}
 		catch (Exception $e) {
@@ -121,6 +133,7 @@ class WOPI
 			'DAV::getetag',
 			self::PROP_READ_ONLY,
 			self::PROP_USER_NAME,
+			self::PROP_USER_ID,
 		], 0);
 
 		$modified = !empty($props['DAV::getlastmodified']) ? $props['DAV::getlastmodified']->format(DATE_ISO8601) : null;
@@ -128,9 +141,9 @@ class WOPI
 
 		$data = [
 			'BaseFileName' => basename($uri),
-			'UserFriendlyName' => $props['DAV::PROP_USER_NAME'] ?? 'User',
-			'OwnerId' => 1,
-			'UserId' => 1,
+			'UserFriendlyName' => $props[self::PROP_USER_NAME] ?? 'User',
+			'OwnerId' => 0,
+			'UserId' => $props[self::PROP_USER_ID] ?? 0,
 			'Size' => $size,
 			'Version' => $props['DAV::getetag'] ?? md5($uri . $size . $modified),
 		];
@@ -142,9 +155,16 @@ class WOPI
 		$data['ReadOnly'] = $props['self::PROP_READ_ONLY'] ?? false;
 		$data['UserCanWrite'] = !$data['ReadOnly'];
 		$data['UserCanRename'] = !$data['ReadOnly'];
+		$data['DisableCopy'] = $data['ReadOnly'];
+		$data['UserCanNotWriteRelative'] = true; // This requires you to implement file name UI
+		//$data['DisablePrint'] = true;
+
+		$json = json_encode($data, JSON_PRETTY_PRINT);
+		$this->server->log('WOPI: => Info: %s', $json);
 
 		http_response_code(200);
-		echo json_encode($data, JSON_PRETTY_PRINT);
+		header('Content-Type: application/json', true);
+		echo $json;
 		return true;
 	}
 
@@ -160,13 +180,13 @@ class WOPI
 	 *   'application/vnd.oasis.opendocument.presentation' => ['edit' => 'http://'...],
 	 * ]]
 	 */
-	public function discover(string $url): array
+	static public function discover(string $url): array
 	{
 		if (function_exists('curl_init')) {
 			$c = curl_init($url);
 			curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
 			$r = curl_exec($c);
-			$code = curl_getinfo(CURLINFO_HTTP_CODE);
+			$code = curl_getinfo($c, CURLINFO_HTTP_CODE);
 
 			if ($code != 200) {
 				throw new \RuntimeException(sprintf("Discovery URL returned an error: %d\n%s", $code, $r));
@@ -269,7 +289,7 @@ class WOPI
 		$url = parse_url($url);
 
 		// Remove available options from URL
-		$url['query'] = preg_replace('/<(\w+)=(\w+)&>/i', '', $url['query']);
+		$url['query'] = preg_replace('/<(\w+)=(\w+)&>/i', '', $url['query'] ?? '');
 
 		// Set options
 		parse_str($url['query'], $params);
