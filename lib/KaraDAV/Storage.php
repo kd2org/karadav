@@ -10,6 +10,7 @@ class Storage extends AbstractStorage
 {
 	protected Users $users;
 	protected NextCloud $nextcloud;
+	protected array $properties = [];
 
 	/**
 	 * These file names will be ignored when doing a PUT
