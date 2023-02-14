@@ -138,12 +138,15 @@ class Storage extends AbstractStorage
 			case 'DAV::creationdate':
 				return new \DateTime('@' . filectime($target));
 			case WebDAV::PROP_DIGEST_MD5:
-				if (!is_file($target)) {
+				if (!is_file($target) || is_dir($target) || !is_readable($target)) {
 					return null;
 				}
 
 				return md5_file($target);
 			// NextCloud stuff
+			case NextCloud::PROP_OC_CHECKSUMS:
+				// We are not returning OC checksums as this could slow directory listings
+				return null;
 			case NextCloud::PROP_NC_HAS_PREVIEW:
 			case NextCloud::PROP_NC_IS_ENCRYPTED:
 				return 'false';
@@ -238,7 +241,7 @@ class Storage extends AbstractStorage
 		return $out;
 	}
 
-	public function put(string $uri, $pointer, ?string $hash, ?int $mtime): bool
+	public function put(string $uri, $pointer, ?string $hash_algo, ?string $hash, ?int $mtime): bool
 	{
 		if (preg_match(self::PUT_IGNORE_PATTERN, basename($uri))) {
 			return false;
@@ -297,9 +300,13 @@ class Storage extends AbstractStorage
 			@unlink($tmp_file);
 			throw new WebDAV_Exception('Your quota is exhausted', 403);
 		}
-		elseif ($hash && md5_file($tmp_file) != $hash) {
+		elseif ($hash && $hash_algo == 'MD5' && md5_file($tmp_file) != $hash) {
 			@unlink($tmp_file);
 			throw new WebDAV_Exception('The data sent does not match the supplied MD5 hash', 400);
+		}
+		elseif ($hash && $hash_algo == 'SHA1' && sha1_file($tmp_file) != $hash) {
+			@unlink($tmp_file);
+			throw new WebDAV_Exception('The data sent does not match the supplied SHA1 hash', 400);
 		}
 		else {
 			rename($tmp_file, $target);

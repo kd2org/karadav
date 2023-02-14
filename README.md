@@ -1,4 +1,4 @@
-# KaraDAV - A lightweight WebDAV server, with NextCloud compatibility
+# KaraDAV - A lightweight WebDAV server, compatible with ownCloud and NextCloud clients
 
 This is a simple and lighweight WebDAV server, allowing to easily set up a file sharing server compatible with WebDAV and NextCloud clients. It has no dependencies and good performance.
 
@@ -72,7 +72,7 @@ It has been tested with:
 
 **We recommend the ownCloud apps**, as they are more stable and lighter :)
 
-Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients.
+Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients if their publishers decide so.
 
 ## WebDAV clients compatibility
 
@@ -86,7 +86,7 @@ Here is a list of clients tested with KaraDAV:
 * CyberDuck (Windows) version 8.5.0
 * Dolphin (KDE)
 * Thunar (GTK/GNOME)
-* [rclone](https://rclone.org/webdav/) on Linux
+* [rclone](https://rclone.org/webdav/) on Linux, including [bi-directional sync](https://rclone.org/bisync/).
 * [csync](https://csync.org/) on Linux. This is a library offering two-way sync, it is used by the ownCloud client, but it has a command-line client. Just replace `http` with `owncloud`, and `https` with `ownclouds` in URL, eg. `csync /home/bohwaz/sync ownclouds://karadav.example/files/bohwaz/`
 
 ### Android
