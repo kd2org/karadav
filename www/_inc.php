@@ -77,6 +77,10 @@ if (!defined('KaraDAV\WWW_URL')) {
 	define('KaraDAV\WWW_URL', sprintf('http%s://%s%s%s', $https, $name, $port, $root));
 }
 
+if (!defined('KaraDAV\DEFAULT_QUOTA')) {
+	define('KaraDAV\DEFAULT_QUOTA', 200);
+}
+
 // Init database
 if (!file_exists(DB_FILE)) {
 	$db = DB::getInstance();

@@ -88,7 +88,7 @@ elseif ($edit) {
 	$csrf = html_csrf();
 	$login = htmlspecialchars($user->login);
 	$is_admin = $user->is_admin ? 'checked="checked"' : '';
-	$quota = $user ? round($user->quota / 1024 / 1024) : DEFAULT_QUOTA;
+	$quota = $user ? ($user->quota > 0 ? round($user->quota / 1024 / 1024) : $user->quota) : DEFAULT_QUOTA;
 
 	echo '<form method="post" action="">
 	' . $csrf . '
@@ -109,8 +109,9 @@ elseif ($edit) {
 
 	echo '
 			<dt><label for="f_quota">Quota</label></dt>
-			<dd><input type="number" name="quota" step="1" min="0" value="' . $quota . '" required="required" size="6" /> (in MB)</dd>
-			<!--<dd>Set to -1 to have unlimited space</dd>-->
+			<dd><input type="number" name="quota" step="1" min="-1" value="' . $quota . '" required="required" size="6" /> (in MB)</dd>
+			<dd>Set to <tt>0</tt> to disable upload.</dd>
+			<dd>Use <tt>-1</tt> to allow using all the available space on disk.</dd>
 			<dd><input type="submit" name="save" value="Save" /></dd>
 		</dl>
 	</fieldset>
@@ -150,7 +151,7 @@ else {
 	<tbody>';
 
 	foreach ($users->list() as $user) {
-		$used = Storage::getDirectorySize($user->path);
+		$quota = $users->quota($user);
 
 		printf('<tr>
 			<th>%s</th>
@@ -159,10 +160,10 @@ else {
 			<td><a href="?edit=%d" class="btn sm">Edit</a> <a href="?delete=%d" class="btn sm">Delete</a></td>
 		</tr>',
 			htmlspecialchars($user->login),
-			format_bytes($used),
-			format_bytes($user->quota),
-			$user->quota,
-			$used,
+			format_bytes($quota->used),
+			format_bytes($quota->total),
+			$quota->total,
+			$quota->used,
 			$user->is_admin ? 'Admin' : '',
 			$user->id,
 			$user->id

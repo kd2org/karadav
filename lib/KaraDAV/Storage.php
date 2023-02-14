@@ -321,14 +321,10 @@ class Storage extends AbstractStorage
 		}
 
 		if (is_dir($target)) {
-			foreach (self::glob($target, '/*') as $file) {
-				$this->delete(substr($file, strlen($this->users->current()->path)));
-			}
-
-			rmdir($target);
+			self::deleteDirectory($target);
 		}
 		else {
-			unlink($target);
+			@unlink($target);
 		}
 
 		$this->getResourceProperties($uri)->clear();
@@ -468,14 +464,14 @@ class Storage extends AbstractStorage
 	{
 		$total = 0;
 		$path = rtrim($path, '/');
+		$path = realpath($path);
 
-		foreach (self::glob($path, '/*', GLOB_NOSORT) as $f) {
-			if (is_dir($f)) {
-				$total += self::getDirectorySize($f);
-			}
-			else {
-				$total += filesize($f);
-			}
+		if (!$path || !file_exists($path)) {
+			return 0;
+		}
+
+		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)) as $f) {
+			$total += $f->getSize();
 		}
 
 		return $total;
@@ -483,7 +479,19 @@ class Storage extends AbstractStorage
 
 	static public function deleteDirectory(string $path): void
 	{
-		foreach (self::glob($path, '/*', GLOB_NOSORT) as $f) {
+		$path = rtrim($path, '/');
+		$path = realpath($path);
+
+		$dir = opendir($path);
+
+		while ($f = readdir($dir)) {
+			// Skip dots
+			if ($f == '.' || $f = '..') {
+				continue;
+			}
+
+			$f = $path . DIRECTORY_SEPARATOR . $f;
+
 			if (is_dir($f)) {
 				self::deleteDirectory($f);
 				@rmdir($f);
@@ -492,6 +500,8 @@ class Storage extends AbstractStorage
 				@unlink($f);
 			}
 		}
+
+		closedir($dir);
 
 		@rmdir($path);
 	}

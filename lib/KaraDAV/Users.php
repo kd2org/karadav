@@ -76,7 +76,7 @@ class Users
 		return $user;
 	}
 
-	public function create(string $login, string $password, int $quota = 0, bool $is_admin = false)
+	public function create(string $login, string $password, int $quota = DEFAULT_QUOTA, bool $is_admin = false)
 	{
 		$login = strtolower(trim($login));
 		$hash = password_hash(trim($password), null);
@@ -97,7 +97,7 @@ class Users
 		}
 
 		if (isset($data['quota'])) {
-			$params['quota'] = (int) $data['quota'] * 1024 * 1024;
+			$params['quota'] = $data['quota'] <= 0 ? (int) $data['quota'] : (int) $data['quota'] * 1024 * 1024;
 		}
 
 		if (isset($data['is_admin'])) {
@@ -297,9 +297,21 @@ class Users
 		$used = $total = $free = 0;
 
 		if ($user) {
-			$used = Storage::getDirectorySize($user->path);
-			$total = $user->quota;
-			$free = max(0, $total - $used);
+			if ($user->quota == -1) {
+				$total = (int) @disk_total_space($user->path);
+				$free = (int) @disk_free_space($user->path);
+				$used = $total - $free;
+			}
+			elseif ($user->quota == 0) {
+				$total = 0;
+				$free = 0;
+				$used = 0;
+			}
+			else {
+				$used = Storage::getDirectorySize($user->path);
+				$total = $user->quota;
+				$free = max(0, $total - $used);
+			}
 		}
 
 		return (object) compact('free', 'total', 'used');
