@@ -262,11 +262,20 @@ class Server
 		}
 
 		$hash = null;
+		$hash_algo = null;
 
 		// Support for checksum matching
 		// https://dcache.org/old/manuals/UserGuide-6.0/webdav.shtml#checksums
 		if (!empty($_SERVER['HTTP_CONTENT_MD5'])) {
 			$hash = bin2hex(base64_decode($_SERVER['HTTP_CONTENT_MD5']));
+			$hash_algo = 'MD5';
+		}
+		// Support for ownCloud/NextCloud checksum
+		// https://github.com/owncloud-archive/documentation/issues/2964
+		elseif (!empty($_SERVER['HTTP_OC_CHECKSUM'])
+			&& preg_match('/MD5:[a-f0-9]{32}|SHA1:[a-f0-9]{40}/', $_SERVER['HTTP_OC_CHECKSUM'], $match)) {
+			$hash_algo = strtok($match[0], ':');
+			$hash = strtok(false);
 		}
 
 		$uri = $this->_prefix($uri);
@@ -282,7 +291,8 @@ class Server
 			}
 		}
 
-		// Specific to NextCloud/ownCloud
+		// Specific to NextCloud/ownCloud, to allow setting file mtime
+		// This expects a UNIX timestamp
 		$mtime = (int)($_SERVER['HTTP_X_OC_MTIME'] ?? 0) ?: null;
 
 		if ($mtime) {
@@ -291,7 +301,7 @@ class Server
 
 		$this->extendExecutionTime();
 
-		$created = $this->storage->put($uri, fopen('php://input', 'r'), $hash, $mtime);
+		$created = $this->storage->put($uri, fopen('php://input', 'r'), $hash_algo, $hash, $mtime);
 
 		$prop = $this->storage->properties($uri, ['DAV::getetag'], 0);
 

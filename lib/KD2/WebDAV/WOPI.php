@@ -157,7 +157,8 @@ class WOPI
 		$data['UserCanRename'] = !$data['ReadOnly'];
 		$data['DisableCopy'] = $data['ReadOnly'];
 		$data['UserCanNotWriteRelative'] = true; // This requires you to implement file name UI
-		//$data['DisablePrint'] = true;
+		//$data['DisablePrint'] = true; // Does not work currently
+		// see https://forum.collaboraonline.com/t/cross-origin-frame-issue-when-printing-in-chrome/1514
 
 		$json = json_encode($data, JSON_PRETTY_PRINT);
 		$this->server->log('WOPI: => Info: %s', $json);

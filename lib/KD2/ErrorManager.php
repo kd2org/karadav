@@ -321,6 +321,8 @@ class ErrorManager
 		}
 		else if (self::$enabled & self::PRODUCTION)
 		{
+			@header_remove('Content-Disposition');
+			@header('Content-Type: text/html; charset=utf-8', true);
 			self::htmlProduction($report);
 		}
 		else

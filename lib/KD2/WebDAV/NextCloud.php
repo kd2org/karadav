@@ -37,6 +37,7 @@ abstract class NextCloud
 	const PROP_OC_SIZE = self::OC_NAMESPACE . ':size';
 	const PROP_OC_DOWNLOADURL = self::OC_NAMESPACE . ':downloadURL';
 	const PROP_OC_PERMISSIONS = self::OC_NAMESPACE . ':permissions';
+	const PROP_OC_CHECKSUMS = self::OC_NAMESPACE . ':checksums';
 
 	// Preview
 	const PROP_NC_HAS_PREVIEW = self::NC_NAMESPACE . ':has-preview';
@@ -57,6 +58,7 @@ abstract class NextCloud
 		self::PROP_OC_SIZE,
 		self::PROP_OC_DOWNLOADURL,
 		self::PROP_OC_PERMISSIONS,
+		self::PROP_OC_CHECKSUMS,
 		self::PROP_OC_SHARETYPES,
 		self::PROP_NC_HAS_PREVIEW,
 		self::PROP_NC_NOTE,
@@ -414,8 +416,6 @@ abstract class NextCloud
 			throw new Exception('Invalid WebDAV URL', 404);
 		}
 
-		$ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
-
 		if (preg_match(self::WEBDAV_BASE_REGEXP, $uri, $match)) {
 			$base_uri = rtrim($match[0], '/') . '/';
 		}
@@ -539,6 +539,10 @@ abstract class NextCloud
 					'send_mail' => false,
 					'upload' => false,
 					'upload_files_drop' => false,
+				],
+				'checksums' => [
+					'supportedTypes' => ['SHA1', 'MD5'],
+					'preferredUploadType' => 'MD5',
 				],
 			],
 		]);
