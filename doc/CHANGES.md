@@ -1,3 +1,12 @@
+## 0.3.8
+
+* Allow to have "unlimited" quota for users (actually, up to the maximum space available on disk) by setting `-1` as user quota
+* Change method for recursive disk space and recursive directory delete
+
+## 0.3.7
+
+* Fix issue #25 dynamic properties with PHP 8.2
+
 ## 0.3.6
 
 * Fix division by zero error when quota is zero
