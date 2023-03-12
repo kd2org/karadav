@@ -108,7 +108,7 @@ class Storage extends AbstractStorage
 			case 'DAV::resourcetype':
 				return is_dir($target) ? 'collection' : '';
 			case 'DAV::getlastmodified':
-				if (!$uri && $depth == 0 && is_dir($target)) {
+				if (!DISABLE_SLOW_OPERATIONS && !$uri && $depth == 0 && is_dir($target)) {
 					$mtime = self::getDirectoryMTime($target);
 				}
 				else {
@@ -125,7 +125,7 @@ class Storage extends AbstractStorage
 			case 'DAV::ishidden':
 				return basename($target)[0] == '.';
 			case 'DAV::getetag':
-				if (!$uri && !$depth) {
+				if (!DISABLE_SLOW_OPERATIONS && !$uri && !$depth) {
 					$hash = self::getDirectorySize($target) . self::getDirectoryMTime($target);
 				}
 				else {
@@ -189,7 +189,7 @@ class Storage extends AbstractStorage
 			case 'DAV::quota-used-bytes':
 				return null;
 			case Nextcloud::PROP_OC_SIZE:
-				if (is_dir($target)) {
+				if (!DISABLE_SLOW_OPERATIONS && is_dir($target)) {
 					return self::getDirectorySize($target);
 				}
 				else {
