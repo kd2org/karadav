@@ -55,6 +55,23 @@ const LOG_FILE = null;
 const ENABLE_XSENDFILE = false;
 
 /**
+ * Set to TRUE if you have a slow filesystem (eg. NFS/BindFS)
+ *
+ * This will disable directory sizes and directory last modification date
+ * (all directories will appear as 0-bytes, and the modification date might
+ * not be accurate). Not a huge impact, but it can appear weird to the user.
+ *
+ * Details: to find out the size taken by a directory, we must do the sum
+ * of all files and sub-directories, which might be slow if you have lots
+ * of files. Same for directory modification date, we need to find out the
+ * last modification of each file in that directory.
+ *
+ * Note that this will not disable slow operations used for quotas, as it
+ * would effectively disable quotas. You must disable each user quota.
+ */
+const DISABLE_SLOW_OPERATIONS = false;
+
+/**
  * LDAP server configuration
  *
  * To use a LDAP server for login, fill those details.

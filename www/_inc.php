@@ -84,6 +84,10 @@ if (!defined('KaraDAV\DEFAULT_QUOTA')) {
 	define('KaraDAV\DEFAULT_QUOTA', 200);
 }
 
+if (!defined('KaraDAV\DISABLE_SLOW_OPERATIONS')) {
+	define('KaraDAV\DISABLE_SLOW_OPERATIONS', false);
+}
+
 // Init database
 if (!file_exists(DB_FILE)) {
 	$db = DB::getInstance();

@@ -1,3 +1,7 @@
+## 0.3.9
+
+* Allow to disable recursive directory size / mtime for slow filesystems
+
 ## 0.3.8
 
 * Allow to have "unlimited" quota for users (actually, up to the maximum space available on disk) by setting `-1` as user quota
