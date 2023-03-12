@@ -1,3 +1,7 @@
+## 0.3.10
+
+* Allow to install as a subdirectory
+
 ## 0.3.9
 
 * Allow to disable recursive directory size / mtime for slow filesystems

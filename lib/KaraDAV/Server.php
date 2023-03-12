@@ -51,7 +51,9 @@ class Server
 		// available on the root path. We need to handle a
 		// classic login/password auth here.
 
-		if (0 !== strpos($uri, '/files/')) {
+		$base = rtrim(parse_url(WWW_URL, PHP_URL_PATH), '/');
+
+		if (0 !== strpos($uri, $base . '/files/')) {
 			return false;
 		}
 
@@ -63,7 +65,7 @@ class Server
 			return true;
 		}
 
-		$this->dav->setBaseURI('/files/' . $user->login . '/');
+		$this->dav->setBaseURI($base . '/files/' . $user->login . '/');
 
 		return $this->dav->route($uri);
 	}

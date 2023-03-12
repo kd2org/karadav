@@ -29,6 +29,41 @@
 </Directory>
 ```
 
+## Using a sub-directory for install
+
+Let's say you want KaraDAV to be available at `http://me.localhost/dav/`
+
+Set up an alias like this:
+
+```
+<VirtualHost *:80>
+	ServerName me.localhost
+	Alias /dav /home/bohwaz/git/karadav/www
+</VirtualHost>
+
+<Directory /home/user/git/karadav/www>
+	Options -Indexes -Multiviews
+	AllowOverride None
+	DirectoryIndex index.php
+
+	RewriteEngine On
+	RewriteBase /dav/
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^.*$ /dav/_router.php [L]
+</Directory>
+```
+
+If you want to use a different sub-directory, you'll need to change `/dav/` to the correct name.
+
+Then create or edit the `config.local.php` file at the root of KaraDAV and make sure it contains the correct URL:
+
+```
+const WWW_URL = 'http://me.localhost/dav/';
+```
+
+Or this won't work.
+
 ## Security issues
 
 * Do not expose the `data` directory on your webserver, or your app database might be leaked, as well as your users data.
