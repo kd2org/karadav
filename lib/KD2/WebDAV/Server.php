@@ -301,7 +301,24 @@ class Server
 
 		$this->extendExecutionTime();
 
-		$created = $this->storage->put($uri, fopen('php://input', 'r'), $hash_algo, $hash, $mtime);
+		$stream = fopen('php://input', 'r');
+
+		// mod_fcgid <= 2.3.9 doesn't handle chunked transfer encoding for PUT requests
+		// see https://github.com/kd2org/picodav/issues/6
+		if (strstr($_SERVER['HTTP_TRANSFER_ENCODING'] ?? '', 'chunked') && PHP_SAPI == 'fpm-fcgi') {
+			// We can't seek here
+			// see https://github.com/php/php-src/issues/9441
+			$l = strlen(fread($stream, 1));
+
+			if ($l === 0) {
+				throw new Exception('This server cannot accept "Transfer-Encoding: chunked" uploads (please upgrade to mod_fcgid >= 2.3.10).', 500);
+			}
+
+			// reset stream
+			fseek($stream, 0, SEEK_SET);
+		}
+
+		$created = $this->storage->put($uri, $stream, $hash_algo, $hash, $mtime);
 
 		$prop = $this->storage->properties($uri, ['DAV::getetag'], 0);
 
