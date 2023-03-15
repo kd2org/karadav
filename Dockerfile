@@ -11,16 +11,12 @@ RUN mkdir /var/karadav/data
 RUN mkdir /var/karadav/lib
 RUN mkdir /var/karadav/www
 
-RUN chown -R nobody.nobody /var/karadav
-
-USER nobody
-
 # Add application
 WORKDIR /var/karadav/
-COPY --chown=nobody lib /var/karadav/lib/
-COPY --chown=nobody www /var/karadav/www/
-COPY --chown=nobody schema.sql /var/karadav/
-COPY --chown=nobody config.dist.php /var/karadav/config.local.php
+COPY lib /var/karadav/lib/
+COPY www /var/karadav/www/
+COPY schema.sql /var/karadav/
+COPY config.dist.php /var/karadav/config.local.php
 
 EXPOSE 8080
 

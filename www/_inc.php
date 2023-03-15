@@ -90,10 +90,14 @@ if (!defined('KaraDAV\DISABLE_SLOW_OPERATIONS')) {
 
 // Init database
 if (!file_exists(DB_FILE)) {
+	$created = touch(DB_FILE);
+	if (!$created) {
+	    throw new \RuntimeException('Failed to create database file');
+	}
+	
 	$db = DB::getInstance();
 	$db->exec('BEGIN;');
 	$db->exec(file_get_contents(__DIR__ . '/../schema.sql'));
-
 	if (!LDAP::enabled()) {
 		$users = new Users;
 		$p = 'karadavdemo';
