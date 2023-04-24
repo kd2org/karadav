@@ -8,6 +8,7 @@ use KD2\WebDAV\Exception as WebDAV_Exception;
 class NextCloud extends WebDAV_NextCloud
 {
 	protected Users $users;
+	protected ?\stdClass $user;
 	protected string $temporary_chunks_path;
 
 	public function __construct(Users $users)
