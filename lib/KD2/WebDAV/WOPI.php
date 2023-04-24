@@ -157,8 +157,6 @@ class WOPI
 		$data['UserCanRename'] = !$data['ReadOnly'];
 		$data['DisableCopy'] = $data['ReadOnly'];
 		$data['UserCanNotWriteRelative'] = true; // This requires you to implement file name UI
-		$data['DisablePrint'] = true; // Does not work currently
-		// see https://forum.collaboraonline.com/t/cross-origin-frame-issue-when-printing-in-chrome/1514
 
 		$json = json_encode($data, JSON_PRETTY_PRINT);
 		$this->server->log('WOPI: => Info: %s', $json);
@@ -361,7 +359,7 @@ class WOPI
 				<input name="access_token_ttl" value="{$token_ttl}" type="hidden" />
 			</form>
 
-			<iframe id="frame" name="frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-downloads allow-modals" allow="autoplay camera microphone display-capture" allowfullscreen="true"></iframe>
+			<iframe id="frame" name="frame" allow="autoplay camera microphone display-capture" allowfullscreen="true"></iframe>
 
 			<script type="text/javascript">
 			document.forms[0].submit();
