@@ -1,3 +1,7 @@
+## 0.3.11
+
+* Fix warning in PHP 8.2 (@lubiana)
+
 ## 0.3.10
 
 * Allow to install as a subdirectory
