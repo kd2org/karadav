@@ -139,7 +139,7 @@ class Users
 		return true;
 	}
 
-	public function login(?string $login, ?string $password, ?string $app_password = null): ?stdClass
+	public function login(?string $login, ?string $password): ?stdClass
 	{
 		$login = null !== $login ? strtolower(trim($login)) : null;
 
@@ -155,18 +155,35 @@ class Users
 		}
 
 		// If not, try to login
-		$user = $this->get($login);
-
-		if (!$user) {
-			return null;
-		}
+		$ok = false;
 
 		if (LDAP::enabled()) {
 			if (!LDAP::checkPassword($login, $password)) {
 				return null;
 			}
+
+			$ok = true;
 		}
-		elseif (!password_verify(trim($password), $user->password)) {
+		elseif (AUTH_CALLBACK) {
+			$r = call_user_func(AUTH_CALLBACK, $login, $password);
+			if ($r !== true) {
+				return false;
+			}
+
+			$ok = true;
+		}
+
+		$user = $this->get($login);
+
+		if (!$user && !$ok) {
+			return null;
+		}
+		elseif (!$user && $ok) {
+			$this->create($login, random_bytes(10));
+			$user = $this->get($login);
+		}
+
+		if (!$ok && !password_verify(trim($password), $user->password)) {
 			return null;
 		}
 
