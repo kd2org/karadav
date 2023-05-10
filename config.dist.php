@@ -72,6 +72,27 @@ const ENABLE_XSENDFILE = false;
 const DISABLE_SLOW_OPERATIONS = false;
 
 /**
+ * External authentication callback
+ *
+ * Use this to authenticate a user with a third-party service.
+ * Provide a valid PHP callback: either a function name, or a class name and method in an array.
+ *
+ * The callback will be passed the username and password as parameters, and must return
+ * TRUE if auth was successful, or FALSE otherwise.
+ *
+ * If the callback returned TRUE and the user does not exist in the database,
+ * it will be created with the default quota.
+ *
+ * @var string|array
+ */
+const AUTH_CALLBACK = null;
+//const AUTH_CALLBACK = ['MyAuthClass', 'login'];
+//const AUTH_CALLBACK = 'my_login';
+//function my_login(string $user, string $password) {
+//	return ($user == 'me' && $password == 'secret');
+//}
+
+/**
  * LDAP server configuration
  *
  * To use a LDAP server for login, fill those details.
