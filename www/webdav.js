@@ -541,7 +541,7 @@ const WebDAVNavigator = (url, options) => {
 			$('.download_all').onclick = download_all;
 		}
 
-		if (!root_permissions || root_permissions.indexOf('CK') != -1) {
+		if (!root_permissions || root_permissions.indexOf('C') != -1 || root_permissions.indexOf('K') != -1) {
 			$('.upload').insertAdjacentHTML('afterbegin', create_buttons);
 
 			$('.mkdir').onclick = () => {
