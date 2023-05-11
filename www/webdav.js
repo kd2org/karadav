@@ -157,11 +157,13 @@ const WebDAVNavigator = (url, options) => {
 	};
 
 	const wopi_init = async () => {
-		if (!wopi_discovery_url) {
+		try {
+			var d = await reqXML('GET', wopi_discovery_url);
+		}
+		catch (e) {
+			reloadListing();
 			return;
 		}
-
-		var d = await reqXML('GET', wopi_discovery_url);
 
 		d.querySelectorAll('app').forEach(app => {
 			var mime = (a = app.getAttribute('name').match(/^.*\/.*$/)) ? a[0] : null;
@@ -776,11 +778,10 @@ const WebDAVNavigator = (url, options) => {
 
 	document.querySelector('html').innerHTML = html_tpl;
 
+	// Wait for WOPI discovery before creating the list
 	if (wopi_discovery_url) {
-		// Wait for WOPI discovery before creating the list
 		wopi_init();
-	}
-	else {
+	} else {
 		reloadListing();
 	}
 
