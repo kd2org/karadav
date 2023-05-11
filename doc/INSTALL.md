@@ -64,6 +64,33 @@ const WWW_URL = 'http://me.localhost/dav/';
 
 Or this won't work.
 
+## Example Nginx with php-fpm
+
+```
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name karadav.localhost;
+
+    root /home/user/git/karadav/www;
+
+    index index.php;
+
+    # Serve files
+    location / {
+        try_files $uri $uri/ /_router.php?$query_string;
+    }
+
+    location ~* \.php$ {
+        fastcgi_pass unix:/run/php-fpm/www.sock;
+        include fastcgi_params;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+}
+```
+
 ## Security issues
 
 * Do not expose the `data` directory on your webserver, or your app database might be leaked, as well as your users data.
