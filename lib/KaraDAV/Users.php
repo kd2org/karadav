@@ -166,8 +166,9 @@ class Users
 		}
 		elseif (AUTH_CALLBACK) {
 			$r = call_user_func(AUTH_CALLBACK, $login, $password);
+
 			if ($r !== true) {
-				return false;
+				return null;
 			}
 
 			$ok = true;
