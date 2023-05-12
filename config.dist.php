@@ -87,7 +87,7 @@ const DISABLE_SLOW_OPERATIONS = false;
  */
 const AUTH_CALLBACK = null;
 //const AUTH_CALLBACK = ['MyAuthClass', 'login'];
-//const AUTH_CALLBACK = 'my_login';
+//const AUTH_CALLBACK = 'KaraDAV\my_login';
 //function my_login(string $user, string $password) {
 //	return ($user == 'me' && $password == 'secret');
 //}
