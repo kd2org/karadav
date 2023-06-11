@@ -169,6 +169,7 @@ class Storage extends AbstractStorage
 
 				return '';
 			case NextCloud::PROP_OC_ID:
+				// fileId is required by NextCloud desktop client
 				$username = $this->users->current()->login;
 				return NextCloud::getFileId($uri, $username);
 			case NextCloud::PROP_OC_PERMISSIONS:
@@ -185,7 +186,6 @@ class Storage extends AbstractStorage
 				return implode('', $permissions);
 			case 'DAV::quota-available-bytes':
 				return null;
-				return -3;
 			case 'DAV::quota-used-bytes':
 				return null;
 			case Nextcloud::PROP_OC_SIZE:
