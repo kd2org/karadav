@@ -155,6 +155,19 @@ abstract class NextCloud
 		}
 	 */
 
+
+	/**
+	 * Return a unique integer for a file. Return NULL if file IDs are not supported.
+	 *
+	 * @param  string $uri File URI
+	 * @param  string $login User name
+	 * @return integer|null
+	 */
+	static public function getFileId(string $uri, string $login): ?int
+	{
+		return null;
+	}
+
 	/**
 	 * Direct download API
 	 * Return a unique secret to authentify a direct URL request (for direct API)
@@ -604,7 +617,7 @@ abstract class NextCloud
 		]);
 	}
 
-	public function getDirectURL(string $uri, string $user)
+	public function getDirectDownloadURL(string $uri, string $user)
 	{
 		$uri = trim($uri, '/');
 		$expire = intval((time() - strtotime('2022-09-01'))/3600) + 8; // 8 hours
@@ -631,7 +644,7 @@ abstract class NextCloud
 			throw new Exception('Missing fileId', 400);
 		}
 
-		$uri = gzuncompress(base64_decode($_POST['fileId']));
+		$uri = gzuncompress(decbin($_POST['fileId']));
 
 		if (!$uri) {
 			throw new Exception('Invalid fileId', 404);
@@ -644,7 +657,7 @@ abstract class NextCloud
 			throw new Exception('Invalid fileId', 404);
 		}
 
-		$url = $this->getDirectURL($uri, $user);
+		$url = $this->getDirectDownloadURL($uri, $user);
 
 		$this->server->log('NextCloud Direct Download URL is: %s', $url);
 
@@ -700,12 +713,6 @@ abstract class NextCloud
 		$this->server->setBaseURI('/');
 		$this->server->original_uri = $uri;
 		$this->server->http_get($uri);
-	}
-
-	static public function getDirectID(string $username, string $uri): string
-	{
-		// trick to avoid having to store a file ID, just send the file name
-		return rtrim(base64_encode(gzcompress($username . ':' . $uri)), '=');
 	}
 
 	protected function nc_ocs(array $data = []): array
@@ -807,7 +814,10 @@ abstract class NextCloud
 			$mtime = (int) $_SERVER['HTTP_X_OC_MTIME'] ?: null;
 
 			header('X-OC-MTime: accepted');
-			header('OC-FileId: ' . self::getDirectID($user, $dest));
+
+			if ($id = self::getFileId($user, $dest)) {
+				header('OC-FileId: ' . $id);
+			}
 
 			$return = $this->assembleChunks($login, $dir, $dest, $mtime);
 
