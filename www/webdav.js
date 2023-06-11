@@ -353,6 +353,10 @@ const WebDAVNavigator = (url, options) => {
 	};
 
 	const formatDate = (date) => {
+		if (isNaN(date)) {
+			return '';
+		}
+
 		var now = new Date;
 		var nb_hours = (+(now) - +(date)) / 3600 / 1000;
 
