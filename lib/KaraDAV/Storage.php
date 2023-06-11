@@ -153,7 +153,7 @@ class Storage extends AbstractStorage
 			case NextCloud::PROP_OC_SHARETYPES:
 				return WebDAV::EMPTY_PROP_VALUE;
 			case NextCloud::PROP_OC_DOWNLOADURL:
-				return $this->nextcloud->getDirectURL($uri, $this->users->current()->login);
+				return $this->nextcloud->getDirectDownloadURL($uri, $this->users->current()->login);
 			case Nextcloud::PROP_NC_RICH_WORKSPACE:
 				if (!is_dir($target)) {
 					return '';
@@ -170,7 +170,7 @@ class Storage extends AbstractStorage
 				return '';
 			case NextCloud::PROP_OC_ID:
 				$username = $this->users->current()->login;
-				return NextCloud::getDirectID($username, $uri);
+				return NextCloud::getFileId($uri, $username);
 			case NextCloud::PROP_OC_PERMISSIONS:
 				$permissions = [];
 
