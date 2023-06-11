@@ -1,3 +1,7 @@
+## 0.3.12
+
+* Fix issue on NextCloud Android after they changed OC-FileId from string to integer
+
 ## 0.3.11
 
 * Fix warning in PHP 8.2 (@lubiana)
