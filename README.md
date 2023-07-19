@@ -87,14 +87,14 @@ Here is a list of clients tested with KaraDAV:
 * davfs2 is NOT recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
 * Microsoft Windows native webclient (also called 'MiniRedir') is notoriously bad. We tested it successfully on Windows 10, but it is recommended to use [CyberDuck](https://cyberduck.io/download/) or [WinSCP](https://winscp.net/) instead, both are free software.
 * CyberDuck (Windows) version 8.5.0
-* Dolphin (KDE)
-* Thunar (GTK/GNOME)
+* **Recommended** Dolphin (KDE) and other KDE-based browsers (Konqueror, Krusader)
+* Thunar (GTK/GNOME) and other GTK-based file browsers (Nautilus, Caja, PCManFM, etc.), the GTK WebDAV stack is usually slower than KDE
 * [rclone](https://rclone.org/webdav/) on Linux, including [bi-directional sync](https://rclone.org/bisync/).
 * [csync](https://csync.org/) on Linux. This is a library offering two-way sync, it is used by the ownCloud client, but it has a command-line client. Just replace `http` with `owncloud`, and `https` with `ownclouds` in URL, eg. `csync /home/bohwaz/sync ownclouds://karadav.example/files/bohwaz/`
 
 ### Android
 
-* **Recommended** [RCX](https://f-droid.org/en/packages/io.github.x0b.rcx/)
+* **Recommended** [RCX](https://f-droid.org/en/packages/io.github.x0b.rcx/) or its fork [Round-Sync](https://github.com/newhinton/Round-Sync)
 * [DAVx⁵](https://www.davx5.com/), see [the manual](https://manual.davx5.com/webdav_mounts.html) for how to set up a WebDAV mount
 * [X-Plore](https://www.lonelycatgames.com/apps/xplore)
 
