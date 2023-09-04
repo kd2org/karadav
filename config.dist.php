@@ -140,11 +140,11 @@ const ERRORS_EMAIL = null;
 
 /**
  * Log PHP errors in this file.
- * Default: ROOT/error.log
+ * Default: ROOT/data/error.log
  *
  * @var string
  */
-const ERRORS_LOG = __DIR__ . '/error.log';
+const ERRORS_LOG = __DIR__ . '/data/error.log';
 
 /**
  * Send errors reports to this errbit/airbrake compatible API endpoint

@@ -37,8 +37,8 @@ if (defined('KaraDAV\ERRORS_EMAIL') && ERRORS_EMAIL) {
 if (defined('KaraDAV\ERRORS_LOG') && ERRORS_LOG) {
 	ErrorManager::setLogFile(ERRORS_LOG);
 }
-elseif (is_writeable(__DIR__ . '/../error.log')) {
-	ErrorManager::setLogFile(__DIR__ . '/../error.log');
+elseif (is_writeable(__DIR__ . '/../data/error.log')) {
+	ErrorManager::setLogFile(__DIR__ . '/../data/error.log');
 }
 
 if (defined('KaraDAV\ERRORS_REPORT_URL') && ERRORS_REPORT_URL) {
