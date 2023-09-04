@@ -1,0 +1,10 @@
+version: '3'
+services:
+  karadav:
+    container_name: karadav
+    build: .
+    volumes:
+      - ./data:/var/karadav/data
+      - ./config.local.php:/var/karadav/config.local.php
+    ports:
+      - "8080:8080"
