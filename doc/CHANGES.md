@@ -1,3 +1,7 @@
+## 0.3.13 - September 10, 2023
+
+* Use files inodes as file ID, so that we keep the same id when the file is moved or renamed.
+
 ## 0.3.12
 
 * Fix issue on NextCloud Android after they changed OC-FileId from string to integer
