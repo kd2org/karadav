@@ -170,8 +170,7 @@ class Storage extends AbstractStorage
 				return '';
 			case NextCloud::PROP_OC_ID:
 				// fileId is required by NextCloud desktop client
-				$username = $this->users->current()->login;
-				return NextCloud::getFileId($uri, $username);
+				return fileinode($target);
 			case NextCloud::PROP_OC_PERMISSIONS:
 				$permissions = [];
 
