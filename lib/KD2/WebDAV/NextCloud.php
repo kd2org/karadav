@@ -4,7 +4,7 @@ namespace KD2\WebDAV;
 
 abstract class NextCloud
 {
-	const NC_VERSION = '27.0.2';
+	const NC_VERSION = '99.0.0';
 
 	/**
 	 * File permissions for NextCloud clients

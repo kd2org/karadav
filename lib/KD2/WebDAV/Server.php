@@ -1242,7 +1242,7 @@ class Server
 	{
 		$uri = parse_url($source, PHP_URL_PATH);
 		$uri = rawurldecode($uri);
-		$uri = rtrim($uri, '/');
+		$uri = trim($uri, '/');
 
 		if ($uri . '/' == $this->base_uri) {
 			$uri .= '/';
