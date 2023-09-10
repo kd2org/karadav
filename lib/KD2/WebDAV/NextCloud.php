@@ -155,26 +155,6 @@ abstract class NextCloud
 		}
 	 */
 
-
-	/**
-	 * Return a unique integer for a file.
-	 *
-	 * By default, the integer is just a partial has of the file URI.
-	 * As the file ID is required by the NextCloud desktop client.
-	 *
-	 * Make sure this is smaller than largest long value in Java (9,223,372,036,854,775,807)
-	 * or the NextCloud Android client will fail.
-	 *
-	 * @param  string $uri File URI
-	 * @param  string $login User name
-	 * @return integer
-	 * @see https://github.com/nextcloud/android/issues/11718
-	 */
-	static public function getFileId(string $uri, string $login): int
-	{
-		return base_convert(substr(md5($login . ':' . $uri), 0, 14), 16, 10);
-	}
-
 	/**
 	 * Direct download API
 	 * Return a unique secret to authentify a direct URL request (for direct API)
@@ -821,7 +801,12 @@ abstract class NextCloud
 			$mtime = (int) $_SERVER['HTTP_X_OC_MTIME'] ?: null;
 
 			header('X-OC-MTime: accepted');
-			header('OC-FileId: ' . self::getFileId($dest, $user));
+
+			$props = $this->storage->properties($dest, [self::PROP_OC_ID], 0);
+
+			if (count($props)) {
+				header('OC-FileId: ' . current($props));
+			}
 
 			$return = $this->assembleChunks($login, $dir, $dest, $mtime);
 
