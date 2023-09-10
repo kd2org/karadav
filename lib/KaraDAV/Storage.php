@@ -463,7 +463,7 @@ class Storage extends AbstractStorage
 	static protected function glob(string $path, string $pattern = '', int $flags = 0): array
 	{
 		$path = preg_replace('/[\*\?\[\]]/', '\\\\$0', $path);
-		return glob($path . $pattern, $flags);
+		return glob($path . $pattern, $flags) ?: [];
 	}
 
 	static public function getDirectorySize(string $path): int
