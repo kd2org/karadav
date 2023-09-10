@@ -118,7 +118,7 @@ class Server
 
 	public function setBaseURI(string $uri): void
 	{
-		$this->base_uri = '/' . ltrim($uri);
+		$this->base_uri = '/' . ltrim($uri, '/');
 		$this->base_uri = rtrim($this->base_uri, '/') . '/';
 	}
 
