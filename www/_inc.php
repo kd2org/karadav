@@ -106,8 +106,14 @@ if (!defined('KaraDAV\WWW_URL')) {
 
 // Init database
 if (!file_exists(DB_FILE)) {
-	if (!is_writable(dirname(DB_FILE))) {
-		throw new \RuntimeException('Cannot create database in directory: ' . dirname(DB_FILE));
+	$parent = dirname(DB_FILE);
+
+	if (!file_exists($parent)) {
+		@mkdir($parent, 0777, true);
+	}
+
+	if (!is_writable($parent)) {
+		throw new \RuntimeException('Cannot create database in directory: ' . $parent);
 	}
 
 	$db = DB::getInstance();
