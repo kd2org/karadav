@@ -13,14 +13,38 @@ ErrorManager::setLogFile(__DIR__ . '/../error.log');
 
 $cfg_file = __DIR__ . '/../config.local.php';
 
-if (!file_exists($cfg_file)) {
-	die('This server is not configured yet. Please copy config.dist.php to config.local.php and edit it.');
+if (file_exists($cfg_file)) {
+	require $cfg_file;
 }
 
-require $cfg_file;
+// Default configuration constants
+$defaults = [
+	'DEFAULT_QUOTA'           => 200,
+	'STORAGE_PATH'            => __DIR__ . '/../data/%s',
+	'DB_FILE'                 => __DIR__ . '/../data/db.sqlite',
+	'WOPI_DISCOVERY_URL'      => null,
+	'ACCESS_CONTROL_ALL'      => false,
+	'LOG_FILE'                => null,
+	'ENABLE_XSENDFILE'        => false,
+	'DISABLE_SLOW_OPERATIONS' => false,
+	'ERRORS_SHOW'             => true,
+	'ERRORS_EMAIL'            => true,
+	'ERRORS_LOG'              => null,
+	'ERRORS_REPORT_URL'       => null,
+	'AUTH_CALLBACK'           => null,
+	'LDAP_HOST'               => null,
+	'LDAP_LOGIN'              => null,
+	'LDAP_BASE'               => null,
+	'LDAP_URI'                => null,
+	'LDAP_DISPLAY_NAME'       => null,
+	'LDAP_FIND_USER'          => null,
+	'LDAP_FIND_IS_ADMIN'      => null,
+];
 
-if (!defined('KaraDAV\ERRORS_SHOW')) {
-	define('KaraDAV\ERRORS_SHOW', true);
+foreach ($defaults as $const => $value) {
+	if (!defined('KaraDAV\\' . $const)) {
+		define('KaraDAV\\' . $const, $value);
+	}
 }
 
 if (!ERRORS_SHOW) {
@@ -30,24 +54,24 @@ else {
 	ErrorManager::enable(ErrorManager::DEVELOPMENT);
 }
 
-if (defined('KaraDAV\ERRORS_EMAIL') && ERRORS_EMAIL) {
+if (ERRORS_EMAIL) {
 	ErrorManager::setEmail(ERRORS_EMAIL);
 }
 
-if (defined('KaraDAV\ERRORS_LOG') && ERRORS_LOG) {
+if (ERRORS_LOG) {
 	ErrorManager::setLogFile(ERRORS_LOG);
 }
 elseif (is_writeable(__DIR__ . '/../data/error.log')) {
 	ErrorManager::setLogFile(__DIR__ . '/../data/error.log');
 }
 
-if (defined('KaraDAV\ERRORS_REPORT_URL') && ERRORS_REPORT_URL) {
+if (ERRORS_REPORT_URL) {
 	ErrorManager::setRemoteReporting(ERRORS_REPORT_URL, true);
 }
 
 // Create random secret key
 if (!defined('KaraDAV\SECRET_KEY')) {
-	$cfg = file_get_contents($cfg_file);
+	$cfg = file_exists($cfg_file) ? file_get_contents($cfg_file) : "<?php\n";
 
 	if (false == strpos($cfg, 'SECRET_KEY')) {
 		$secret = base64_encode(random_bytes(16));
@@ -55,7 +79,7 @@ if (!defined('KaraDAV\SECRET_KEY')) {
 		$c = sprintf("\n\n// Randomly generated secret key, please change only if necessary\nconst SECRET_KEY = %s;\n\n",
 			var_export($secret, true));
 
-		if (!is_writeable($cfg_file)) {
+		if ((file_exists($cfg_file) && !is_writeable($cfg_file)) || !is_writeable(dirname($cfg_file))) {
 			echo "<h2>Configuration missing</h2>";
 			echo "<h4>KaraDAV cannot write to <tt>config.local.php</tt></h4>";
 			echo "<p>Please append the following code to the <tt>config.local.php</tt> file:</p>";
@@ -80,20 +104,12 @@ if (!defined('KaraDAV\WWW_URL')) {
 	define('KaraDAV\WWW_URL', sprintf('http%s://%s%s%s', $https, $name, $port, $root));
 }
 
-if (!defined('KaraDAV\AUTH_CALLBACK')) {
-	define('KaraDAV\AUTH_CALLBACK', null);
-}
-
-if (!defined('KaraDAV\DEFAULT_QUOTA')) {
-	define('KaraDAV\DEFAULT_QUOTA', 200);
-}
-
-if (!defined('KaraDAV\DISABLE_SLOW_OPERATIONS')) {
-	define('KaraDAV\DISABLE_SLOW_OPERATIONS', false);
-}
-
 // Init database
 if (!file_exists(DB_FILE)) {
+	if (!is_writable(dirname(DB_FILE))) {
+		throw new \RuntimeException('Cannot create database in directory: ' . dirname(DB_FILE));
+	}
+
 	$db = DB::getInstance();
 	$db->exec('BEGIN;');
 	$db->exec(file_get_contents(__DIR__ . '/../schema.sql'));
