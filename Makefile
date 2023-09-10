@@ -12,7 +12,6 @@ php-deps:
 	wget -O lib/KD2/ErrorManager.php '${KD2FW_URL}ErrorManager.php'
 	wget -O lib/KD2/WebDAV/Server.php '${KD2FW_URL}WebDAV/Server.php'
 	wget -O lib/KD2/WebDAV/AbstractStorage.php '${KD2FW_URL}WebDAV/AbstractStorage.php'
-	wget -O lib/KD2/WebDAV/FileStorage.php '${KD2FW_URL}WebDAV/FileStorage.php'
 	wget -O lib/KD2/WebDAV/NextCloud.php '${KD2FW_URL}WebDAV/NextCloud.php'
 	wget -O lib/KD2/WebDAV/WOPI.php '${KD2FW_URL}WebDAV/WOPI.php'
 
