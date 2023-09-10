@@ -1,6 +1,7 @@
 ## 0.3.13 - September 10, 2023
 
 * Use files inodes as file ID, so that we keep the same id when the file is moved or renamed.
+* Fix a bug in the NextCloud Android app, where the "Plus" button was disabled, because the NextCloud app doesn't respect the NextCloud spec.
 
 ## 0.3.12
 
