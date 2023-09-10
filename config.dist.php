@@ -3,6 +3,15 @@
 namespace KaraDAV;
 
 /**
+ * This is the configuration file for KaraDAV
+ * *DO NOT* edit the config.dist.php, copy it to config.local.php
+ * and edit it to suit your needs. Changing config.dist.php won't do
+ * anything.
+ *
+ * If config.local.php does not exist, default values will be used.
+ */
+
+/**
  * Default quota for new users (in MB)
  */
 const DEFAULT_QUOTA = 200;
