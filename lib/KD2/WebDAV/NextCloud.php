@@ -4,6 +4,8 @@ namespace KD2\WebDAV;
 
 abstract class NextCloud
 {
+	const NC_VERSION = '27.0.2';
+
 	/**
 	 * File permissions for NextCloud clients
 	 * https://doc.owncloud.com/desktop/next/appendices/architecture.html#server-side-permissions
@@ -434,7 +436,7 @@ abstract class NextCloud
 		}
 		else {
 			$name = 'NextCloud';
-			$version = '24.0.4';
+			$version = self::NC_VERSION;
 		}
 
 		return [
@@ -493,12 +495,14 @@ abstract class NextCloud
 
 	public function nc_capabilities()
 	{
+		$v = explode('.', self::NC_VERSION);
+
 		return $this->nc_ocs([
 			'version' => [
-				'major' => 24,
-				'minor' => 0,
-				'micro' => 4,
-				'string' => '24.0.4',
+				'major' => (int)$v[0],
+				'minor' => (int)$v[1],
+				'micro' => (int)$v[1],
+				'string' => self::NC_VERSION,
 				'edition' => '',
 				'extendedSupport' => false,
 			],
