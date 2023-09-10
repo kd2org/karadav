@@ -31,6 +31,9 @@ abstract class NextCloud
 	const PERM_WRITE = 'W';
 	const PERM_CREATE = 'C';
 	const PERM_MKDIR = 'K';
+	// NextCloud Android is buggy and doesn't differentiate between C and K, you must use CK
+	// or nothing (eg. C or K alone is not recognized, same with KC)
+	const PERM_CREATE_FILES_DIRS = 'CK';
 
 	const NC_NAMESPACE = 'http://nextcloud.org/ns';
 	const OC_NAMESPACE = 'http://owncloud.org/ns';
