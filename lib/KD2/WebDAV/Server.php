@@ -118,7 +118,8 @@ class Server
 
 	public function setBaseURI(string $uri): void
 	{
-		$this->base_uri = rtrim($uri, '/') . '/';
+		$this->base_uri = '/' . ltrim($this->base_uri);
+		$this->base_uri = rtrim($this->base_uri, '/') . '/';
 	}
 
 	/**
@@ -1243,8 +1244,9 @@ class Server
 		$uri = parse_url($source, PHP_URL_PATH);
 		$uri = rawurldecode($uri);
 		$uri = trim($uri, '/');
+		$uri = '/' . $uri;
 
-		if ($uri . '/' == $this->base_uri) {
+		if ($uri . '/' === $this->base_uri) {
 			$uri .= '/';
 		}
 
