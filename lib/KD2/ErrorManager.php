@@ -1004,23 +1004,34 @@ class ErrorManager
 				if ($var instanceof \Traversable) {
 					$var2 = [];
 
-					// Iterate as long as we can
-					while (@$var->valid()) {
-						$var2[] = $var->current();
-						$var->next();
+					try {
+						// Iterate as long as we can
+						while (@$var->valid()) {
+							$var2[] = $var->current();
+							$var->next();
+						}
+					}
+					catch (\Exception $e) {
+						$var2[] = '**' . $e->getMessage() . '**';
 					}
 
 					$var = $var2;
 				}
 
-				foreach ($var as $key=>$value)
+				foreach ((array)$var as $key=>$value)
 				{
 					$out .= str_repeat(' ', $level * 2);
 					$out .= is_string($key) ? '["' . $key . '"]' : '[' . $key . ']';
-					$out .= '=> ' . self::dump($value, $hide_values, $level) . PHP_EOL;
+
+					if ($value === $var) {
+						$out .= '=> *RECURSION*' . PHP_EOL;
+					}
+					else {
+						$out .= '=> ' . self::dump($value, $hide_values, $level + 1) . PHP_EOL;
+					}
 				}
 
-				$out .= str_repeat(' ', --$level * 2) . '}';
+				$out .= str_repeat(' ', $level * 2) . '}';
 				return $out;
 			default:
 				return gettype($var);
