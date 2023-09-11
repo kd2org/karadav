@@ -3,10 +3,11 @@
 namespace KaraDAV;
 
 use KD2\WebDAV\AbstractStorage;
+use KD2\WebDAV\TrashInterface;
 use KD2\WebDAV\WOPI;
 use KD2\WebDAV\Exception as WebDAV_Exception;
 
-class Storage extends AbstractStorage
+class Storage extends AbstractStorage implements TrashInterface
 {
 	protected Users $users;
 	protected NextCloud $nextcloud;
@@ -22,6 +23,15 @@ class Storage extends AbstractStorage
 	{
 		$this->users = $users;
 		$this->nextcloud = $nextcloud;
+	}
+
+	protected function ensureDirectoryExists(string $path): void
+	{
+		$path = $this->users->current()->path . $path;
+
+		if (!file_exists($path)) {
+			@mkdir($path, @fileperms($this->users->current()->path) ?: 0770, true);
+		}
 	}
 
 	public function getLock(string $uri, ?string $token = null): ?string
@@ -183,6 +193,24 @@ class Storage extends AbstractStorage
 				}
 
 				return implode('', $permissions);
+			case NextCloud::PROP_NC_TRASHBIN_FILENAME:
+				if (0 !== strpos($uri, '.trash/')) {
+					return null;
+				}
+
+				return basename($uri);
+			case NextCloud::PROP_NC_TRASHBIN_DELETION_TIME:
+				if (0 !== strpos($uri, '.trash/')) {
+					return null;
+				}
+
+				return $this->getTrashInfo(basename($uri))['DeletionDate'] ?? null;
+			case NextCloud::PROP_NC_TRASHBIN_ORIGINAL_LOCATION:
+				if (0 !== strpos($uri, '.trash/')) {
+					return null;
+				}
+
+				return $this->getTrashInfo(basename($uri))['Path'] ?? null;
 			case 'DAV::quota-available-bytes':
 				return null;
 			case 'DAV::quota-used-bytes':
@@ -240,7 +268,7 @@ class Storage extends AbstractStorage
 		return $out;
 	}
 
-	public function put(string $uri, $pointer, ?string $hash_algo, ?string $hash, ?int $mtime): bool
+	public function put(string $uri, $pointer, ?string $hash_algo = null, ?string $hash = null, ?int $mtime = null): bool
 	{
 		if (preg_match(self::PUT_IGNORE_PATTERN, basename($uri))) {
 			return false;
@@ -253,9 +281,7 @@ class Storage extends AbstractStorage
 			throw new WebDAV_Exception('Target is a directory', 409);
 		}
 
-		if (!file_exists($parent)) {
-			mkdir($parent, 0770, true);
-		}
+		$this->ensureDirectoryExists($uri);
 
 		$new = !file_exists($target);
 
@@ -326,6 +352,12 @@ class Storage extends AbstractStorage
 			throw new WebDAV_Exception('Target does not exist', 404);
 		}
 
+		// Move to trash
+		if (DEFAULT_TRASHBIN_DELAY > 0 && 0 !== strpos($uri, '.trash')) {
+			$this->moveToTrash($uri);
+			return;
+		}
+
 		if (is_dir($target)) {
 			self::deleteDirectory($target);
 		}
@@ -367,7 +399,7 @@ class Storage extends AbstractStorage
 		$method = $move ? 'rename' : 'copy';
 
 		if ($method == 'copy' && is_dir($source)) {
-			@mkdir($target, 0770, true);
+			$this->ensureDirectoryExists($destination);
 
 			if (!is_dir($target)) {
 				throw new WebDAV_Exception('Target directory could not be created', 409);
@@ -422,7 +454,7 @@ class Storage extends AbstractStorage
 			throw new WebDAV_Exception('You don\'t have the right to create a directory here', 403);
 		}
 
-		mkdir($target, 0770);
+		$this->ensureDirectoryExists($uri);
 	}
 
 	public function getResourceProperties(string $uri): Properties
@@ -577,5 +609,136 @@ class Storage extends AbstractStorage
 		}
 
 		return $uri;
+	}
+
+	/**
+	 * @see https://specifications.freedesktop.org/trash-spec/trashspec-latest.html
+	 */
+	public function moveToTrash(string $uri): void
+	{
+		$this->ensureDirectoryExists('.trash/info');
+		$this->ensureDirectoryExists('.trash/files');
+
+		$name = basename($uri);
+
+		$target = $this->users->current()->path . '.trash/info/' . $name . '.trashinfo';
+		$info = sprintf("[Trash Info]\nPath=%s\nDeletionDate=%s\n",
+			str_replace('%2F', '/', rawurlencode($uri)),
+			date(DATE_RFC3339)
+		);
+
+		file_put_contents($target, $info);
+
+		$this->move($uri, '.trash/files/' . $name);
+	}
+
+	public function restoreFromTrash(string $uri): void
+	{
+		$src = $this->users->current()->path . '.trash/files/' . $uri;
+
+		if (!file_exists($src)) {
+			return;
+		}
+
+		$info = $this->getTrashInfo($uri);
+		$dest = $info['Path'] ?? $uri;
+
+		if ($info) {
+			$this->delete('.trash/info/' . $uri . '.trashinfo');
+		}
+
+		$this->move('.trash/files/' . $uri, $dest);
+	}
+
+	public function emptyTrash(): void
+	{
+		$this->delete('.trash');
+		$this->ensureDirectoryExists('.trash/info');
+		$this->ensureDirectoryExists('.trash/files');
+	}
+
+	public function deleteFromTrash(string $uri): void
+	{
+		$this->delete('.trash/files/' . $uri);
+		$this->delete('.trash/info/' . $uri . '.trashinfo');
+	}
+
+	protected function getTrashInfo(string $uri): ?array
+	{
+		$info_file = $this->users->current()->path . '.trash/info/' . $uri . '.trashinfo';
+		$info = @parse_ini_file($info_file, false, INI_SCANNER_RAW);
+
+		if (!isset($info['Path'], $info['DeletionDate'])) {
+			return null;
+		}
+
+		$info['Path'] = rawurldecode($info['Path']);
+		$info['DeletionDate'] = strtotime($info['DeletionDate']);
+		$info['InfoFilePath'] = $info_file;
+		return $info;
+	}
+
+	public function pruneTrash(int $delete_before_timestamp): int
+	{
+		$this->ensureDirectoryExists('.trash/info');
+		$this->ensureDirectoryExists('.trash/files');
+
+		$info_dir = $this->users->current()->path . '.trash/info';
+		$count = 0;
+
+		foreach (glob($info_dir . '/*.trashinfo') as $file) {
+			$name = basename($file);
+			$name = str_replace('.trashinfo', '', $name);
+			$info = $this->getTrashInfo($name);
+
+			if (!$info) {
+				continue;
+			}
+
+			if ($info['DeletionDate'] < $delete_before_timestamp) {
+				$this->delete('.trash/files/' . $name);
+				$this->delete('.trash/info/' . $name . '.trashinfo');
+				$count++;
+			}
+		}
+
+		return $count;
+	}
+
+	public function listTrashFiles(): iterable
+	{
+		$this->pruneTrash(time() - DEFAULT_TRASHBIN_DELAY);
+
+		$this->ensureDirectoryExists('.trash/info');
+		$this->ensureDirectoryExists('.trash/files');
+		$info_dir = $this->users->current()->path . '.trash/info';
+		$files_dir = $this->users->current()->path . '.trash/files';
+
+		foreach (glob($info_dir . '/*.trashinfo') as $file) {
+			$name = basename($file);
+			$name = str_replace('.trashinfo', '', $name);
+			$target = $files_dir . '/' . $name;
+
+			if (!file_exists($target)) {
+				@unlink($file);
+				continue;
+			}
+
+			$info = $this->getTrashInfo($name);
+
+			$is_dir = is_dir($target);
+			$size = $is_dir ? self::getDirectorySize($target) : filesize($target);
+
+			yield $name => [
+				NextCloud::PROP_NC_TRASHBIN_FILENAME => $name,
+				NextCloud::PROP_NC_TRASHBIN_ORIGINAL_LOCATION => $info['Path'],
+				NextCloud::PROP_NC_TRASHBIN_DELETION_TIME => $info['DeletionDate'],
+				NextCloud::PROP_OC_SIZE => $size,
+				NextCloud::PROP_OC_ID => fileinode($file),
+				'DAV::getcontentlength' => $size,
+				'DAV::getcontenttype' => $is_dir ? null : @mime_content_type($target),
+				'DAV::resourcetype' => $is_dir ? 'collection' : '',
+			];
+		}
 	}
 }

@@ -35,6 +35,7 @@ If you are looking for an even lighter WebDAV server, try also our other server,
 * Passes most of the [Litmus compliance tests](https://github.com/tolsen/litmus) (see below)
 * Supports WOPI, for editing and viewing of documents using OnlyOffice, Collabora Online or MS Office.
 * Support for LDAP
+* Trashbin: files are moved to a `.trash` folder before being deleted completely
 * Good performance!
 
 ### NextCloud/ownCloud features
@@ -45,6 +46,7 @@ The following ownCloud/NextCloud specific features are supported:
 
 * [Direct download](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
 * [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
+* [Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
 * `X-OC-MTime` [header](https://gitlab.gnome.org/GNOME/gvfs/-/issues/637) to set file modification time
 * `OC-Checksum` [header](https://github.com/owncloud-archive/documentation/issues/2964) to verify file upload integrity
 * Login via app-specific passwords (necessary for NextCloud desktop and Android clients)
@@ -106,8 +108,7 @@ Here is a list of clients tested with KaraDAV:
 
 This might get supported in future (maybe):
 
-* Probably: [NextCloud Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
-* Maybe: [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html)
+* Probably: [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html)
 * Maybe: NextCloud files versioning
 	* [NextCloud API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/versions.html)
 	* [NextCloud versioning pattern](https://docs.nextcloud.com/server/latest/user_manual/en/files/version_control.html)

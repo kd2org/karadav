@@ -20,6 +20,7 @@ if (file_exists($cfg_file)) {
 // Default configuration constants
 $defaults = [
 	'DEFAULT_QUOTA'           => 200,
+	'DEFAULT_TRASHBIN_DELAY'  => 60*60*24*30,
 	'STORAGE_PATH'            => __DIR__ . '/../data/%s',
 	'DB_FILE'                 => __DIR__ . '/../data/db.sqlite',
 	'WOPI_DISCOVERY_URL'      => null,
@@ -28,8 +29,8 @@ $defaults = [
 	'ENABLE_XSENDFILE'        => false,
 	'DISABLE_SLOW_OPERATIONS' => false,
 	'ERRORS_SHOW'             => true,
-	'ERRORS_EMAIL'            => true,
-	'ERRORS_LOG'              => null,
+	'ERRORS_EMAIL'            => null,
+	'ERRORS_LOG'              => __DIR__ . '/../data/error.log',
 	'ERRORS_REPORT_URL'       => null,
 	'AUTH_CALLBACK'           => null,
 	'LDAP_HOST'               => null,
@@ -71,7 +72,7 @@ if (ERRORS_REPORT_URL) {
 
 // Create random secret key
 if (!defined('KaraDAV\SECRET_KEY')) {
-	$cfg = file_exists($cfg_file) ? file_get_contents($cfg_file) : "<?php\n";
+	$cfg = file_exists($cfg_file) ? file_get_contents($cfg_file) : "<?php\nnamespace KaraDAV;\n\n";
 
 	if (false == strpos($cfg, 'SECRET_KEY')) {
 		$secret = base64_encode(random_bytes(16));

@@ -17,6 +17,13 @@ namespace KaraDAV;
 const DEFAULT_QUOTA = 200;
 
 /**
+ * Default delay after which files should be deleted from the trashbin
+ * (in seconds)
+ * Set to zero (0) to disable the trashbin (files will be deleted directly)
+ */
+const DEFAULT_TRASHBIN_DELAY = 60*60*24*30; // 15 days
+
+/**
  * Users file storage path
  * %s is replaced by the login name of the user
  */

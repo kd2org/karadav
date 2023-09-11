@@ -22,11 +22,11 @@ if (!$user) {
 	exit;
 }
 
-$quota = $users->quota($user);
-$server = new Server;
+$quota = $users->quota($user, true);
 $free = format_bytes($quota->free);
 $used = format_bytes($quota->used);
 $total = format_bytes($quota->total);
+$trash = format_bytes($quota->trash ?? 0);
 $percent = $quota->total ? floor(($quota->used / $quota->total)*100) . '%' : '100%';
 $www_url = WWW_URL;
 $username = htmlspecialchars($user->login);
@@ -40,6 +40,7 @@ echo <<<EOF
 	<dd><h3>{$percent} used, {$free} free</h3></dd>
 	<dd><progress max="{$quota->total}" value="{$quota->used}"></progress>
 	<dd>Used {$used} out of a total of {$total}.</dd>
+	<dd>Trash: {$trash}.</dd>
 	<dt>WebDAV URL</dt>
 	<dd><h3><a href="{$user->dav_url}"><tt>{$user->dav_url}</tt></a></h3>
 	<dt>NextCloud URL</dt>

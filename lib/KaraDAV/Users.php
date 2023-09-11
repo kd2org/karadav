@@ -309,10 +309,11 @@ class Users
 		return $this->makeUserObjectGreatAgain($user);
 	}
 
-	public function quota(?stdClass $user = null): stdClass
+	public function quota(?stdClass $user = null, bool $with_trash = false): stdClass
 	{
 		$user ??= $this->current();
 		$used = $total = $free = 0;
+		$trash = null;
 
 		if ($user) {
 			if ($user->quota == -1) {
@@ -330,9 +331,11 @@ class Users
 				$total = $user->quota;
 				$free = max(0, $total - $used);
 			}
+
+			$trash = $with_trash ? Storage::getDirectorySize($user->path . '/.trash') : null;
 		}
 
-		return (object) compact('free', 'total', 'used');
+		return (object) compact('free', 'total', 'used', 'trash');
 	}
 
 	public function delete(?stdClass $user)

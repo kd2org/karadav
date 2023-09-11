@@ -52,6 +52,10 @@ abstract class NextCloud
 	// in Android app
 	const PROP_NC_RICH_WORKSPACE = self::NC_NAMESPACE . ':rich-workspace';
 
+	const PROP_NC_TRASHBIN_FILENAME = self::NC_NAMESPACE . ':trashbin-filename';
+	const PROP_NC_TRASHBIN_ORIGINAL_LOCATION = self::NC_NAMESPACE . ':trashbin-original-location';
+	const PROP_NC_TRASHBIN_DELETION_TIME = self::NC_NAMESPACE . ':trashbin-deletion-time';
+
 	// Useless?
 	const PROP_OC_SHARETYPES = self::OC_NAMESPACE . ':share-types';
 	const PROP_NC_NOTE = self::NC_NAMESPACE . ':note';
@@ -237,6 +241,10 @@ abstract class NextCloud
 
 		// There's just 3 or 4 different endpoints for avatars, this is ridiculous
 		'remote.php/dav/avatars/' => 'avatar',
+
+		// Trasbin API
+		// https://docs.nextcloud.com/server/19/developer_manual/client_apis/WebDAV/trashbin.html
+		'remote.php/dav/trashbin/' => 'trashbin',
 
 		// Main routes
 		'remote.php/webdav/' => 'webdav', // desktop client
@@ -526,7 +534,7 @@ abstract class NextCloud
 					// https://github.com/owncloud/client/blob/24ca9615f6e8ea765f6c25fb4e009b1acc262a2d/src/libsync/capabilities.cpp#L166
 					'bigfilechunking' => true,
 					'comments' => false,
-					'undelete' => false,
+					'undelete' => in_array(TrashInterface::class, class_implements($this->storage)),
 					'versioning' => false,
 				],
 				'files_sharing' => [
@@ -786,6 +794,10 @@ abstract class NextCloud
 		$dir = $match[2] ?? null;
 		$part = $match[3] ?? null;
 
+		if ($login !== $user) {
+			throw new Exception('Invalid username in URL, does not match logged user', 403);
+		}
+
 		if ($method == 'MKCOL') {
 			http_response_code(201);
 		}
@@ -857,5 +869,69 @@ abstract class NextCloud
 		else {
 			throw new Exception('Invalid method for chunked upload', 400);
 		}
+	}
+
+	protected function nc_trashbin(string $uri): ?string
+	{
+		$this->requireAuth();
+
+		$r = '!^remote\.php/dav/trashbin/([^/]+)/trash/([^/]*)$!';
+
+		if (!preg_match($r, $uri, $match)) {
+			throw new Exception('Invalid URL for trashbin API', 400);
+		}
+
+		$method = $_SERVER['REQUEST_METHOD'] ?? null;
+		$login = $match[1] ?? null;
+		$path = $match[2] ?? null;
+
+		if ($method === 'DELETE' && empty($path)) {
+			$this->storage->emptyTrash();
+			http_response_code(204);
+		}
+		elseif ($method === 'DELETE') {
+			$this->storage->deleteFromTrash($path);
+			http_response_code(204);
+		}
+		elseif ($method === 'MOVE' && !empty($path)) {
+			$this->storage->restoreFromTrash($path);
+			http_response_code(201);
+		}
+		elseif ($method === 'PROPFIND') {
+			header('HTTP/1.1 207 Multi-Status', true);
+			header('Content-Type: text/xml; charset=utf-8', true);
+
+			$out = '<?xml version="1.0" encoding="utf-8"?>' . PHP_EOL;
+			$out .= '<d:multistatus xmlns:d="DAV:" xmlns:nc="http://nextcloud.org/ns" xmlns:oc="http://owncloud.org/ns">' . PHP_EOL;
+
+			$out .= sprintf('<d:response><d:href>%s</d:href><d:propstat><d:prop><d:resourcetype><d:collection/></d:resourcetype></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat><d:propstat><d:prop><nc:trashbin-deletion-time/><d:getcontenttype/><oc:size/><oc:id/><d:getcontentlength/><nc:trashbin-filename/><nc:trashbin-original-location/></d:prop><d:status>HTTP/1.1 404 Not Found</d:status></d:propstat></d:response>', $match[0]);
+
+			foreach ($this->storage->listTrashFiles() as $file => $props) {
+				$out .= '<d:response>' . PHP_EOL;
+				$path = '/' . trim($uri, '/') . '/' . rawurlencode($file);
+				$out .= sprintf('<d:href>%s</d:href>', htmlspecialchars($path, ENT_XML1)) . PHP_EOL;
+				$out .= '<d:propstat><d:prop>';
+
+				foreach ($props as $key => $value) {
+					$pos = strrpos($key, ':');
+					$ns = substr($key, 0, $pos);
+					$tag = substr($key, $pos + 1);
+					$out .= sprintf('<%s xmlns="%s">%s</%1$s>', $tag, $ns, htmlspecialchars($value, ENT_XML1));
+				}
+
+				$out .= '</d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>' . PHP_EOL;
+				$out .= '</d:response>' . PHP_EOL;
+			}
+
+			$out .= '</d:multistatus>';
+
+			echo $out;
+
+			$this->server->log("=> Body:\n%s", $out);		}
+		else {
+			throw new Exception('Invalid method for trashbin', 400);
+		}
+
+		return null;
 	}
 }
