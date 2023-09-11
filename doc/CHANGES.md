@@ -1,4 +1,8 @@
-## 0.3.13 - September 10, 2023
+## 0.4.0 - September 11, 2023
+
+* Implement trashbin support, compatible with NextCloud API
+
+## 0.3.13
 
 * Use files inodes as file ID, so that we keep the same id when the file is moved or renamed.
 * Fix a bug in the NextCloud Android app, where the "Plus" button was disabled, because the NextCloud app doesn't respect the NextCloud spec.
