@@ -21,7 +21,7 @@ const DEFAULT_QUOTA = 200;
  * (in seconds)
  * Set to zero (0) to disable the trashbin (files will be deleted directly)
  */
-const DEFAULT_TRASHBIN_DELAY = 60*60*24*30; // 15 days
+const DEFAULT_TRASHBIN_DELAY = 60*60*24*30; // 30 days
 
 /**
  * Users file storage path
