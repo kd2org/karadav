@@ -1,3 +1,7 @@
+## 0.4.1 - October 15, 2023
+
+* Update dependencies to fix "Invalid URL" bug
+
 ## 0.4.0 - September 11, 2023
 
 * Implement trashbin support, compatible with NextCloud API
