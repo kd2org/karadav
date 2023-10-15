@@ -131,8 +131,9 @@ class ErrorManager
 	static public function shutdownHandler()
 	{
 		// Stop here if disabled or if the script ended with an exception
-		if (!self::$enabled || self::$catching)
+		if (!self::$enabled || self::$catching) {
 			return false;
+		}
 
 		$error = error_get_last();
 
@@ -755,32 +756,12 @@ class ErrorManager
 		return $out;
 	}
 
-	/**
-	 * Enable error manager
-	 * @param  integer $type Type of error management (ErrorManager::PRODUCTION or ErrorManager::DEVELOPMENT)
-	 * You can also use ErrorManager::PRODUCTION | ErrorManager::CLI_DEVELOPMENT to get error messages in CLI but still hide errors
-	 * on web front-end.
-	 * @return void
-	 */
-	static public function enable($type = self::DEVELOPMENT)
+	static public function setEnvironment(int $environment): void
 	{
-		if (self::$enabled)
-			return true;
+		self::$enabled = $environment;
+		error_reporting($environment & self::DEVELOPMENT ? -1 : E_ALL & ~E_DEPRECATED & ~E_STRICT);
 
-		self::$context['request_started'] = $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true);
-
-		self::$enabled = $type;
-
-		self::$term_color = function_exists('posix_isatty') && defined('\STDOUT') && @posix_isatty(\STDOUT);
-
-		ini_set('display_errors', false);
-		ini_set('log_errors', false);
-		ini_set('html_errors', false);
-		ini_set('zend.exception_ignore_args', false); // We want to get the args in exceptions (since PHP 7.4)
-		error_reporting($type & self::DEVELOPMENT ? -1 : E_ALL & ~E_DEPRECATED & ~E_STRICT);
-
-		if ($type & self::DEVELOPMENT && PHP_SAPI != 'cli')
-		{
+		if ($environment & self::DEVELOPMENT && PHP_SAPI != 'cli') {
 			self::setHtmlHeader('<!DOCTYPE html><meta charset="utf-8" /><style type="text/css">
 			body { font-family: sans-serif; } * { margin: 0; padding: 0; }
 			u, code b, i, h3 { font-style: normal; font-weight: normal; text-decoration: none; }
@@ -796,32 +777,52 @@ class ErrorManager
 			</style>
 			<pre id="icn"> \__/<br /> (xx)<br />//||\\\\</pre>');
 		}
+	}
+
+	/**
+	 * Enable error manager
+	 * @param  integer $environment Type of error management (ErrorManager::PRODUCTION or ErrorManager::DEVELOPMENT)
+	 * You can also use ErrorManager::PRODUCTION | ErrorManager::CLI_DEVELOPMENT to get error messages in CLI but still hide errors
+	 * on web front-end.
+	 * @return void
+	 */
+	static public function enable(int $environment = self::DEVELOPMENT): void
+	{
+		if (self::$enabled) {
+			return;
+		}
+
+		self::$context['request_started'] = $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true);
+
+		self::$term_color = function_exists('posix_isatty') && defined('\STDOUT') && @posix_isatty(\STDOUT);
+
+		ini_set('display_errors', false);
+		ini_set('log_errors', false);
+		ini_set('html_errors', false);
+		ini_set('zend.exception_ignore_args', false); // We want to get the args in exceptions (since PHP 7.4)
+
+		self::setEnvironment($environment);
 
 		register_shutdown_function([self::class, 'shutdownHandler']);
-
 		set_exception_handler([__CLASS__, 'exceptionHandler']);
-
 		set_error_handler([__CLASS__, 'errorHandler']);
 
-		if ($type & self::DEVELOPMENT)
-		{
+		if ($environment & self::DEVELOPMENT) {
 			self::startTimer('_global');
 		}
 
 		// Assign default context
 		static $defaults = [
-			'hostname'       => 'SERVER_NAME',
-			'http_user_agent'     => 'HTTP_USER_AGENT',
-			'http_referrer'  => 'HTTP_REFERER',
-			'user_addr'      => 'REMOTE_ADDR',
-			'server_addr'    => 'SERVER_ADDR',
-			'root_directory' => 'DOCUMENT_ROOT',
+			'hostname'        => 'SERVER_NAME',
+			'http_user_agent' => 'HTTP_USER_AGENT',
+			'http_referrer'   => 'HTTP_REFERER',
+			'user_addr'       => 'REMOTE_ADDR',
+			'server_addr'     => 'SERVER_ADDR',
+			'root_directory'  => 'DOCUMENT_ROOT',
 		];
 
-		foreach ($defaults as $a => $b)
-		{
-			if (isset($_SERVER[$b]) && !isset(self::$context[$a]))
-			{
+		foreach ($defaults as $a => $b) {
+			if (isset($_SERVER[$b]) && !isset(self::$context[$a])) {
 				self::$context[$a] = $_SERVER[$b];
 			}
 		}
