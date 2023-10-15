@@ -281,7 +281,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			throw new WebDAV_Exception('Target is a directory', 409);
 		}
 
-		$this->ensureDirectoryExists($uri);
+		$this->ensureDirectoryExists($parent);
 
 		$new = !file_exists($target);
 
@@ -292,6 +292,10 @@ class Storage extends AbstractStorage implements TrashInterface
 		$delete = false;
 		$size = 0;
 		$quota = $this->users->quota($this->users->current());
+
+		if ($quota->free <= 0) {
+			throw new WebDAV_Exception('Your quota is exhausted', 403);
+		}
 
 		$tmp_dir = sprintf(STORAGE_PATH, '_tmp');
 
@@ -399,7 +403,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		$method = $move ? 'rename' : 'copy';
 
 		if ($method == 'copy' && is_dir($source)) {
-			$this->ensureDirectoryExists($destination);
+			$this->ensureDirectoryExists($parent);
 
 			if (!is_dir($target)) {
 				throw new WebDAV_Exception('Target directory could not be created', 409);
