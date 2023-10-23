@@ -1,6 +1,6 @@
 # KaraDAV - A lightweight WebDAV server, compatible with ownCloud and NextCloud clients
 
-This is a simple and lighweight WebDAV server, allowing to easily set up a file sharing server compatible with WebDAV and NextCloud clients. It has no dependencies and good performance.
+This is a simple and lightweight WebDAV server, allowing to easily set up a file sharing server compatible with WebDAV and NextCloud clients. It has no dependencies and good performance.
 
 It is written in PHP (8+). The only dependency is SQLite3 for the database.
 
@@ -299,7 +299,7 @@ But they mostly pass with litmus 0.13-3 supplied by Debian:
 30. unlock................ pass
 31. prep_collection....... pass
 32. lock_collection....... pass
-33. owner_modify.......... FAIL (PROPPATCH on locked resouce on `/files/demo/litmus/lockcoll/lockme.txt': 423 Locked)
+33. owner_modify.......... FAIL (PROPPATCH on locked resource on `/files/demo/litmus/lockcoll/lockme.txt': 423 Locked)
 34. notowner_modify....... pass
 35. refresh............... pass
 36. indirect_refresh...... pass
