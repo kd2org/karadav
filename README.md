@@ -30,6 +30,7 @@ If you are looking for an even lighter WebDAV server, try also our other server,
 * Compatible with WebDAV clients
 * Support for HTTP ranges (partial download of files)
 * Support for [RFC 3230](https://greenbytes.de/tech/webdav/rfc3230.xhtml) to get the MD5 digest hash of a file (to check integrity) on `HEAD` requests (only MD5 is supported so far)
+* Support for setting the file modification time using `PROPPATCH` and `Win32LastModifiedTime` or `{DAV:}lastmodified` properties
 * Support for `Content-MD5` with `PUT` requests, see [dCache documentation for details](https://dcache.org/old/manuals/UserGuide-6.0/webdav.shtml#checksums)
 * Support for some of the [Microsoft proprietary properties](https://greenbytes.de/tech/webdav/webdavfaq.html)
 * Passes most of the [Litmus compliance tests](https://github.com/tolsen/litmus) (see below)
@@ -47,7 +48,7 @@ The following ownCloud/NextCloud specific features are supported:
 * [Direct download](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
 * [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
 * [Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
-* `X-OC-MTime` [header](https://gitlab.gnome.org/GNOME/gvfs/-/issues/637) to set file modification time
+* `X-OC-MTime` [header](https://gitlab.gnome.org/GNOME/gvfs/-/issues/637) to set file modification time (also supported by [rclone](https://rclone.org/webdav/#provider-notes))
 * `OC-Checksum` [header](https://github.com/owncloud-archive/documentation/issues/2964) to verify file upload integrity
 * Login via app-specific passwords (necessary for NextCloud desktop and Android clients)
 * Thumbnail/preview of images and files
