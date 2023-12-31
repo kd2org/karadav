@@ -27,11 +27,15 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	protected function ensureDirectoryExists(string $path): void
 	{
-		$path = $this->users->current()->path . $path;
-
 		if (!file_exists($path)) {
 			@mkdir($path, @fileperms($this->users->current()->path) ?: 0770, true);
 		}
+	}
+
+	protected function ensureTrashExists(): void
+	{
+		$this->ensureDirectoryExists($this->users->current()->path  . '.trash/info');
+		$this->ensureDirectoryExists($this->users->current()->path . '.trash/files');
 	}
 
 	public function getLock(string $uri, ?string $token = null): ?string
@@ -460,7 +464,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			throw new WebDAV_Exception('You don\'t have the right to create a directory here', 403);
 		}
 
-		$this->ensureDirectoryExists($uri);
+		$this->ensureDirectoryExists($target);
 	}
 
 	public function touch(string $uri, \DateTimeInterface $datetime): bool
@@ -635,8 +639,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	 */
 	public function moveToTrash(string $uri): void
 	{
-		$this->ensureDirectoryExists('.trash/info');
-		$this->ensureDirectoryExists('.trash/files');
+		$this->ensureTrashExists();
 
 		$name = basename($uri);
 
@@ -672,8 +675,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function emptyTrash(): void
 	{
 		$this->delete('.trash');
-		$this->ensureDirectoryExists('.trash/info');
-		$this->ensureDirectoryExists('.trash/files');
+		$this->ensureTrashExists();
 	}
 
 	public function deleteFromTrash(string $uri): void
@@ -699,8 +701,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function pruneTrash(int $delete_before_timestamp): int
 	{
-		$this->ensureDirectoryExists('.trash/info');
-		$this->ensureDirectoryExists('.trash/files');
+		$this->ensureTrashExists();
 
 		$info_dir = $this->users->current()->path . '.trash/info';
 		$count = 0;
@@ -728,8 +729,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	{
 		$this->pruneTrash(time() - DEFAULT_TRASHBIN_DELAY);
 
-		$this->ensureDirectoryExists('.trash/info');
-		$this->ensureDirectoryExists('.trash/files');
+		$this->ensureTrashExists();
 		$info_dir = $this->users->current()->path . '.trash/info';
 		$files_dir = $this->users->current()->path . '.trash/files';
 

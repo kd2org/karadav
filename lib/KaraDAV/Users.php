@@ -70,6 +70,8 @@ class Users
 				mkdir($user->path, 0770, true);
 			}
 
+			$user->path = realpath($user->path);
+
 			$user->dav_url = WWW_URL . 'files/' . $user->login . '/';
 		}
 

@@ -1,6 +1,7 @@
 ## 0.4.3 - December 31, 2023
 
 * Add support for `PROPPATCH`-ing last modification time
+* Fix creation of ghost directory in user directory (fix #46)
 * Fix bug with NextCloud client where files were not showing up anymore
 * Update dependencies
 
