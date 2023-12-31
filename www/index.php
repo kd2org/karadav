@@ -22,6 +22,12 @@ if (!$user) {
 	exit;
 }
 
+if (isset($_GET['empty_trash'])) {
+	$users->emptyTrash($user);
+	header('Location: ./');
+	exit;
+}
+
 $quota = $users->quota($user, true);
 $free = format_bytes($quota->free);
 $used = format_bytes($quota->used);
@@ -30,6 +36,11 @@ $trash = format_bytes($quota->trash ?? 0);
 $percent = $quota->total ? floor(($quota->used / $quota->total)*100) . '%' : '100%';
 $www_url = WWW_URL;
 $username = htmlspecialchars($user->login);
+$trash_button = '';
+
+if ($quota->trash) {
+	$trash_button = '<br /><a href="?empty_trash" class="btn sm">Empty trash now</a>';
+}
 
 html_head('My files');
 
@@ -40,7 +51,7 @@ echo <<<EOF
 	<dd><h3>{$percent} used, {$free} free</h3></dd>
 	<dd><progress max="{$quota->total}" value="{$quota->used}"></progress>
 	<dd>Used {$used} out of a total of {$total}.</dd>
-	<dd>Trash: {$trash}.</dd>
+	<dd>Trash: {$trash}. {$trash_button}</dd>
 	<dt>WebDAV URL</dt>
 	<dd><h3><a href="{$user->dav_url}"><tt>{$user->dav_url}</tt></a></h3>
 	<dt>NextCloud URL</dt>
