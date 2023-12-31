@@ -237,7 +237,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		return $this->getResourceProperties($uri)->get($name);
 	}
 
-	public function properties(string $uri, ?array $properties, int $depth): ?array
+	public function propfind(string $uri, ?array $properties, int $depth): ?array
 	{
 		$target = $this->users->current()->path . $uri;
 
@@ -268,7 +268,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		return $out;
 	}
 
-	public function put(string $uri, $pointer, ?string $hash_algo = null, ?string $hash = null, ?int $mtime = null): bool
+	public function put(string $uri, $pointer, ?string $hash_algo = null, ?string $hash = null): bool
 	{
 		if (preg_match(self::PUT_IGNORE_PATTERN, basename($uri))) {
 			return false;
@@ -339,10 +339,6 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 		else {
 			rename($tmp_file, $target);
-		}
-
-		if ($mtime) {
-			@touch($target, $mtime);
 		}
 
 		return $new;
@@ -416,12 +412,16 @@ class Storage extends AbstractStorage implements TrashInterface
 				} else {
 					copy($item, $target . DIRECTORY_SEPARATOR . $iterator->getSubPathname());
 				}
+				touch($target . DIRECTORY_SEPARATOR . $iterator->getSubPathname(), filemtime($item));
 			}
 		}
 		else {
 			$method($source, $target);
+			touch($target, filemtime($source));
 
-			$this->getResourceProperties($uri)->move($destination);
+			if ($method === 'rename') {
+				$this->getResourceProperties($uri)->move($destination);
+			}
 		}
 
 		return $overwritten;
@@ -461,6 +461,21 @@ class Storage extends AbstractStorage implements TrashInterface
 		$this->ensureDirectoryExists($uri);
 	}
 
+	public function touch(string $uri, \DateTimeInterface $datetime): bool
+	{
+		$target = $this->users->current()->path . $uri;
+
+		if (!file_exists($target)) {
+			return false;
+		}
+
+		if (!is_writeable($target)) {
+			throw new WebDAV_Exception('You don\'t have the right to create a directory here', 403);
+		}
+
+		return touch($target, $datetime->getTimestamp());
+	}
+
 	public function getResourceProperties(string $uri): Properties
 	{
 		if (!isset($this->properties[$uri])) {
@@ -470,17 +485,13 @@ class Storage extends AbstractStorage implements TrashInterface
 		return $this->properties[$uri];
 	}
 
-	public function setProperties(string $uri, string $body): void
+	public function proppatch(string $uri, array $properties): array
 	{
-		$properties = WebDAV::parsePropPatch($body);
-
-		if (!count($properties)) {
-			return;
-		}
-
 		$db = DB::getInstance();
 
 		$db->exec('BEGIN;');
+
+		$out = [];
 
 		foreach ($properties as $name => $prop) {
 			if ($prop['action'] == 'set') {
@@ -489,11 +500,13 @@ class Storage extends AbstractStorage implements TrashInterface
 			else {
 				$this->getResourceProperties($uri)->remove($name);
 			}
+
+			$out[$name] = 200;
 		}
 
 		$db->exec('END');
 
-		return;
+		return $out;
 	}
 
 	static protected function glob(string $path, string $pattern = '', int $flags = 0): array
