@@ -451,7 +451,7 @@ class Server
 		}
 
 		if (!isset($file['content']) && !isset($file['resource']) && !isset($file['path'])) {
-			throw new \RuntimeException('Invalid file array returned by ::get()');
+			throw new \RuntimeException('Invalid file array returned by ::get(): ' . print_r($file, true));
 		}
 
 		$this->extendExecutionTime();
