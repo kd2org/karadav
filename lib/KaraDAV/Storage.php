@@ -417,10 +417,12 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 		else {
 			$method($source, $target);
-			touch($target, filemtime($source));
 
 			if ($method === 'rename') {
 				$this->getResourceProperties($uri)->move($destination);
+			}
+			else {
+				touch($target, filemtime($source));
 			}
 		}
 
