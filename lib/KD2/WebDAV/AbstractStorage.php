@@ -45,14 +45,20 @@ abstract class AbstractStorage
 	 * Or it MUST return an array, where the keys are 'namespace_url:property_name' tuples,
 	 * and the value is the content of the property tag.
 	 */
-	abstract public function properties(string $uri, ?array $requested_properties, int $depth): ?array;
+	abstract public function propfind(string $uri, ?array $requested_properties, int $depth): ?array;
 
 	/**
 	 * Store resource properties
 	 * @param string $uri
-	 * @param string $body XML PROPPATCH request, parsing it is up to you
+	 * @param string $properties List of PROPPATCH request:
+	 * key = property name (namespace:tag_name)
+	 * value = array ['action' => 'set'|'remove', 'attributes' => array|null, 'content' => string|null]
+	 *
+	 * Should return an array:
+	 * key = property name
+	 * value = HTTP code (200 = OK, 403 = forbidden, 409 = conflict)
 	 */
-	public function setProperties(string $uri, string $body): void
+	public function proppatch(string $uri, array $properties): array
 	{
 		// By default, properties are not saved
 	}
@@ -65,10 +71,9 @@ abstract class AbstractStorage
 	 * @param  null|string $hash A hash of the resource to store.
 	 * If it is supplied and doesn't match the uploaded file, this method should fail with a
 	 * 400 code WebDAV exception and not proceed to store the resource.
-	 * @param  null|int $mtime The modification timestamp to set on the file
 	 * @return bool Return TRUE if the resource has been created, or FALSE it has just been updated.
 	 */
-	abstract public function put(string $uri, $pointer, ?string $hash_algo, ?string $hash, ?int $mtime): bool;
+	abstract public function put(string $uri, $pointer, ?string $hash_algo, ?string $hash): bool;
 
 	/**
 	 * Delete a resource
@@ -112,6 +117,15 @@ abstract class AbstractStorage
 	 * If the array value IS NULL, then a subsequent call to properties() will be issued for each element.
 	 */
 	abstract public function list(string $uri, array $properties): iterable;
+
+	/**
+	 * Change the file modification time for target $uri
+	 *
+	 * @param  string             $uri
+	 * @param  \DateTimeInterface $datetime
+	 * @return bool TRUE if the file modification time has been set correctly
+	 */
+	abstract public function touch(string $uri, \DateTimeInterface $timestamp): bool;
 
 	/**
 	 * Lock the requested resource
