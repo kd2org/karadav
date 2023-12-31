@@ -84,7 +84,7 @@ class WOPI
 
 			$method = $_SERVER['REQUEST_METHOD'];
 			$id = rawurldecode(strtok($uri, '/'));
-			$action = trim(strtok(false), '/');
+			$action = trim(strtok(''), '/');
 
 			$uri = $this->storage->getWopiURI($id, $auth_token);
 

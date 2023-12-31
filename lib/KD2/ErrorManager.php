@@ -377,18 +377,18 @@ class ErrorManager
 		$boundary = sprintf('-----=%s', md5(uniqid(rand())));
 
 		$header = sprintf("MIME-Version: 1.0\r\nFrom: \"%s\" <%s>\r\nIn-Reply-To: <%s>\r\nMessage-Id: <%s>\r\n", $from, self::$email_errors, $msgid, $msgid);
-		$header.= sprintf("Content-Type: multipart/mixed; boundary=\"%s\"\r\n", $boundary);
+		$header.= sprintf("Content-Type: multipart/alternative; boundary=\"%s\"\r\n", $boundary);
 		$header.= "\r\n";
 
 		$msg = "This message contains multiple MIME parts.\r\n\r\n";
 		$msg.= sprintf("--%s\r\n", $boundary);
 		$msg.= "Content-Type: text/plain; charset=\"utf-8\"\r\n";
 		$msg.= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-		$msg.= $log . "\r\n\r\n";
+		$msg.= wordwrap($log, 990) . "\r\n\r\n";
 		$msg.= sprintf("--%s\r\n", $boundary);
 		$msg.= "Content-Type: text/html; charset=\"utf-8\"\r\n";
 		$msg.= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-		$msg.= $html . "\r\n\r\n";
+		$msg.= wordwrap($html, 990) . "\r\n\r\n";
 		$msg.= sprintf("--%s--", $boundary);
 
 		mail(self::$email_errors, sprintf('Error #%s: %s', $report->context->id, $title), $msg, $header);
