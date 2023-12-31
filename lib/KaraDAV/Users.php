@@ -345,4 +345,10 @@ class Users
 		Storage::deleteDirectory($user->path);
 		DB::getInstance()->run('DELETE FROM users WHERE id = ?;', $user->id);
 	}
+
+	public function emptyTrash(?stdClass $user)
+	{
+		$path = rtrim($user->path, '/') . '/.trash';
+		Storage::deleteDirectory($path);
+	}
 }

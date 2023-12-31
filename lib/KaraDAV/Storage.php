@@ -547,7 +547,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		while ($f = readdir($dir)) {
 			// Skip dots
-			if ($f == '.' || $f = '..') {
+			if ($f === '.' || $f === '..') {
 				continue;
 			}
 
@@ -564,7 +564,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		closedir($dir);
 
-		@rmdir($path);
+		rmdir($path);
 	}
 
 	static public function getDirectoryMTime(string $path): int

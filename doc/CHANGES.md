@@ -3,6 +3,7 @@
 * Add support for `PROPPATCH`-ing last modification time
 * Fix creation of ghost directory in user directory (fix #46)
 * Fix bug with NextCloud client where files were not showing up anymore
+* Allow to empty trash from user home
 * Update dependencies
 
 ## 0.4.2
