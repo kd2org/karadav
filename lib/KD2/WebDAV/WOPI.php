@@ -127,7 +127,7 @@ class WOPI
 
 	protected function getInfo(string $uri): bool
 	{
-		$props = $this->storage->properties($uri, [
+		$props = $this->storage->propfind($uri, [
 			'DAV::getcontentlength',
 			'DAV::getlastmodified',
 			'DAV::getetag',
@@ -305,7 +305,7 @@ class WOPI
 		// You need to extend this method by creating a token for the document_uri first!
 		// Return the token with the document properties using ::PROP_TOKEN
 
-		$props = $this->storage->properties($document_uri, [self::PROP_TOKEN, self::PROP_TOKEN_TTL, self::PROP_FILE_URL], 0);
+		$props = $this->storage->propfind($document_uri, [self::PROP_TOKEN, self::PROP_TOKEN_TTL, self::PROP_FILE_URL], 0);
 
 		if (count($props) != 3) {
 			throw new Exception('Missing properties for document', 500);

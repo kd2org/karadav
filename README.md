@@ -101,6 +101,12 @@ Here is a list of clients tested with KaraDAV:
 * [DAVx⁵](https://www.davx5.com/), see [the manual](https://manual.davx5.com/webdav_mounts.html) for how to set up a WebDAV mount
 * [X-Plore](https://www.lonelycatgames.com/apps/xplore)
 
+Other untested:
+
+* [EasySync](https://github.com/phpbg/easysync)
+* [WebDAV provider](https://github.com/alexbakker/webdav-provider)
+* [WebDAV Sync](https://github.com/SakiiCode/WebDavSync)
+
 ## WOPI clients compatibility
 
 * Tested successfully with Collabora Development Edition (see [COLLABORA.md](doc/COLLABORA.md))

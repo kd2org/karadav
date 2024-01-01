@@ -1,3 +1,7 @@
+## 0.4.4 - January 1st, 2024
+
+* Update dependencies
+
 ## 0.4.3 - December 31, 2023
 
 * Add support for `PROPPATCH`-ing last modification time
