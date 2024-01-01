@@ -67,8 +67,6 @@ class Server
 		'DAV::quota-available-bytes',
 	];
 
-	const PROP_NAMESPACE_MICROSOFT = 'urn:schemas-microsoft-com:';
-
 	/**
 	 * File modification time accepted properties
 	 * @see https://github.com/mar10/wsgidav/issues/112

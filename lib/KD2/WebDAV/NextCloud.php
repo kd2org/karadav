@@ -213,7 +213,7 @@ abstract class NextCloud
 		// So to avoid that you can just redirect to the file if it's not too large
 		// But you are free to extend this method and resize the image on the fly instead.
 		else {
-			$size = $this->server->getStorage()->properties($uri, ['DAV::getcontentlength'], 0);
+			$size = $this->server->getStorage()->propfind($uri, ['DAV::getcontentlength'], 0);
 			$size = count($size) ? current($size) : null;
 
 			if ($size > 1024*1024 || !$size) {
@@ -821,7 +821,7 @@ abstract class NextCloud
 
 			header('X-OC-MTime: accepted');
 
-			$props = $this->storage->properties($dest, [self::PROP_OC_ID], 0);
+			$props = $this->storage->propfind($dest, [self::PROP_OC_ID], 0);
 
 			if (count($props)) {
 				header('OC-FileId: ' . current($props));
