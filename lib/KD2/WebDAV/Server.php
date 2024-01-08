@@ -1338,6 +1338,19 @@ class Server
 		}
 	}
 
+	protected function validateURI(string $uri): string
+	{
+		$uri = preg_replace('!/{2,}!', '/', $uri);
+		$uri = str_replace('\\', '/', $uri);
+
+		// Protect against path traversal
+		if (preg_match('!(?:^|/)\.\.(?:$|/)!', $uri)) {
+			throw new Exception(sprintf('Invalid URI: "%s"', $uri), 403);
+		}
+
+		return $uri;
+	}
+
 	protected function getURI(string $source): string
 	{
 		$uri = parse_url($source, PHP_URL_PATH);
@@ -1353,11 +1366,7 @@ class Server
 			throw new Exception(sprintf('Invalid URI, "%s" is outside of scope "%s"', $uri, $this->base_uri), 400);
 		}
 
-		$uri = preg_replace('!/{2,}!', '/', $uri);
-
-		if (false !== strpos($uri, '..')) {
-			throw new Exception(sprintf('Invalid URI: "%s"', $uri), 403);
-		}
+		$uri = $this->validateURI();
 
 		$uri = substr($uri, strlen($this->base_uri));
 		$uri = $this->_prefix($uri);
@@ -1411,9 +1420,7 @@ class Server
 		$this->log('<= %s /%s', $method, $uri);
 
 		try {
-			if (false !== strpos($uri, '..')) {
-				throw new Exception(sprintf('Invalid URI: "%s"', $uri), 403);
-			}
+			$uri = $this->validateURI($uri);
 
 			// Call 'http_method' class method
 			$method = 'http_' . strtolower($method);
