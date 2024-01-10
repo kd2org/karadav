@@ -1,3 +1,7 @@
+## 0.4.5 - January 10, 2024
+
+* Fix: Don't forbid from creating directories containing three dots in the name
+
 ## 0.4.4 - January 1st, 2024
 
 * Update dependencies
