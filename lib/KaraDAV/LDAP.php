@@ -8,7 +8,7 @@ class LDAP
 
 	static public function enabled(): bool
 	{
-		$config = [LDAP_HOST, LDAP_LOGIN, LDAP_FIND_USER, LDAP_FIND_IS_ADMIN, LDAP_BASE, LDAP_DISPLAY_NAME];
+		$config = [LDAP_HOST, LDAP_PORT, LDAP_SECURE, LDAP_LOGIN, LDAP_FIND_USER, LDAP_FIND_IS_ADMIN, LDAP_BASE, LDAP_DISPLAY_NAME];
 		$target = count($config);
 		$config = array_filter($config);
 		return count($config) == $target;
@@ -20,7 +20,13 @@ class LDAP
 			return;
 		}
 
-		$l = ldap_connect(LDAP_HOST) || die('Cannot connect to LDAP');
+		$uri = sprintf('ldap%s://%s:%d', LDAP_SECURE ? 's' : '', LDAP_HOST, LDAP_PORT);
+		$l = ldap_connect($uri);
+
+		if (!$l) {
+			throw new \RuntimeException('Invalid LDAP connection URI: ' . $uri);
+		}
+
 		ldap_set_option($l, \LDAP_OPT_PROTOCOL_VERSION, 3);
 		ldap_set_option($l, \LDAP_OPT_REFERRALS, 0);
 		ldap_set_option($l, \LDAP_OPT_NETWORK_TIMEOUT, 10);
