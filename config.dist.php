@@ -112,30 +112,66 @@ const AUTH_CALLBACK = null;
  * LDAP server configuration
  *
  * To use a LDAP server for login, fill those details.
+ * All LDAP constants MUST be filled, if any constant is NULL, then LDAP support is disabled.
  *
- * All users logging in will be created locally and have the default quota.
+ * All users signing in with success, who don't have an existing account,
+ * will be created locally and have the default quota.
+ *
+ * Example strings are taken from https://yunohost.org/en/packaging_sso_ldap_integration#ldap-integration
  */
 const LDAP_HOST = null;
 //const LDAP_HOST = '127.0.0.1';
 
-// LDAP server port
+/**
+ * LDAP server port
+ * @var integer
+ */
 const LDAP_PORT = 389;
 
-// Set to TRUE if using LDAPS
+/**
+ * LDAP security
+ * Set to TRUE if using LDAPS
+ * @var bool
+ */
 const LDAP_SECURE = false;
 
+/**
+ * LDAP user DN
+ * This is used in bind. Use %s for user login string.
+ * @var string
+ */
 const LDAP_LOGIN = null;
 //const LDAP_LOGIN = 'uid=%s,ou=users,dc=yunohost,dc=org';
 
+/**
+ * LDAP base DN
+ * @var string
+ */
 const LDAP_BASE = null;
 //const LDAP_BASE = 'dc=yunohost,dc=org';
 
+/**
+ * LDAP display name attribute
+ * @var string
+ */
 const LDAP_DISPLAY_NAME = null;
 //const LDAP_DISPLAY_NAME = 'displayname';
 
+/**
+ * LDAP Search filter
+ * This is used to find out if a logged-in user has the permission to access this application.
+ * Use %s for the user login.
+ * @var string
+ */
 const LDAP_FIND_USER = null;
 //const LDAP_FIND_USER = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.main,ou=permission,dc=yunohost,dc=org))';
 
+/**
+ * LDAP admin filter
+ * This is used to find out if user can manage other users account and change quota etc.
+ * Use %s for the user login
+ * @var string
+ */
 const LDAP_FIND_IS_ADMIN = null;
 //const LDAP_FIND_IS_ADMIN = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.admin.main,ou=permission,dc=yunohost,dc=org))';
 
