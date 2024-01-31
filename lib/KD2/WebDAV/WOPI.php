@@ -103,6 +103,10 @@ class WOPI
 			elseif ($action == 'contents' && $method == 'POST') {
 				$this->server->log('WOPI: => PutFile');
 				$this->server->http_put($uri);
+
+				// In WOPI, HTTP response code 201/204 is not accepted, only 200
+				// or Collabora will fail saving
+				http_response_code(200);
 			}
 			// CheckFileInfo
 			elseif (!$action && $method == 'GET') {
@@ -112,9 +116,6 @@ class WOPI
 			else {
 				throw new Exception('Invalid URI', 404);
 			}
-
-			$this->server->log('WOPI: <= 200');
-			http_response_code(200); // This is required for Collabora
 		}
 		catch (Exception $e) {
 			$this->server->log('WOPI: => %d: %s', $e->getCode(), $e->getMessage());
