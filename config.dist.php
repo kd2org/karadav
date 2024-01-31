@@ -171,7 +171,7 @@ const ERRORS_LOG = __DIR__ . '/data/error.log';
 /**
  * Send errors reports to this errbit/airbrake compatible API endpoint
  * Default: NULL
- * Example: 'https://user:password@
+ * Example: 'https://user:password@domain.tld/errors'
  *
  * @var string|null
  * @see https://errbit.com/images/error_summary.png
