@@ -116,7 +116,13 @@ const AUTH_CALLBACK = null;
  * All users logging in will be created locally and have the default quota.
  */
 const LDAP_HOST = null;
-//const LDAP_URI = '127.0.0.1';
+//const LDAP_HOST = '127.0.0.1';
+
+// LDAP server port
+const LDAP_PORT = 389;
+
+// Set to TRUE if using LDAPS
+const LDAP_SECURE = false;
 
 const LDAP_LOGIN = null;
 //const LDAP_LOGIN = 'uid=%s,ou=users,dc=yunohost,dc=org';
