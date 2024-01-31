@@ -541,6 +541,8 @@ class Server
 			fseek($file['resource'], 0, SEEK_SET);
 		}
 
+		http_response_code(200);
+
 		if (($start || $end) && $seek === 0) {
 			if (null !== $end && $end > $length) {
 				header('Content-Range: bytes */' . $length, true);
@@ -1084,7 +1086,7 @@ class Server
 			$set_time_name = $name;
 		}
 
-		$prefix .= sprintf(">\n<d:response>\n  <d:href>%s</d:href>\n", htmlspecialchars($url, ENT_XML1));
+		$prefix .= sprintf(">\n<d:response>\n  <d:href>%s</d:href>\n", htmlspecialchars($uri, ENT_XML1));
 
 		// http_response_code doesn't know the 207 status code
 		header('HTTP/1.1 207 Multi-Status', true);
@@ -1366,7 +1368,7 @@ class Server
 			throw new Exception(sprintf('Invalid URI, "%s" is outside of scope "%s"', $uri, $this->base_uri), 400);
 		}
 
-		$uri = $this->validateURI();
+		$uri = $this->validateURI($uri);
 
 		$uri = substr($uri, strlen($this->base_uri));
 		$uri = $this->_prefix($uri);
