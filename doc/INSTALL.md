@@ -84,6 +84,7 @@ server {
     }
 
     location ~* \.php$ {
+        try_files $uri $uri/ /_router.php?$query_string;
         fastcgi_pass unix:/run/php-fpm/www.sock;
         include fastcgi_params;
         fastcgi_index index.php;
