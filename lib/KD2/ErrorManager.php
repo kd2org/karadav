@@ -274,7 +274,11 @@ class ErrorManager
 			header('Content-Type: text/plain; charset=utf-8', true);
 		}
 
-		if (($is_cli || $is_curl) && (self::$enabled & self::DEVELOPMENT || self::$enabled & self::CLI_DEVELOPMENT))
+		$text_mode_dev = ($is_curl && self::$enabled & self::DEVELOPMENT)
+			|| ($is_cli && self::$enabled & self::DEVELOPMENT)
+			|| ($is_cli && self::$enabled & self::CLI_DEVELOPMENT);
+
+		if ($text_mode_dev)
 		{
 			foreach ($report->errors as $e)
 			{
@@ -355,17 +359,29 @@ class ErrorManager
 
 	static public function reportExceptionSilent(\Throwable $e): void
 	{
-		extract(self::buildExceptionReport($e));
-
-		// Log exception to file
-		if (ini_get('log_errors'))
-		{
-			error_log($log);
-		}
+		$report = self::logException($e);
+		extract($report);
 
 		if (self::$email_errors) {
 			self::sendEmail($title, $report, $log, $html_report);
 		}
+	}
+
+	static public function logException(\Throwable $e): array
+	{
+		$report = self::buildExceptionReport($e);
+
+		// Log exception to file
+		if (ini_get('log_errors')) {
+			error_log($report['log']);
+		}
+
+		// Send report to URL
+		if (self::$report_auto && self::$report_url) {
+			self::sendReport($report['report'], self::$report_url);
+		}
+
+		return $report;
 	}
 
 	static protected function sendEmail(string $title, \stdClass $report, string $log, string $html): void
@@ -390,6 +406,9 @@ class ErrorManager
 		$msg.= "Content-Transfer-Encoding: 8bit\r\n\r\n";
 		$msg.= wordwrap($html, 990) . "\r\n\r\n";
 		$msg.= sprintf("--%s--", $boundary);
+
+		$msg = str_replace("\0", "", $msg);
+		$header = str_replace("\0", "", $header);
 
 		mail(self::$email_errors, sprintf('Error #%s: %s', $report->context->id, $title), $msg, $header);
 	}
@@ -447,7 +466,7 @@ class ErrorManager
 	/**
 	 * Generates a report from an exception
 	 */
-	static public function makeReport($e)
+	static public function makeReport($e): \stdClass
 	{
 		$report = (object) [
 			'errors' => [],

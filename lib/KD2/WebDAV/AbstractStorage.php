@@ -61,6 +61,13 @@ abstract class AbstractStorage
 	public function proppatch(string $uri, array $properties): array
 	{
 		// By default, properties are not saved
+		$out = [];
+
+		foreach ($properties as $key => $value) {
+			$out[$key] = 200;
+		}
+
+		return $out;
 	}
 
 	/**
