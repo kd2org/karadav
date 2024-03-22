@@ -5,6 +5,9 @@ namespace KaraDAV;
 require_once __DIR__ . '/_inc.php';
 
 $uri = parse_url($_SERVER['REQUEST_URI'], \PHP_URL_PATH);
+$base_uri = parse_url(WWW_URL, \PHP_URL_PATH);
+
+$uri = '/' . ltrim(substr($uri, strlen($base_uri)), '/');
 
 $s = new Server;
 
@@ -50,7 +53,7 @@ if (!$s->route($uri)) {
 	}
 
 	http_response_code(404);
-	echo '<h1>Invalid URL</h1>';
+	echo '<h1>Page not found</h1>';
 }
 elseif (LOG_FILE) {
 	http_log("ROUTER: => %d\nResponse headers:\n  %s", http_response_code(), implode("\n  ", headers_list()));
