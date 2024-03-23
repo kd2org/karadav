@@ -7,7 +7,7 @@ require_once __DIR__ . '/_inc.php';
 $uri = parse_url($_SERVER['REQUEST_URI'], \PHP_URL_PATH);
 $base_uri = parse_url(WWW_URL, \PHP_URL_PATH);
 
-$uri = '/' . ltrim(substr($uri, strlen($base_uri)), '/');
+$relative_uri = '/' . ltrim(substr($uri, strlen($base_uri)), '/');
 
 $s = new Server;
 
@@ -34,11 +34,12 @@ if (LOG_FILE) {
 if (PHP_SAPI == 'cli-server') {
 	file_put_contents('php://stderr', $uri . "\n");
 
-	if (is_file(__DIR__ . '/' . $uri)) {
+	// If file exists, just serve it
+	if (is_file(__DIR__ . $relative_uri)) {
 		return false;
 	}
-	// Index.php
-	elseif ($uri == '/' && $method != 'OPTIONS') {
+	// Serve root index.php file
+	elseif ($relative_uri === '/' && $method != 'OPTIONS') {
 		return false;
 	}
 }
