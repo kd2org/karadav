@@ -67,7 +67,14 @@ class Users
 			$user->path = rtrim($user->path, '/') . '/';
 
 			if (!file_exists($user->path)) {
-				mkdir($user->path, 0770, true);
+				$parent = dirname($user->path);
+
+				// Create parent directory with default permissions, if required
+				if (!file_exists($parent)) {
+					mkdir($parent, 0770, true);
+				}
+
+				mkdir($user->path, fileperms($parent), true);
 			}
 
 			$user->path = rtrim(realpath($user->path), '/') . '/';
