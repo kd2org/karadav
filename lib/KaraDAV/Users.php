@@ -88,14 +88,33 @@ class Users
 
 	public function edit(int $id, array $data)
 	{
+		$old_user = $this->getById($id);
+
+		if (!$old_user) {
+			throw new \LogicException('User does not exist: ' . $id);
+		}
+
 		$params = [];
+		$new_login = null;
 
 		if (!empty($data['password'])) {
 			$params['password'] = password_hash(trim($data['password']), null);
 		}
 
 		if (!empty($data['login'])) {
-			$params['login'] = trim($data['login']);
+			$new_login = strtolower(trim($data['login']));
+
+			if ($new_login !== $old_user->login) {
+				$exists = $this->get($new_login);
+				$params['login'] = $new_login;
+
+				if ($exists) {
+					throw new \LogicException('User login already exists: ' . $params['login']);
+				}
+			}
+			else {
+				$new_login = null;
+			}
 		}
 
 		if (isset($data['quota'])) {
@@ -112,6 +131,13 @@ class Users
 		$params[] = $id;
 
 		DB::getInstance()->run(sprintf('UPDATE users SET %s WHERE id = ?;', $update), ...$params);
+
+		if ($new_login) {
+			$path = sprintf(STORAGE_PATH, $new_login);
+			$path = rtrim($path, '/') . '/';
+
+			rename($old_user->path, $path);
+		}
 	}
 
 	public function current(): ?stdClass
