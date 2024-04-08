@@ -1,3 +1,25 @@
+## 0.5.0 - April 8, 2024
+
+* Rewrite WOPI server
+* Handle read-only files in WOPI server
+* Implement randomly generated avatars for users
+
+## 0.4.9 - 2024
+
+* Bug fixes
+
+## 0.4.8 - 2024
+
+* Bug fixes
+
+## 0.4.7 - 2024
+
+* Bug fixes
+
+## 0.4.6 - 2024
+
+* Bug fixes
+
 ## 0.4.5 - January 10, 2024
 
 * Fix: Don't forbid from creating directories containing three dots in the name
