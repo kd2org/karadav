@@ -6,7 +6,6 @@ require_once __DIR__ . '/_inc.php';
 
 $uri = parse_url($_SERVER['REQUEST_URI'], \PHP_URL_PATH);
 $base_uri = parse_url(WWW_URL, \PHP_URL_PATH);
-
 $relative_uri = '/' . ltrim(substr($uri, strlen($base_uri)), '/');
 
 $s = new Server;
@@ -48,7 +47,7 @@ if (isset($_SERVER['REDIRECT_REQUEST_METHOD'])) {
 	$_SERVER['REQUEST_METHOD'] = $_SERVER['REDIRECT_REQUEST_METHOD'];
 }
 
-if (!$s->route($uri)) {
+if (!$s->route($uri, $relative_uri)) {
 	if (PHP_SAPI == 'cli-server') {
 		$s->dav->log("ROUTER: => Route is not managed: 404");
 	}

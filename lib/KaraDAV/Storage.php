@@ -226,7 +226,7 @@ class Storage extends AbstractStorage implements TrashInterface
 				else {
 					return filesize($target);
 				}
-			case WOPI::PROP_FILE_URL:
+			case WOPI::PROP_FILE_URI:
 				$id = gzcompress($uri);
 				$id = WOPI::base64_encode_url_safe($id);
 				return WWW_URL . 'wopi/files/' . $id;
@@ -591,29 +591,47 @@ class Storage extends AbstractStorage implements TrashInterface
 		return $last;
 	}
 
-	protected function createWopiToken(string $uri)
+	protected function createWopiToken(string $uri): ?array
 	{
+		if (false !== strpos($uri, '../')) {
+			return null;
+		}
+
 		$user = $this->users->current();
 		$ttl = time()+(3600*10);
 
+		$hash = sha1($uri);
+		$random = substr(sha1(random_bytes(10)), 0, 10);
+		$login = $user->login;
+
 		// Use the user password as a server secret
-		$check = WebDAV::hmac(compact('ttl', 'uri'), $user->password);
-		$data = sprintf('%s_%s_%s', $check, $ttl, $user->login);
+		$hmac = WebDAV::hmac(compact('ttl', 'random', 'hash', 'login'), $user->password);
+		$data = sprintf('%s_%s_%d_%s', $hmac, $random, $ttl, $login);
+
+		$id = gzcompress($uri);
+		$id = WOPI::base64_encode_url_safe($id);
+		$url = WWW_URL . 'wopi/files/' . $id;
 
 		return [
+			WOPI::PROP_WOPI_URL => $url,
 			WOPI::PROP_TOKEN => WOPI::base64_encode_url_safe($data),
 			WOPI::PROP_TOKEN_TTL => $ttl * 1000,
 		];
 	}
 
-	public function getWopiURI(string $id, string $token): ?string
+	public function verifyWopiToken(string $id, string $token): ?array
 	{
 		$id = WOPI::base64_decode_url_safe($id);
 		$uri = gzuncompress($id);
+
+		if (false !== strpos($uri, '../')) {
+			return null;
+		}
+
 		$token_decode = WOPI::base64_decode_url_safe($token);
-		$hash = strtok($token_decode, '_');
-		$ttl = (int) strtok('_');
-		$login = strtok(false);
+
+		list($user_hmac, $random, $ttl, $login) = explode('_', $token_decode);
+		$ttl = (int) $ttl;
 
 		if ($ttl < time()) {
 			return null;
@@ -623,15 +641,29 @@ class Storage extends AbstractStorage implements TrashInterface
 			return null;
 		}
 
+		$hash = sha1($uri);
 		$user = $this->users->current();
+		$hmac = WebDAV::hmac(compact('ttl', 'random', 'hash', 'login'), $user->password);
 
-		$check = WebDAV::hmac(compact('ttl', 'uri'), $user->password);
-
-		if (!hash_equals($check, $hash)) {
+		if (!hash_equals($hmac, $user_hmac)) {
 			return null;
 		}
 
-		return $uri;
+		$path = $this->users->current()->path . $uri;
+
+		if (!file_exists($path)) {
+			return null;
+		}
+
+		$readonly = !is_writeable($path);
+
+		return [
+			WOPI::PROP_FILE_URI    => $uri,
+			WOPI::PROP_READ_ONLY   => $readonly,
+			WOPI::PROP_USER_NAME   => $user->login,
+			WOPI::PROP_USER_ID     => md5($user->login),
+			WOPI::PROP_USER_AVATAR => null,
+		];
 	}
 
 	/**

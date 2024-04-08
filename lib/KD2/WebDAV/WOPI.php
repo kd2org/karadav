@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace KD2\WebDAV;
 
@@ -18,32 +19,93 @@ namespace KD2\WebDAV;
  * @see https://learn.microsoft.com/en-us/microsoft-365/cloud-storage-partner-program/rest/concepts#access-token
  * @see https://learn.microsoft.com/en-us/microsoft-365/cloud-storage-partner-program/online/wopi-requirements
  * @see https://dzone.com/articles/implementing-wopi-protocol-for-office-integration
+ * @see https://sdk.collaboraonline.com/docs/advanced_integration.html
+ *
+ * ## How this WOPI class interacts with the WebDAV server?
+ *
+ * 1. The local application will render a HTML page including an iframe
+ * calling the editing server WOPI URL (see getEditorHTML).
+ *
+ * 2. The iframe will be loaded by a POST request to the editing server WOPI URL.
+ * This request includes a token and a token TTL, as well as the local WOPI URL
+ * (WOPISrc parameter in iframe URL).
+ *
+ * The security of this token is left to the local application.
+ *
+ * 3. The editing server will then make a request to the local WOPI URL (WOPISrc),
+ * usually something like https://example.org/wopi/files/XXX, where XXX is the file
+ * unique identifier.
+ *
+ * Note: this identifier should not be the file number, or this would allow an attacker
+ * to enumerate local files. Instead use a unique string, eg. UUID.
+ * It should also not be the local file URI, unless this is signed and verified in the token.
+ *
+ * 4. This request will be handled by this class, intercepting the request before
+ * the WebDAV server routing. This class will then call the **verifyWopiToken**
+ * method of the WebDAV storage class:
+ *
+ *  $props = $this->storage->verifyWopiToken($id, $auth_token);
+ *
+ * This method:
+ * - MUST verify that the file ID matches an existing file,
+ * - MUST verify the authenticity of the passed token,
+ * and then either return NULL if something fails,
+ * or return an array of properties (see ::PROP_* constants).
+ *
+ * These two properties MUST be returned (others are optional):
+ * PROP_FILE_URI: this is the local file URI, as if requested using WebDAV (eg. documents/text.odt)
+ *  This must be properly URL-encoded!
+ * PROP_READ_ONLY: this MUST be a boolean, TRUE if the file cannot be modified, or FALSE if it can.
+ *
+ * 5. This class will then see if the editing server requested for file informations,
+ * fetching file contents, or saving file contents. For the last two cases, this class
+ * will call the WebDAV server http_get() and http_put() methods, which will in turn
+ * call the Storage class.
  */
 class WOPI
 {
+	/**
+	 * Reusing WebDAV server convention of using a XML namespace
+	 * for properties, even though we are not doing XML here
+	 */
 	const NS = 'https://interoperability.blob.core.windows.net/files/MS-WOPI/';
-	const PROP_FILE_URL = self::NS . ':file-url';
+	const PROP_FILE_URI = self::NS . ':file-uri';
+	const PROP_WOPI_URL = self::NS . ':wopi-url';
 	const PROP_TOKEN = self::NS . ':token';
 	const PROP_TOKEN_TTL = self::NS . ':token-ttl';
 	const PROP_READ_ONLY = self::NS . ':ReadOnly';
 	const PROP_USER_NAME = self::NS . ':UserFriendlyName';
 	const PROP_USER_ID = self::NS . ':UserId';
+	const PROP_USER_AVATAR = self::NS . ':UserExtraInfo-Avatar';
 
 	protected AbstractStorage $storage;
 	protected Server $server;
 
-	public function setStorage(AbstractStorage $storage)
+	/**
+	 * Set the local Storage object
+	 */
+	public function setStorage(AbstractStorage $storage): void
 	{
+		if (!method_exists($storage, 'verifyWopiToken')) {
+			throw new \LogicException('Storage class does not implement verifyWopiToken method');
+		}
+
 		$this->storage = $storage;
 	}
 
-	public function setServer(Server $server)
+	/**
+	 * Set the local WebDAV server object
+	 */
+	public function setServer(Server $server): void
 	{
 		$this->storage = $server->getStorage();
 		$this->server = $server;
 	}
 
-	public function getAuthToken()
+	/**
+	 * Return auth token, either from POST, URL query string, or from Authorization header
+	 */
+	public function getAuthToken(): string
 	{
 		// HTTP_AUTHORIZATION might be missing in some installs
 		$header = apache_request_headers()['Authorization'] ?? '';
@@ -51,20 +113,19 @@ class WOPI
 		if ($header && 0 === stripos($header, 'Bearer ')) {
 			return trim(substr($header, strlen('Bearer ')));
 		}
-		elseif (!empty($_GET['access_token'])) {
-			return trim($_GET['access_token']);
+		elseif (!empty($_REQUEST['access_token'])) {
+			return trim($_REQUEST['access_token']);
 		}
 		else {
 			throw new Exception('No access_token was provided', 401);
 		}
 	}
 
+	/**
+	 * Route a WOPI request, returns FALSE if the current URI is not a WOPI URI
+	 */
 	public function route(?string $uri = null): bool
 	{
-		if (!method_exists($this->storage, 'getWopiURI')) {
-			throw new \LogicException('Storage class does not implement getWopiURI method');
-		}
-
 		if (null === $uri) {
 			$uri = $_SERVER['REQUEST_URI'] ?? '/';
 		}
@@ -83,14 +144,21 @@ class WOPI
 			$auth_token = $this->getAuthToken();
 
 			$method = $_SERVER['REQUEST_METHOD'];
-			$id = rawurldecode(strtok($uri, '/'));
-			$action = trim(strtok(''), '/');
+			$id = rawurldecode(strtok($uri, '/') ?: '');
+			$action = trim(strtok('') ?: '', '/');
 
-			$uri = $this->storage->getWopiURI($id, $auth_token);
+			$props = $this->storage->verifyWopiToken($id, $auth_token);
 
-			if (!$uri) {
+			if (!$props) {
 				throw new Exception('Invalid file ID or invalid token', 404);
 			}
+
+			if (!isset($props[self::PROP_FILE_URI], $props[self::PROP_READ_ONLY])) {
+				throw new \LogicException('Storage::verifyWopiToken method didn\'t return an array, or the array is missing file URI and read only properties');
+			}
+
+			$uri = $props[self::PROP_FILE_URI];
+			$uri = rawurldecode($uri);
 
 			$this->server->log('WOPI: => Found doc_uri: %s', $uri);
 
@@ -101,6 +169,11 @@ class WOPI
 			}
 			// PutFile
 			elseif ($action == 'contents' && $method == 'POST') {
+				// Make sure we can't overwrite a read-only file
+				if ($props[self::PROP_READ_ONLY]) {
+					throw new Exception('This file is read-only', 403);
+				}
+
 				$this->server->log('WOPI: => PutFile');
 				$this->server->http_put($uri);
 
@@ -111,7 +184,7 @@ class WOPI
 			// CheckFileInfo
 			elseif (!$action && $method == 'GET') {
 				$this->server->log('WOPI: => CheckFileInfo');
-				$this->getInfo($uri);
+				$this->getInfo($uri, $props);
 			}
 			else {
 				throw new Exception('Invalid URI', 404);
@@ -120,44 +193,47 @@ class WOPI
 		catch (Exception $e) {
 			$this->server->log('WOPI: => %d: %s', $e->getCode(), $e->getMessage());
 			http_response_code($e->getCode());
+			header('Content-Type: application/json', true);
 			echo json_encode(['error' => $e->getMessage()]);
 		}
 
 		return true;
 	}
 
-	protected function getInfo(string $uri): bool
+	/**
+	 * Output file informations in JSON
+	 */
+	protected function getInfo(string $uri, array $props): bool
 	{
-		$props = $this->storage->propfind($uri, [
-			'DAV::getcontentlength',
-			'DAV::getlastmodified',
-			'DAV::getetag',
-			self::PROP_READ_ONLY,
-			self::PROP_USER_NAME,
-			self::PROP_USER_ID,
-		], 0);
-
 		$modified = !empty($props['DAV::getlastmodified']) ? $props['DAV::getlastmodified']->format(DATE_ISO8601) : null;
 		$size = $props['DAV::getcontentlength'] ?? null;
+		$readonly = (bool) $props[self::PROP_READ_ONLY];
 
 		$data = [
-			'BaseFileName' => basename($uri),
-			'UserFriendlyName' => $props[self::PROP_USER_NAME] ?? 'User',
-			'OwnerId' => 0,
-			'UserId' => $props[self::PROP_USER_ID] ?? 0,
-			'Size' => $size,
-			'Version' => $props['DAV::getetag'] ?? md5($uri . $size . $modified),
+			'BaseFileName'            => basename($uri),
+			'UserFriendlyName'        => $props[self::PROP_USER_NAME] ?? 'User',
+			'OwnerId'                 => 0,
+			'UserId'                  => $props[self::PROP_USER_ID] ?? 0,
+			'Version'                 => $props['DAV::getetag'] ?? md5($uri . $size . $modified),
+			'ReadOnly'                => $readonly,
+			'UserCanWrite'            => !$readonly,
+			'UserCanRename'           => !$readonly,
+			'DisableCopy'             => $readonly,
+			'UserCanNotWriteRelative' => true, // This requires you to implement file name UI
 		];
+
+		if (isset($props[self::PROP_USER_AVATAR])) {
+			$data['UserExtraInfo'] = ['avatar' => $props[self::PROP_USER_AVATAR]];
+		}
+
+		if (isset($size)) {
+			$data['Size'] = $size;
+		}
 
 		if ($modified) {
 			$data['LastModifiedTime'] = $modified;
 		}
 
-		$data['ReadOnly'] = $props['self::PROP_READ_ONLY'] ?? false;
-		$data['UserCanWrite'] = !$data['ReadOnly'];
-		$data['UserCanRename'] = !$data['ReadOnly'];
-		$data['DisableCopy'] = $data['ReadOnly'];
-		$data['UserCanNotWriteRelative'] = true; // This requires you to implement file name UI
 
 		$json = json_encode($data, JSON_PRETTY_PRINT);
 		$this->server->log('WOPI: => Info: %s', $json);
@@ -301,28 +377,60 @@ class WOPI
 		return $url;
 	}
 
-	public function getEditorHTML(string $editor_url, string $document_uri, string $title = 'Document')
+	/**
+	 * Return an HTML page for the WOPI editor
+	 *
+	 * WOPI properties (token, token TTL and local WOPI URL) will be discovered
+	 * using the storage PROPFIND method.
+	 *
+	 * This is an quick and dirty method. To have a different way of generating tokens,
+	 * use rawEditorHTML instead.
+	 */
+	public function getEditorHTML(string $editor_url, string $document_uri, string $title = 'Document'): string
 	{
-		// You need to extend this method by creating a token for the document_uri first!
-		// Return the token with the document properties using ::PROP_TOKEN
-
-		$props = $this->storage->propfind($document_uri, [self::PROP_TOKEN, self::PROP_TOKEN_TTL, self::PROP_FILE_URL], 0);
+		// Trying to find properties from WebDAV propfind
+		$props = $this->storage->propfind($document_uri, [self::PROP_TOKEN, self::PROP_TOKEN_TTL, self::PROP_WOPI_URL], 0);
 
 		if (count($props) != 3) {
 			throw new Exception('Missing properties for document', 500);
 		}
 
-		$src = $props[self::PROP_FILE_URL] ?? null;
+		$src = $props[self::PROP_WOPI_URL] ?? null;
 		$token = $props[self::PROP_TOKEN] ?? null;
-		// access_token_TTL: A 64-bit integer containing the number of milliseconds since January 1, 1970 UTC and representing the expiration date and time stamp of the access_token.
-		$token_ttl = $props[self::PROP_TOKEN_TTL] ?? (time() + 10 * 3600) * 1000;
-
-		// Append WOPI host URL
-		$url = $this->setEditorOptions($editor_url, ['WOPISrc' => $src]);
+		$token_ttl = $props[self::PROP_TOKEN_TTL] ?? (time() + 10 * 3600);
 
 		if (!$token) {
 			throw new Exception('Access forbidden: no token was created', 403);
 		}
+
+		return $this->rawEditorHTML($url, $token, $token_ttl, $title);
+	}
+
+	public function getEditorFrameHTML(string $editor_url, string $src, string $token, int $token_ttl)
+	{
+		// access_token_TTL: A 64-bit integer containing the number of milliseconds since January 1, 1970 UTC and representing the expiration date and time stamp of the access_token.
+		$token_ttl *= 1000;
+
+		// Append WOPI host URL
+		$url = $this->setEditorOptions($editor_url, ['WOPISrc' => $src]);
+
+		return <<<EOF
+		<form target="frame" action="{$url}" method="post">
+			<input name="access_token" value="{$token}" type="hidden" />
+			<input name="access_token_ttl" value="{$token_ttl}" type="hidden" />
+		</form>
+
+		<iframe id="frame" name="frame" allow="autoplay camera microphone display-capture" allowfullscreen="true"></iframe>
+
+		<script type="text/javascript">
+		document.forms[0].submit();
+		</script>
+EOF;
+	}
+
+	public function rawEditorHTML(string $editor_url, string $src, string $token, int $token_ttl, string $title = 'Document'): string
+	{
+		$frame = $this->getEditorFrameHTML($editor_url, $src, $token, $token_ttl);
 
 		return <<<EOF
 		<!DOCTYPE html>
@@ -355,16 +463,7 @@ class WOPI
 		</head>
 
 		<body>
-			<form target="frame" action="{$url}" method="post">
-				<input name="access_token" value="{$token}" type="hidden" />
-				<input name="access_token_ttl" value="{$token_ttl}" type="hidden" />
-			</form>
-
-			<iframe id="frame" name="frame" allow="autoplay camera microphone display-capture" allowfullscreen="true"></iframe>
-
-			<script type="text/javascript">
-			document.forms[0].submit();
-			</script>
+			{$frame}
 		</body>
 		</html>
 EOF;
