@@ -4,6 +4,7 @@ namespace KaraDAV;
 
 use KD2\WebDAV\NextCloud as WebDAV_NextCloud;
 use KD2\WebDAV\Exception as WebDAV_Exception;
+use KD2\Graphics\SVG\Avatar;
 
 class NextCloud extends WebDAV_NextCloud
 {
@@ -187,4 +188,9 @@ class NextCloud extends WebDAV_NextCloud
 		return ['created' => !$exists, 'etag' => md5(filemtime($target) . filesize($target))];
 	}
 
+	protected function nc_avatar(): void
+	{
+		header('Content-Type: image/svg+xml; charset=utf-8');
+		echo Avatar::beam($_SERVER['REQUEST_URI'] ?? '', ['colors' => ['#009', '#ccf', '#9cf']]);
+	}
 }

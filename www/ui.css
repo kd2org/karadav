@@ -180,6 +180,11 @@ p.info tt {
 	padding: .2em;
 }
 
+h3 img {
+	vertical-align: middle;
+	margin: 0 1em;
+}
+
 @media screen and (max-width: 900px) {
 	main {
 		border-radius: 0;

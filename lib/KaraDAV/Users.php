@@ -80,6 +80,7 @@ class Users
 			$user->path = rtrim(realpath($user->path), '/') . '/';
 
 			$user->dav_url = WWW_URL . 'files/' . $user->login . '/';
+			$user->avatar_url = WWW_URL . 'avatars/' . substr(md5($user->login), 0, 16);
 		}
 
 		return $user;
