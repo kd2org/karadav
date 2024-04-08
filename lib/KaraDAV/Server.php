@@ -20,7 +20,7 @@ class Server
 		$this->dav->setStorage($storage);
 	}
 
-	public function route(?string $uri = null): bool
+	public function route(string $uri, string $relative_uri): bool
 	{
 		$method = $_SERVER['REQUEST_METHOD'] ?? null;
 
@@ -34,14 +34,14 @@ class Server
 			$wopi = new WOPI;
 			$wopi->setServer($this->dav);
 
-			if ($wopi->route($uri)) {
+			if ($wopi->route($relative_uri)) {
 				return true;
 			}
 		}
 
 		$this->nc->setServer($this->dav);
 
-		if ($r = $this->nc->route($uri)) {
+		if ($r = $this->nc->route($relative_uri)) {
 			// NextCloud route already replied something, stop here
 			return true;
 		}

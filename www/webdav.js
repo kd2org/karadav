@@ -60,7 +60,7 @@ const WebDAVNavigator = (url, options) => {
 	const wopi_propfind_tpl = '<' + `?xml version="1.0" encoding="UTF-8"?>
 		<D:propfind xmlns:D="DAV:" xmlns:W="https://interoperability.blob.core.windows.net/files/MS-WOPI/">
 			<D:prop>
-				<W:file-url/><W:token/><W:token-ttl/>
+				<W:wopi-url/><W:token/><W:token-ttl/>
 			</D:prop>
 		</D:propfind>`;
 
@@ -218,7 +218,7 @@ const WebDAVNavigator = (url, options) => {
 
 	const wopi_open = async (document_url, wopi_url) => {
 		var properties = await reqXML('PROPFIND', document_url, wopi_propfind_tpl, {'Depth': '0'});
-		var src = (a = properties.querySelector('file-url')) ? a.textContent : null;
+		var src = (a = properties.querySelector('wopi-url')) ? a.textContent : null;
 		var token = (a = properties.querySelector('token')) ? a.textContent : null;
 		var token_ttl = (a = properties.querySelector('token-ttl')) ? a.textContent : +(new Date(Date.now() + 3600 * 1000));
 
