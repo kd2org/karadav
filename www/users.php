@@ -142,6 +142,7 @@ else {
 	<table>
 	<thead>
 		<tr>
+			<td></td>
 			<th>User</th>
 			<td>Quota</td>
 			<td>Admin</td>
@@ -154,11 +155,13 @@ else {
 		$quota = $users->quota($user);
 
 		printf('<tr>
+			<td><img src="%s" alt="" /></td>
 			<th>%s</th>
 			<td>%s used out of %s<br /><progress max="%d" value="%d"></progress></td>
 			<td>%s</td>
 			<td><a href="?edit=%d" class="btn sm">Edit</a> <a href="?delete=%d" class="btn sm">Delete</a></td>
 		</tr>',
+			$user->avatar_url,
 			htmlspecialchars($user->login),
 			format_bytes($quota->used),
 			format_bytes($quota->total),

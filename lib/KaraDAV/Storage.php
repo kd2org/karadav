@@ -649,7 +649,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			return null;
 		}
 
-		$path = $this->users->current()->path . $uri;
+		$path = $user->path . $uri;
 
 		if (!file_exists($path)) {
 			return null;
@@ -662,7 +662,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			WOPI::PROP_READ_ONLY   => $readonly,
 			WOPI::PROP_USER_NAME   => $user->login,
 			WOPI::PROP_USER_ID     => md5($user->login),
-			WOPI::PROP_USER_AVATAR => null,
+			WOPI::PROP_USER_AVATAR => $user->avatar_url,
 		];
 	}
 

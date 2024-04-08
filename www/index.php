@@ -46,7 +46,7 @@ html_head('My files');
 
 echo <<<EOF
 <h2 class="myfiles"><a class="btn" href="{$user->dav_url}">Manage my files</a></h2>
-<h3>Hello, {$username} !</h3>
+<h3>Hello, {$username} ! <img src="{$user->avatar_url}" alt="" /></h3>
 <dl>
 	<dd><h3>{$percent} used, {$free} free</h3></dd>
 	<dd><progress max="{$quota->total}" value="{$quota->used}"></progress>
