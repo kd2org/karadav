@@ -658,11 +658,12 @@ class Storage extends AbstractStorage implements TrashInterface
 		$readonly = !is_writeable($path);
 
 		return [
-			WOPI::PROP_FILE_URI    => $uri,
-			WOPI::PROP_READ_ONLY   => $readonly,
-			WOPI::PROP_USER_NAME   => $user->login,
-			WOPI::PROP_USER_ID     => md5($user->login),
-			WOPI::PROP_USER_AVATAR => $user->avatar_url,
+			WOPI::PROP_FILE_URI      => $uri,
+			WOPI::PROP_READ_ONLY     => $readonly,
+			WOPI::PROP_USER_NAME     => $user->login,
+			WOPI::PROP_USER_ID       => md5($user->login),
+			WOPI::PROP_USER_AVATAR   => $user->avatar_url,
+			WOPI::PROP_LAST_MODIFIED => $this->get_file_property($uri, WOPI::PROP_LAST_MODIFIED, 0),
 		];
 	}
 
