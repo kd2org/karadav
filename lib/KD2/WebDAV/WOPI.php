@@ -77,6 +77,7 @@ class WOPI
 	const PROP_USER_NAME = self::NS . ':UserFriendlyName';
 	const PROP_USER_ID = self::NS . ':UserId';
 	const PROP_USER_AVATAR = self::NS . ':UserExtraInfo-Avatar';
+	const PROP_LAST_MODIFIED = 'DAV::getlastmodified';
 
 	protected AbstractStorage $storage;
 	protected Server $server;
@@ -140,6 +141,8 @@ class WOPI
 
 		$this->server->log('WOPI: => %s', $uri);
 
+		$return = null;
+
 		try {
 			$auth_token = $this->getAuthToken();
 
@@ -175,26 +178,63 @@ class WOPI
 				}
 
 				$this->server->log('WOPI: => PutFile');
+
+				$lastmodified = $props[self::PROP_LAST_MODIFIED];
+				$collabora_timestamp = $this->server->getHeader('X-COOL-WOPI-Timestamp');
+
+				// Collabora doesn't use WOPI lock/unlock
+				// See https://sdk.collaboraonline.com/docs/How_to_integrate.html#further-differences-to-wopi
+				if ($collabora_timestamp
+					&& ($date = \DateTime::createFromFormat(\DateTime::ISO8601, $collabora_timestamp))
+					&& $lastmodified
+					&& $lastmodified instanceof \DateTime
+					&& $date->format('YmdHis') != $lastmodified->format('YmdHis'))
+				{
+					$this->server->log('WOPI: <= 409 (File was modified: client = %s, server = %s)',
+						$date->format('Y-m-d H:i:s'),
+						$lastmodified->format('Y-m-d H:i:s'));
+					http_response_code(409);
+					header('Content-Type: application/json', true);
+					echo '{"COOLStatusCode": 1010}';
+					return true;
+				}
+
 				$this->server->http_put($uri);
 
 				// In WOPI, HTTP response code 201/204 is not accepted, only 200
 				// or Collabora will fail saving
 				http_response_code(200);
+
+				// Useful for Collabora
+				if ($lastmodified) {
+					// Update last-modified time
+					$lastmodified = $this->storage->propfind($uri, ['DAV::getlastmodified'], 0)[self::PROP_LAST_MODIFIED] ?? null;
+
+					if ($lastmodified && $lastmodified instanceof \DateTime) {
+						$return = ['LastModifiedTime' => $lastmodified->format(\DateTime::ISO8601)];
+					}
+				}
 			}
 			// CheckFileInfo
 			elseif (!$action && $method == 'GET') {
 				$this->server->log('WOPI: => CheckFileInfo');
-				$this->getInfo($uri, $props);
+				$return = $this->getInfo($uri, $props);
 			}
 			else {
 				throw new Exception('Invalid URI', 404);
 			}
 		}
 		catch (Exception $e) {
-			$this->server->log('WOPI: => %d: %s', $e->getCode(), $e->getMessage());
+			$this->server->log('WOPI: <= %d: %s', $e->getCode(), $e->getMessage());
 			http_response_code($e->getCode());
+			$return = ['error' => $e->getMessage()];
+		}
+
+		if ($return) {
 			header('Content-Type: application/json', true);
-			echo json_encode(['error' => $e->getMessage()]);
+			$return = json_encode($return, JSON_PRETTY_PRINT);
+			echo $return;
+			$this->server->log('WOPI: <= %s', $return);
 		}
 
 		return true;
@@ -203,11 +243,15 @@ class WOPI
 	/**
 	 * Output file informations in JSON
 	 */
-	protected function getInfo(string $uri, array $props): bool
+	protected function getInfo(string $uri, array $props): array
 	{
-		$modified = !empty($props['DAV::getlastmodified']) ? $props['DAV::getlastmodified']->format(DATE_ISO8601) : null;
+		$modified = null;
 		$size = $props['DAV::getcontentlength'] ?? null;
 		$readonly = (bool) $props[self::PROP_READ_ONLY];
+
+		if (isset($props[self::PROP_LAST_MODIFIED]) && $props[self::PROP_LAST_MODIFIED] instanceof \DateTimeInterface) {
+			$modified = $props[self::PROP_LAST_MODIFIED]->format(DATE_ISO8601);
+		}
 
 		$data = [
 			'BaseFileName'            => basename($uri),
@@ -234,14 +278,8 @@ class WOPI
 			$data['LastModifiedTime'] = $modified;
 		}
 
-
-		$json = json_encode($data, JSON_PRETTY_PRINT);
-		$this->server->log('WOPI: => Info: %s', $json);
-
 		http_response_code(200);
-		header('Content-Type: application/json', true);
-		echo $json;
-		return true;
+		return $data;
 	}
 
 	/**

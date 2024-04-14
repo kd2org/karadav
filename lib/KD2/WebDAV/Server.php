@@ -120,6 +120,24 @@ class Server
 
 	protected AbstractStorage $storage;
 
+	protected array $headers;
+
+	public function __construct()
+	{
+		$this->headers = apache_request_headers();
+		$this->headers = array_change_key_case($this->headers, \CASE_LOWER);
+	}
+
+	public function getHeader(string $name): ?string
+	{
+		return $this->headers[strtolower($name)] ?? null;
+	}
+
+	public function setHeader(string $name, string $value): void
+	{
+		$this->headers[strtolower($name)] = $value;
+	}
+
 	public function setStorage(AbstractStorage $storage)
 	{
 		$this->storage = $storage;
@@ -253,12 +271,16 @@ class Server
 
 	public function http_put(string $uri): ?string
 	{
-		if (!empty($_SERVER['HTTP_CONTENT_TYPE']) && !strncmp($_SERVER['HTTP_CONTENT_TYPE'], 'multipart/', 10)) {
+		$content_type = $this->getHeader('Content-Type');
+
+		if ($content_type && !strncmp($content_type, 'multipart/', 10)) {
 			throw new Exception('Multipart PUT requests are not supported', 501);
 		}
 
-		if (!empty($_SERVER['HTTP_CONTENT_ENCODING'])) {
-			if (false !== strpos($_SERVER['HTTP_CONTENT_ENCODING'], 'gzip')) {
+		$content_encoding = $this->getHeader('Content-Encoding');
+
+		if ($content_encoding) {
+			if (false !== strpos($content_encoding, 'gzip')) {
 				// Might be supported later?
 				throw new Exception('Content Encoding is not supported', 501);
 			}
@@ -267,12 +289,12 @@ class Server
 			}
 		}
 
-		if (!empty($_SERVER['HTTP_CONTENT_RANGE'])) {
+		if ($this->getHeader('Content-Range')) {
 			throw new Exception('Content Range is not supported', 501);
 		}
 
 		// See SabreDAV CorePlugin for reason why OS/X Finder is buggy
-		if (isset($_SERVER['HTTP_X_EXPECTED_ENTITY_LENGTH'])) {
+		if ($this->getHeader('X-Expected-Entity-Length')) {
 			throw new Exception('This server is not compatible with OS/X finder. Consider using a different WebDAV client or webserver.', 403);
 		}
 
@@ -281,14 +303,14 @@ class Server
 
 		// Support for checksum matching
 		// https://dcache.org/old/manuals/UserGuide-6.0/webdav.shtml#checksums
-		if (!empty($_SERVER['HTTP_CONTENT_MD5'])) {
-			$hash = bin2hex(base64_decode($_SERVER['HTTP_CONTENT_MD5']));
+		if ($hash = $this->getHeader('Content-MD5')) {
+			$hash = bin2hex(base64_decode($hash));
 			$hash_algo = 'MD5';
 		}
 		// Support for ownCloud/NextCloud checksum
 		// https://github.com/owncloud-archive/documentation/issues/2964
-		elseif (!empty($_SERVER['HTTP_OC_CHECKSUM'])
-			&& preg_match('/MD5:[a-f0-9]{32}|SHA1:[a-f0-9]{40}/', $_SERVER['HTTP_OC_CHECKSUM'], $match)) {
+		elseif (($checksum = $this->getHeader('OC-Checksum'))
+			&& preg_match('/MD5:[a-f0-9]{32}|SHA1:[a-f0-9]{40}/', $checksum, $match)) {
 			$hash_algo = strtok($match[0], ':');
 			$hash = strtok('');
 		}
@@ -297,8 +319,8 @@ class Server
 
 		$this->checkLock($uri);
 
-		if (!empty($_SERVER['HTTP_IF_MATCH'])) {
-			$etag = trim($_SERVER['HTTP_IF_MATCH'], '" ');
+		if ($match = $this->getHeader('If-Match')) {
+			$etag = trim($match, '" ');
 			$prop = $this->storage->propfind($uri, ['DAV::getetag'], 0);
 
 			if (!empty($prop['DAV::getetag']) && $prop['DAV::getetag'] != $etag) {
@@ -306,9 +328,19 @@ class Server
 			}
 		}
 
+		if ($date = $this->getHeader('If-Unmodified-Since')) {
+			$date = \DateTime::createFromFormat(\DateTime::RFC7231, $date);
+			$prop = $this->storage->propfind($uri, ['DAV::getlastmodified'], 0);
+			if ($date && $prop && $prop instanceof \DateTimeInterface) {
+				if ($date != $prop) {
+					throw new Exception('File was modified since "If-Unmodified-Since" condition', 412);
+				}
+			}
+		}
+
 		// Specific to NextCloud/ownCloud, to allow setting file mtime
 		// This expects a UNIX timestamp
-		$mtime = (int)($_SERVER['HTTP_X_OC_MTIME'] ?? 0) ?: null;
+		$mtime = intval($this->getHeader('X-OC-MTime')) ?: null;
 
 		$this->extendExecutionTime();
 
@@ -316,7 +348,7 @@ class Server
 
 		// mod_fcgid <= 2.3.9 doesn't handle chunked transfer encoding for PUT requests
 		// see https://github.com/kd2org/picodav/issues/6
-		if (strstr($_SERVER['HTTP_TRANSFER_ENCODING'] ?? '', 'chunked') && PHP_SAPI == 'fpm-fcgi') {
+		if (strstr($this->getHeader('Transfer-Encoding') ?? '', 'chunked') && PHP_SAPI == 'fpm-fcgi') {
 			// We can't seek here
 			// see https://github.com/php/php-src/issues/9441
 			$l = strlen(fread($stream, 1));
