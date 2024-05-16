@@ -70,13 +70,15 @@ This server should be compatible with ownCloud and NextCloud synchronization cli
 
 It has been tested with:
 
-* ownCloud Desktop 2.5.1 and 2.11.1 (Debian)
-* NextCloud Desktop 3.1.1 and 3.6.0 (Debian)
-* NextCloud Android app 3.21.0 (F-Droid)
-* ownCloud Android app 2.21.2 (F-Droid)
+* ownCloud Desktop 2.5.1 and 2.11.1 (Debian) [Download](https://download.owncloud.com/desktop/ownCloud/stable/2.11/)
+* NextCloud Desktop 3.1.1 and 3.6.0 (Debian) [Download](https://download.nextcloud.com/desktop/releases/)
+* NextCloud Android app 3.21.0 (F-Droid) [Download](https://github.com/nextcloud/android/releases/tag/stable-3.21.0)
+* ownCloud Android app 2.21.2 (F-Droid) [Download](https://github.com/owncloud/android/releases/tag/oc-android-2.21.2)  
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) 3.1.1 (Debian) *-- Note: make sure to pass options before parameters.*
 
 **We recommend the ownCloud apps**, as they are more stable and lighter :)
+
+Make sure to set the SECRET_KEY value in your config.local.php file or NC/OC sync will not work.
 
 Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients if their publishers decide so.
 
