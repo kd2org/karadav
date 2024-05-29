@@ -237,3 +237,23 @@ function html_csrf_error()
 		echo '<p class="error">Sorry, but the form expired, please submit it again.</p>';
 	}
 }
+
+if (LOG_FILE && isset($_SERVER['REMOTE_ADDR'])) {
+	$method = $_SERVER['REQUEST_METHOD'] ?? $_SERVER['REDIRECT_REQUEST_METHOD'];
+
+	$qs = $_SERVER['QUERY_STRING'] ?? null;
+	$headers = apache_request_headers();
+
+	http_log("===== ROUTER: Got new request: %s from %s =====", date('d/m/Y H:i:s'), $_SERVER['REMOTE_ADDR']);
+
+	http_log("ROUTER: <= %s %s (User: %s)\nRequest headers:\n  %s",
+		$method,
+		$uri . ($qs ? '?' : '') . $qs,
+		$_SERVER['PHP_AUTH_USER'] ?? 'none',
+		implode("\n  ", array_map(fn ($v, $k) => $k . ': ' . $v, $headers, array_keys($headers)))
+	);
+
+	if ($method != 'GET' && $method != 'OPTIONS' && $method != 'HEAD') {
+		http_log("ROUTER: <= Request body:\n%s", file_get_contents('php://input'));
+	}
+}
