@@ -240,6 +240,7 @@ function html_csrf_error()
 
 if (LOG_FILE && isset($_SERVER['REMOTE_ADDR'])) {
 	$method = $_SERVER['REQUEST_METHOD'] ?? $_SERVER['REDIRECT_REQUEST_METHOD'];
+	$uri = parse_url($_SERVER['REQUEST_URI'], \PHP_URL_PATH);
 
 	$qs = $_SERVER['QUERY_STRING'] ?? null;
 	$headers = apache_request_headers();
