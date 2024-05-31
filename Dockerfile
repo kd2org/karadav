@@ -22,4 +22,4 @@ EXPOSE 8080
 VOLUME ["/var/karadav/data", "/var/karadav/config.local.php"]
 
 ENV PHP_CLI_SERVER_WORKERS=3
-CMD ["php", "-S", "0.0.0.0:8080", "-t", "www", "www/_router.php"]
+CMD ["php82", "-S", "0.0.0.0:8080", "-t", "www", "www/_router.php"]
