@@ -8,11 +8,14 @@ Its original purpose was to serve as a demo and test for the KD2 WebDAV library,
 
 ![](doc/scr_index.jpg)
 
-If you are looking for an even lighter WebDAV server, try also our other server, [PicoDAV](https://github.com/kd2org/picodav/). It isn't compatible with NextCloud/ownCloud clients, but it is a single file that you can drop anywhere in your document root, nothing to install!
+If you are looking for an even lighter WebDAV server, try also our other server, [PicoDAV](https://fossil.kd2.org/picodav/). It isn't compatible with NextCloud/ownCloud clients, but it is a single file that you can drop anywhere in your document root, nothing to install!
+
+* Fossil development repository: <https://fossil.kd2.org/karadav/>
+* Git mirror: <https://github.com/kd2org/karadav/> (PR and issues accepted)
 
 ## Features
 
-* User-friendly directory listings for file browsing with a web browser, using our [WebDAV Manager.js](https://github.com/kd2org/webdav-manager.js) client
+* User-friendly directory listings for file browsing with a web browser, using our [WebDAV Manager.js](https://fossil.kd2.org/webdav-manager/) client
 	* Upload directly from browser, using paste or drag and drop
 	* Rename
 	* Delete
