@@ -790,20 +790,17 @@ abstract class NextCloud
 		}
 
 		$method = $_SERVER['REQUEST_METHOD'] ?? null;
-		$login = $match[1] ?? null;
+		// Clients nowadays send some user ID as login, just ignore it.
+		// $login = $match[1] ?? null;
 		$dir = $match[2] ?? null;
 		$part = $match[3] ?? null;
-
-		if ($login !== $user) {
-			throw new Exception('Invalid username in URL, does not match logged user', 403);
-		}
 
 		if ($method == 'MKCOL') {
 			http_response_code(201);
 		}
 		elseif ($method == 'PUT') {
-			$this->server->log('Storing chunk: %s/%s/%s', $login, $dir, $part);
-			$this->storeChunk($login, $dir, $part, fopen('php://input', 'rb'));
+			$this->server->log('Storing chunk: %s/%s/%s', $user, $dir, $part);
+			$this->storeChunk($user, $dir, $part, fopen('php://input', 'rb'));
 			http_response_code(201);
 		}
 		elseif ($method == 'MOVE') {
@@ -821,13 +818,10 @@ abstract class NextCloud
 
 			header('X-OC-MTime: accepted');
 
+			$return = $this->assembleChunks($user, $dir, $dest, $mtime);
+
 			$props = $this->storage->propfind($dest, [self::PROP_OC_ID], 0);
-
-			if (count($props)) {
-				header('OC-FileId: ' . current($props));
-			}
-
-			$return = $this->assembleChunks($login, $dir, $dest, $mtime);
+			header('OC-FileId: ' . current($props));
 
 			if (!empty($return['etag'])) {
 				header(sprintf('ETag: "%s"', $return['etag']));
@@ -844,7 +838,7 @@ abstract class NextCloud
 			}
 		}
 		elseif ($method == 'DELETE' && !$part) {
-			$this->deleteChunks($login, $dir);
+			$this->deleteChunks($user, $dir);
 			$this->server->log("=> Deleted chunks");
 		}
 		elseif ($method == 'PROPFIND') {
@@ -852,7 +846,7 @@ abstract class NextCloud
 			$out = '<?xml version="1.0" encoding="utf-8"?>' . PHP_EOL;
 			$out .= '<d:multistatus xmlns:d="DAV:">' . PHP_EOL;
 
-			foreach ($this->listChunks($login, $dir) as $chunk) {
+			foreach ($this->listChunks($user, $dir) as $chunk) {
 				$out .= '<d:response>' . PHP_EOL;
 				$chunk = '/' . $uri . '/' . $chunk;
 				$out .= sprintf('<d:href>%s</d:href>', htmlspecialchars($chunk, ENT_XML1)) . PHP_EOL;
