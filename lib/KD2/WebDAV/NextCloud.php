@@ -256,6 +256,10 @@ abstract class NextCloud
 		'index.php/login/v2/poll' => 'poll',
 		'index.php/login/v2' => 'login_v2',
 
+		// NC connectivity check (uploads on Android fail without this)
+		// see, e.g., https://github.com/nextcloud/android/issues/10993
+		'index.php/204' => 'ping',
+
 		// Other API endpoints
 		'index.php/core/preview.png' => 'preview',
 		'index.php/apps/files/api/v1/thumbnail/' => 'thumbnail',
@@ -502,6 +506,11 @@ abstract class NextCloud
 			'loginName'   => $session['login'],
 			'appPassword' => $session['password'],
 		];
+	}
+
+	public function nc_ping()
+	{
+		http_response_code(204);
 	}
 
 	public function nc_capabilities()
