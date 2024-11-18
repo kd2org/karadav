@@ -400,8 +400,6 @@ abstract class NextCloud
 	{
 		$this->requireAuth();
 
-		$method = $_SERVER['REQUEST_METHOD'] ?? '';
-
 		// ownCloud-Android is using a different preview API
 		// remote.php/dav/files/user/name.jpg?x=224&y=224&c=&preview=1
 		if (!empty($_GET['preview'])) {
@@ -882,7 +880,7 @@ abstract class NextCloud
 		}
 
 		$method = $_SERVER['REQUEST_METHOD'] ?? null;
-		$login = $match[1] ?? null;
+		//$login = $match[1] ?? null;
 		$path = $match[2] ?? null;
 
 		if ($method === 'DELETE' && empty($path)) {

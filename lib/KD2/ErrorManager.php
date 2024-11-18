@@ -112,11 +112,10 @@ class ErrorManager
 	static protected $term_color = false;
 
 	/**
-	 * Will be set to true when catching an exception to avoid double catching
+	 * Will be incremented when catching an exception to avoid double catching
 	 * with the shutdown function
-	 * @var boolean
 	 */
-	static protected $catching = false;
+	static protected int $catching = 0;
 
 	/**
 	 * Used to store timers and memory consumption
@@ -132,7 +131,7 @@ class ErrorManager
 	{
 		// Stop here if disabled or if the script ended with an exception
 		if (!self::$enabled || self::$catching) {
-			return false;
+			return;
 		}
 
 		$error = error_get_last();
@@ -180,71 +179,46 @@ class ErrorManager
 		// Catch ASSERT_BAIL errors differently because throwing an exception
 		// in this case results in an execution shutdown, and shutdown handler
 		// isn't even called. See https://bugs.php.net/bug.php?id=53619
-		if (assert_options(ASSERT_ACTIVE) && assert_options(ASSERT_BAIL) && substr($message, 0, 18) == 'Warning: assert():')
+		if (PHP_VERSION_ID < 80000 && assert_options(ASSERT_ACTIVE) && assert_options(ASSERT_BAIL) && substr($message, 0, 18) == 'Warning: assert():')
 		{
 			$message .= ' (ASSERT_BAIL detected)';
 			self::exceptionHandler(new \ErrorException($message, 0, $severity, $file, $line));
-			return true;
+			return;
 		}
 
 		throw new \ErrorException($message, 0, $severity, $file, $line);
-		return true;
+		return;
 	}
 
 	/**
 	 * Main exception handler
-	 * @param  object  $e    Exception or Error (PHP 7) object
-	 * @param  boolean $exit Exit the script at the end
-	 * @return void
 	 */
-	static public function exceptionHandler($e, $exit = true)
+	static public function exceptionHandler(\Throwable $e, bool $exit = true): void
 	{
-		self::$catching = true;
-
 		try {
 			self::reportException($e, $exit);
 		}
-		catch (\Throwable $e2) {
+		catch (\Throwable|\Exception $e2) {
 			echo $e2;
 			echo PHP_EOL . PHP_EOL . $e;
 			exit(1);
 		}
-		catch (\Exception $e2) {
-			echo $e2;
-			echo PHP_EOL . PHP_EOL . $e;
-			exit(1);
-		}
-
-		return true;
 	}
 
 	/**
 	 * Main exception handler
-	 * @param  object  $e    Exception or Error (PHP 7) object
-	 * @param  boolean $exit Exit the script at the end
-	 * @return void
 	 */
-	static public function reportException($e, $exit)
+	static public function reportException(\Throwable $e, bool $exit = true): void
 	{
-		foreach (self::$custom_handlers as $class=>$callback)
-		{
-			if ($e instanceOf $class)
-			{
-				call_user_func($callback, $e);
-				$e = false;
-				break;
-			}
-		}
+		self::$catching++;
 
-		if ($e === false)
-		{
-			if ($exit)
-			{
-				exit(1);
-			}
-			else
-			{
-				return;
+		if (self::$catching === 1) {
+			foreach (self::$custom_handlers as $class => $callback) {
+				if ($e instanceOf $class) {
+					call_user_func($callback, $e);
+					$e = false;
+					break;
+				}
 			}
 		}
 
@@ -252,14 +226,12 @@ class ErrorManager
 		unset($e);
 
 		// Log exception to file
-		if (ini_get('log_errors'))
-		{
+		if (ini_get('log_errors')) {
 			error_log($log);
 		}
 
 		// Disable any output if it was buffering
-		if (ob_get_level())
-		{
+		if (ob_get_level()) {
 			ob_end_clean();
 		}
 
@@ -267,7 +239,7 @@ class ErrorManager
 		$is_cli = PHP_SAPI == 'cli';
 
 		if (!$is_cli) {
-			http_response_code(500);
+			@http_response_code(500);
 		}
 
 		if ($is_curl && !headers_sent()) {
@@ -436,7 +408,7 @@ class ErrorManager
 	 */
 	static protected function getFileLocation($file)
 	{
-		if (!empty(self::$context['root_directory']) && ($pos = strpos($file, self::$context['root_directory'])) === 0)
+		if (!empty(self::$context['root_directory']) && strpos($file, self::$context['root_directory']) === 0)
 		{
 			return '...' . substr($file, strlen(self::$context['root_directory']));
 		}
@@ -489,7 +461,7 @@ class ErrorManager
 				],
 			];
 
-			foreach ($e->getTrace() as $i=>$t)
+			foreach ($e->getTrace() as $t)
 			{
 				// Ignore the error stack from ErrorManager
 				if (isset($t['class']) && $t['class'] === __CLASS__
@@ -614,7 +586,7 @@ class ErrorManager
 		$out = sprintf('<section><header><h1>%s</h1><h2>%s</h2></header>',
 			$e->type, nl2br(htmlspecialchars($e->message)));
 
-		foreach ($e->backtrace as $i=>$t)
+		foreach ($e->backtrace as $t)
 		{
 			$out .= '<article>';
 
@@ -1021,7 +993,7 @@ class ErrorManager
 
 				$level++;
 
-				if ($var instanceof \Traversable) {
+				if ($var instanceof \Traversable && method_exists($var, 'valid')) {
 					$var2 = [];
 
 					try {

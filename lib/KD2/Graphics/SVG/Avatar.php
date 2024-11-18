@@ -97,7 +97,7 @@ class Avatar
 		$faceTranslateX = $wrapperTranslateX > $size / 6 ? $wrapperTranslateX / 2 : self::getUnit($numFromName, 6, 1);
 		$faceTranslateY = $wrapperTranslateY > $size / 6 ? $wrapperTranslateY / 2 : self::getUnit($numFromName, 5, 2);
 
-		$maskID = 'mask-' . md5(random_bytes(8));
+		$maskID = 'mask-' . md5($name);
 
 		$rx1 = $options['square'] ? 0 : $size * 2;
 		$rx2 = $isCircle ? $size : $size / 6;
@@ -138,7 +138,7 @@ class Avatar
 					fill="{$wrapperColor}"
 					rx="{$rx2}"
 				/>
-				<g transform="translate({$faceTranslateY} {$faceTranslateY}) rotate({$faceRotate} $half_size $half_size)">
+				<g transform="translate({$faceTranslateX} {$faceTranslateY}) rotate({$faceRotate} $half_size $half_size)">
 					{$mouth}
 					<rect
 						x="{$x1}"

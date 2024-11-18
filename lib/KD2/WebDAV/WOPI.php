@@ -137,16 +137,16 @@ class WOPI
 			return false;
 		}
 
-		$uri = substr($uri, strlen('wopi/files/'));
+		$method = $_SERVER['REQUEST_METHOD'];
+		$this->server->log('WOPI: <= %s %s', $method, $uri);
 
-		$this->server->log('WOPI: => %s', $uri);
+		$uri = substr($uri, strlen('wopi/files/'));
 
 		$return = null;
 
 		try {
 			$auth_token = $this->getAuthToken();
 
-			$method = $_SERVER['REQUEST_METHOD'];
 			$id = rawurldecode(strtok($uri, '/') ?: '');
 			$action = trim(strtok('') ?: '', '/');
 
@@ -163,11 +163,11 @@ class WOPI
 			$uri = $props[self::PROP_FILE_URI];
 			$uri = rawurldecode($uri);
 
-			$this->server->log('WOPI: => Found doc_uri: %s', $uri);
+			$this->server->log('WOPI: Found doc_uri: %s', $uri);
 
 			// GetFile
 			if ($action == 'contents' && $method == 'GET') {
-				$this->server->log('WOPI: => GetFile');
+				$this->server->log('WOPI: <= GetFile');
 				$this->server->http_get($uri);
 			}
 			// PutFile
@@ -177,7 +177,7 @@ class WOPI
 					throw new Exception('This file is read-only', 403);
 				}
 
-				$this->server->log('WOPI: => PutFile');
+				$this->server->log('WOPI: <= PutFile (Content-Length: %d)', $_SERVER['CONTENT_LENGTH'] ?? null);
 
 				$lastmodified = $props[self::PROP_LAST_MODIFIED];
 				$collabora_timestamp = $this->server->getHeader('X-COOL-WOPI-Timestamp');
@@ -190,7 +190,7 @@ class WOPI
 					&& $lastmodified instanceof \DateTime
 					&& $date->format('YmdHis') != $lastmodified->format('YmdHis'))
 				{
-					$this->server->log('WOPI: <= 409 (File was modified: client = %s, server = %s)',
+					$this->server->log('WOPI: => 409 (Conflict, file was modified: client = %s, server = %s)',
 						$date->format('Y-m-d H:i:s'),
 						$lastmodified->format('Y-m-d H:i:s'));
 					http_response_code(409);
@@ -217,7 +217,7 @@ class WOPI
 			}
 			// CheckFileInfo
 			elseif (!$action && $method == 'GET') {
-				$this->server->log('WOPI: => CheckFileInfo');
+				$this->server->log('WOPI: <= CheckFileInfo');
 				$return = $this->getInfo($uri, $props);
 			}
 			else {
@@ -225,7 +225,7 @@ class WOPI
 			}
 		}
 		catch (Exception $e) {
-			$this->server->log('WOPI: <= %d: %s', $e->getCode(), $e->getMessage());
+			$this->server->log('WOPI: => Error %d: %s', $e->getCode(), $e->getMessage());
 			http_response_code($e->getCode());
 			$return = ['error' => $e->getMessage()];
 		}
@@ -234,7 +234,11 @@ class WOPI
 			header('Content-Type: application/json', true);
 			$return = json_encode($return, JSON_PRETTY_PRINT);
 			echo $return;
-			$this->server->log('WOPI: <= %s', $return);
+
+			$this->server->log("WOPI: => %d\n%s",
+				http_response_code(),
+				$return
+			);
 		}
 
 		return true;
@@ -285,7 +289,7 @@ class WOPI
 	/**
 	 * Return list of available editors
 	 * @param  string $url WOPI client discovery URL (eg. http://localhost:8080/hosting/discovery for OnlyOffice)
-	 * @return an array containing a list of extensions and (eventually) a list of mimetypes
+	 * @return array containing a list of extensions and (eventually) a list of mimetypes
 	 * that can be handled by the editor server:
 	 * ['extensions' => [
 	 *   'odt' => ['edit' => 'http://...', 'embedview' => 'http://'],
@@ -441,10 +445,10 @@ class WOPI
 			throw new Exception('Access forbidden: no token was created', 403);
 		}
 
-		return $this->rawEditorHTML($url, $token, $token_ttl, $title);
+		return $this->rawEditorHTML($editor_url, $src, $token, $token_ttl, $title);
 	}
 
-	public function getEditorFrameHTML(string $editor_url, string $src, string $token, int $token_ttl)
+	public function getEditorFrameHTML(string $editor_url, string $src, string $token, int $token_ttl): string
 	{
 		// access_token_TTL: A 64-bit integer containing the number of milliseconds since January 1, 1970 UTC and representing the expiration date and time stamp of the access_token.
 		$token_ttl *= 1000;
@@ -458,7 +462,7 @@ class WOPI
 			<input name="access_token_ttl" value="{$token_ttl}" type="hidden" />
 		</form>
 
-		<iframe id="frame" name="frame" allow="autoplay camera microphone display-capture" allowfullscreen="true"></iframe>
+		<iframe id="frame" name="frame" allow="clipboard-read *; clipboard-write *;" allowfullscreen="true"></iframe>
 
 		<script type="text/javascript">
 		document.forms[0].submit();

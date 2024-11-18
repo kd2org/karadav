@@ -21,8 +21,10 @@ class FileStorage extends AbstractStorage
 	/**
 	 * These file names will be ignored when doing a PUT
 	 * as they are garbage, coming from some OS
+	 * @see https://raw.githubusercontent.com/owncloud/client/master/sync-exclude.lst
 	 */
-	const PUT_IGNORE_PATTERN = '!^~(?:lock\.|^\._)|^(?:\.DS_Store|Thumbs\.db|desktop\.ini)$!';
+	const PUT_IGNORE_PATTERN = '!^~|~$|^~.*tmp$|^Thumbs\.db$|^desktop\.ini$|\.unison$|^My Saved Places'
+		. '|^\.(lock\.|_|DS_Store|DocumentRevisions|directory|Trash|Temp|fseventsd|apdisk|synkron|sync|symform|fuse|nfs)!i';
 
 	public function __construct(string $path, ?string $lockdb = null)
 	{
@@ -84,7 +86,7 @@ class FileStorage extends AbstractStorage
 		$this->db('DELETE FROM locks WHERE uri = ? AND token = ?;', $uri, $token);
 	}
 
-	protected function list(string $uri): iterable
+	protected function list(string $uri, array $properties): iterable
 	{
 		foreach (glob($this->path . $uri . '/*') as $file) {
 			yield basename($file) => null;
@@ -139,7 +141,7 @@ class FileStorage extends AbstractStorage
 		return $meta;
 	}
 
-	protected function put(string $uri, $pointer): bool
+	protected function put(string $uri, $pointer, ?string $hash_algo, ?string $hash): bool
 	{
 		if (preg_match(self::PUT_IGNORE_PATTERN, basename($uri))) {
 			return false;
