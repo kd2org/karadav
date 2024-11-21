@@ -1,3 +1,8 @@
+## 0.5.1 - November 21, 2024
+
+* Fix upload of files larger than 10MB in NC/OC clients (thanks to @nproth)
+* Update dependencies
+
 ## 0.5.0 - April 8, 2024
 
 * Rewrite WOPI server

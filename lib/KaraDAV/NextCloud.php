@@ -17,6 +17,10 @@ class NextCloud extends WebDAV_NextCloud
 		$this->users = $users;
 		$this->temporary_chunks_path =  sprintf(STORAGE_PATH, '_chunks');
 		$this->setRootURL(WWW_URL);
+
+		// KaraDAV users are allowed to try iOS clients if they wish
+		// @see https://github.com/kd2org/karadav/issues/22
+		$this->block_ios_clients = false;
 	}
 
 	public function auth(?string $login, ?string $password): bool

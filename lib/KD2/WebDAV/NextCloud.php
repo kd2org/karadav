@@ -80,6 +80,8 @@ abstract class NextCloud
 	protected Server $server;
 	protected AbstractStorage $storage;
 
+	protected bool $block_ios_clients = true;
+
 	/**
 	 * Handle your authentication
 	 * you should handle real user login/password as well as app-specific passwords here
@@ -331,6 +333,13 @@ abstract class NextCloud
 		$this->server->log('NC <= %s %s => routed to: %s', $method, $uri, $route);
 
 		try {
+			$ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+
+			// Currently, iOS apps are broken
+			if ($this->block_ios_clients && (stristr($ua, 'nextcloud-ios') || stristr($ua, 'owncloudapp'))) {
+				throw new WebDAV_Exception('Your client is not compatible with this server. Consider using a different WebDAV client.', 403);
+			}
+
 			$v = $this->{'nc_' . $route}($uri);
 		}
 		catch (Exception $e) {
