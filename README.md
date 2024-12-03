@@ -332,7 +332,7 @@ Thank you:
 
 * Cédric Picard, for the security report
 
-## License
+## License
 
 This software and its dependencies are available in open source with the AGPL v3 license. This requires you to share all your source code if you include this in your software. This is voluntary.
 
