@@ -173,6 +173,20 @@ These don't support NextCloud or ownCloud clients:
 * [Pydio Cells](https://pydio.com/)
 * [Seafile](https://manual.seafile.com/12.0/extension/webdav/)
 
+### Calendar and contacts
+
+If you are looking for calendar (CalDAV) and contacts (CardDAV), KaraDAV doesn't have these, so have a look at these servers:
+
+* [Davis](https://github.com/tchapi/davis) (PHP, Baikal fork)
+* [Baikal](https://sabre.io/baikal/) (PHP)
+* [Radicale](https://radicale.org/) (Python)
+* [DAViCal](https://www.davical.org/) (PHP, calendar only)
+
+And these clients:
+
+* [AgenDAV](https://github.com/agendav/agendav) (web, PHP, calendar only)
+* [InfCloud](https://inf-it.com/open-source/clients/infcloud/) (web, javascript, calendar + contacts + todo lists)
+
 ## Performance
 
 I created 300 small random files, totalling 5.5 MB.
