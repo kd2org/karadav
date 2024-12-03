@@ -84,7 +84,7 @@ It has been successfully tested with:
 
 Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients if their publishers decide so.
 
-## WebDAV clients
+## WebDAV clients compatibility
 
 ### Recommended (tested with KaraDAV)
 
@@ -107,9 +107,12 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 * Linux:
   * davfs2 is **NOT** recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
   * [csync](https://csync.org/) on Linux (works). This is a library offering two-way sync, it is used by the ownCloud client, but it has a command-line client. Just replace `http` with `owncloud`, and `https` with `ownclouds` in URL, eg. `csync /home/username/sync ownclouds://karadav.example/files/username/`
+  * [cadaver](https://notroj.github.io/cadaver/) command-line client for WebDAV (untested)
   * [Celeste](https://github.com/hwittenborn/celeste) is a Rclone GUI to sync your directories (untested)
   * [Filestash](https://github.com/mickael-kerjean/filestash) is a web client (untested)
-* Windows: the native webclient (also called 'MiniRedir') is notoriously bad. We tested it successfully on Windows 10, but it seems to now [be deprecated and scheduled to be removed](https://help.nextcloud.com/t/end-of-microsoft-support-for-its-webclient-service-on-windows-10-and-11/174121) in Windows 11.
+* Windows:
+  * the native webclient (also called 'MiniRedir') **is notoriously bad**. We tested it successfully on Windows 10, but it seems to now [be deprecated and scheduled to be removed](https://help.nextcloud.com/t/end-of-microsoft-support-for-its-webclient-service-on-windows-10-and-11/174121) in Windows 11.
+  * [CarotDAV](http://rei.to/carotdav_en.html) (proprietary, untested)
 * Android:
   * [EasySync](https://github.com/phpbg/easysync) (does not allow to sync user-chosen folders sadly)
   * [WebDAV provider](https://github.com/alexbakker/webdav-provider) (untested)
