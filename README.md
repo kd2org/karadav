@@ -71,48 +71,61 @@ The following ownCloud/NextCloud specific features are supported:
 
 This server should be compatible with ownCloud and NextCloud synchronization clients (desktop, mobile, CLI).
 
-It has been tested with:
+It has been successfully tested with:
 
-* ownCloud Desktop 2.5.1 and 2.11.1 (Debian)
-* NextCloud Desktop 3.1.1 and 3.6.0 (Debian)
-* NextCloud Android app 3.21.0 (F-Droid)
-* ownCloud Android app 2.21.2 (F-Droid)
-* [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) 3.1.1 (Debian) *-- Note: make sure to pass options before parameters.*
+* [ownCloud Desktop](https://nextcloud.com/install/) (tested on Debian Linux)
+* [NextCloud Desktop](https://owncloud.com/desktop-app/) (tested on Debian Linux)
+* NextCloud Android app ([F-Droid](https://f-droid.org/en/packages/com.nextcloud.client/))
+* ownCloud Android app ([F-Droid](https://f-droid.org/en/packages/com.owncloud.android/))
+* [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) (Debian Linux) *-- Note: make sure to pass options before parameters.*
+* [ownCloud CLI client](https://doc.owncloud.com/desktop/next/advanced_usage/command_line_client.html) (Debian Linux)
 
 **We recommend the ownCloud apps**, as they are more stable and lighter :)
 
 Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients if their publishers decide so.
 
-## WebDAV clients compatibility
+## WebDAV clients
 
-Here is a list of clients tested with KaraDAV:
+### Recommended (tested with KaraDAV)
 
-### Desktop
+* Linux:
+  * KDE-based file browsers: Dolphin, Konqueror, Krusader…
+  * GTK-based file browsers (Thunar, Nautilus, Caja, PCManFM, etc.): they will work, but the GTK implementation is usually slower than KDE
+  * [FUSE webdavfs](https://github.com/miquels/webdavfs)
+* MacOS:
+  * [Cyberduck](https://cyberduck.io/) or [Mountain Duck](https://mountainduck.io/) (proprietary)
+* Windows:
+  * [Cyberduck](https://cyberduck.io/) or [Mountain Duck](https://mountainduck.io/) (proprietary)
+  * [WinSCP](https://winscp.net/)
+* Android:
+  * [DAVx⁵](https://www.davx5.com/) (libre), see [the manual](https://manual.davx5.com/webdav_mounts.html) for how to set up a WebDAV mount
+  * [RCX](https://f-droid.org/en/packages/io.github.x0b.rcx/) or its fork [Round-Sync](https://github.com/newhinton/Round-Sync)
 
-* [FUSE webdavfs](https://github.com/miquels/webdavfs) is **recommended** for Linux
-* davfs2 is NOT recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
-* Microsoft Windows native webclient (also called 'MiniRedir') is notoriously bad. We tested it successfully on Windows 10, but it is recommended to use [CyberDuck](https://cyberduck.io/download/) or [WinSCP](https://winscp.net/) instead, both are free software.
-* CyberDuck (Windows) version 8.5.0
-* **Recommended** Dolphin (KDE) and other KDE-based browsers (Konqueror, Krusader)
-* Thunar (GTK/GNOME) and other GTK-based file browsers (Nautilus, Caja, PCManFM, etc.), the GTK WebDAV stack is usually slower than KDE
-* [rclone](https://rclone.org/webdav/) on Linux, including [bi-directional sync](https://rclone.org/bisync/).
-* [csync](https://csync.org/) on Linux. This is a library offering two-way sync, it is used by the ownCloud client, but it has a command-line client. Just replace `http` with `owncloud`, and `https` with `ownclouds` in URL, eg. `csync /home/bohwaz/sync ownclouds://karadav.example/files/bohwaz/`
+### Others
 
-### Android
+* [rclone](https://rclone.org/webdav/) works, including [bi-directional sync](https://rclone.org/bisync/)! Pick `NextCloud` as the WebDAV vendor to enable advanced sync features.
+* Linux:
+  * davfs2 is **NOT** recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
+  * [csync](https://csync.org/) on Linux (works). This is a library offering two-way sync, it is used by the ownCloud client, but it has a command-line client. Just replace `http` with `owncloud`, and `https` with `ownclouds` in URL, eg. `csync /home/username/sync ownclouds://karadav.example/files/username/`
+  * [Celeste](https://github.com/hwittenborn/celeste) is a Rclone GUI to sync your directories (untested)
+  * [Filestash](https://github.com/mickael-kerjean/filestash) is a web client (untested)
+* Windows: the native webclient (also called 'MiniRedir') is notoriously bad. We tested it successfully on Windows 10, but it seems to now [be deprecated and scheduled to be removed](https://help.nextcloud.com/t/end-of-microsoft-support-for-its-webclient-service-on-windows-10-and-11/174121) in Windows 11.
+* Android:
+  * [EasySync](https://github.com/phpbg/easysync) (does not allow to sync user-chosen folders sadly)
+  * [WebDAV provider](https://github.com/alexbakker/webdav-provider) (untested)
+  * [WebDAV Sync](https://github.com/SakiiCode/WebDavSync) (untested)
+  * [X-Plore](https://www.lonelycatgames.com/apps/xplore) (proprietary) has been tested and works, but the app is now full of intrusive video ads, don't use it!
+  * [DrivinCloudOpen](https://github.com/bohwaz/drivinCloudOpen) is a defunct open-source Android WebDAV client that was easy to use
+* iOS:
+  * [WebDAV Nav+](https://apps.apple.com/app/webdav-nav/id412341302) (proprietary, untested)
+  * [WebDAV Navigator](https://apps.apple.com/app/webdav-navigator/id382551345) (proprietary, untested)
 
-* **Recommended** [RCX](https://f-droid.org/en/packages/io.github.x0b.rcx/) or its fork [Round-Sync](https://github.com/newhinton/Round-Sync)
-* [DAVx⁵](https://www.davx5.com/), see [the manual](https://manual.davx5.com/webdav_mounts.html) for how to set up a WebDAV mount
-* [X-Plore](https://www.lonelycatgames.com/apps/xplore)
+## WOPI (office document editing) compatibility
 
-Other untested:
+KaraDAV has been tested successfully with:
 
-* [EasySync](https://github.com/phpbg/easysync)
-* [WebDAV provider](https://github.com/alexbakker/webdav-provider)
-* [WebDAV Sync](https://github.com/SakiiCode/WebDavSync)
-
-## WOPI clients compatibility
-
-* Tested successfully with Collabora Development Edition (see [COLLABORA.md](doc/COLLABORA.md))
+* Collabora Development Edition (see [COLLABORA.md](doc/COLLABORA.md))
+* OnlyOffice Community Edition
 
 ## Future development
 
@@ -153,9 +166,12 @@ They are lightweight and easy to use in your own software to add support for Web
 * [Davros](https://github.com/mnutt/davros/) used to be compatible with NextCloud client [before version 2.5.0](https://github.com/owncloud/client/issues/6775)
 * [FileRun](https://filerun.com) is a proprietary solution compatible with the NextCloud Android app
 
-Might also be useful:
+These don't support NextCloud or ownCloud clients:
 
-* [DrivinCloudOpen](https://github.com/bohwaz/drivinCloudOpen) is a defunct open-source Android WebDAV client that is easy to use
+* Apache mod_dav is fast and easy to set up.
+* [SFTPGo](https://sftpgo.com/)
+* [Pydio Cells](https://pydio.com/)
+* [Seafile](https://manual.seafile.com/12.0/extension/webdav/)
 
 ## Performance
 
@@ -324,7 +340,7 @@ But they mostly pass with litmus 0.13-3 supplied by Debian:
 
 ## Author
 
-Paheko.cloud / BohwaZ. Contact me on: IRC = bohwaz@irc.libera.chat / Mastodon = https://mamot.fr/@bohwaz / Twitter = @bohwaz
+Paheko.cloud / BohwaZ. Contact me on: Mastodon = https://mamot.fr/@bohwaz
 
 ### Contributors
 
@@ -332,7 +348,7 @@ Thank you:
 
 * Cédric Picard, for the security report
 
-## License
+## License
 
 This software and its dependencies are available in open source with the AGPL v3 license. This requires you to share all your source code if you include this in your software. This is voluntary.
 
