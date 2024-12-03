@@ -452,7 +452,7 @@ abstract class NextCloud
 
 	public function nc_status(): array
 	{
-		if (stristr($_SERVER['HTTP_USER_AGENT'], 'owncloud')) {
+		if (stristr($_SERVER['HTTP_USER_AGENT'] ?? '', 'owncloud')) {
 			$name = 'ownCloud';
 			$version = '10.11.0';
 		}
