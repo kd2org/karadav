@@ -105,7 +105,7 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 
 * [rclone](https://rclone.org/webdav/) works, including [bi-directional sync](https://rclone.org/bisync/)! Pick `NextCloud` as the WebDAV vendor to enable advanced sync features.
 * Linux:
-  * davfs2 is **NOT** recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config.
+  * davfs2 is **NOT** recommended: it is very slow, and it is using a local cache, meaning changing a file locally may not be synced to the server for a few minutes, leading to things getting out of sync. If you have to use it, at least disable locks, by setting `use_locks=0` in the config. Other recommended options are `gui_optimize=1` and `delay_upload=0`. See manpage for details.
   * [csync](https://csync.org/) on Linux (works). This is a library offering two-way sync, it is used by the ownCloud client, but it has a command-line client. Just replace `http` with `owncloud`, and `https` with `ownclouds` in URL, eg. `csync /home/username/sync ownclouds://karadav.example/files/username/`
   * [cadaver](https://notroj.github.io/cadaver/) command-line client for WebDAV (untested)
   * [Celeste](https://github.com/hwittenborn/celeste) is a Rclone GUI to sync your directories (untested)
@@ -164,7 +164,7 @@ This depends on the KD2\WebDAV and KD2\WebDAV_NextCloud classes from the [KD2FW 
 
 They are lightweight and easy to use in your own software to add support for WebDAV and NextCloud clients to your software. Contact us for a commercial license.
 
-## Similar software
+## Similar software alternatives
 
 * [Davros](https://github.com/mnutt/davros/) used to be compatible with NextCloud client [before version 2.5.0](https://github.com/owncloud/client/issues/6775)
 * [FileRun](https://filerun.com) is a proprietary solution compatible with the NextCloud Android app
@@ -175,6 +175,7 @@ These don't support NextCloud or ownCloud clients:
 * [SFTPGo](https://sftpgo.com/)
 * [Pydio Cells](https://pydio.com/)
 * [Seafile](https://manual.seafile.com/12.0/extension/webdav/)
+* [BewCloud](https://github.com/bewcloud/bewcloud)
 
 ### Calendar and contacts
 
