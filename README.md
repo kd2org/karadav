@@ -175,7 +175,7 @@ These don't support NextCloud or ownCloud clients:
 * [SFTPGo](https://sftpgo.com/)
 * [Pydio Cells](https://pydio.com/)
 * [Seafile](https://manual.seafile.com/12.0/extension/webdav/)
-* [BewCloud](https://github.com/bewcloud/bewcloud)
+* [BewCloud](https://github.com/bewcloud/bewcloud) ([doesn't support WebDAV currently](https://github.com/bewcloud/bewcloud/issues/32))
 
 ### Calendar and contacts
 
@@ -193,7 +193,13 @@ And these clients:
 
 ## Performance
 
-I created 300 small random files, totalling 5.5 MB.
+I created 300 small random files, totalling 5.5 MB:
+
+```
+for n in {1..300}; do
+    dd if=/dev/urandom of=file$( printf %03d "$n" ).bin bs=1 count=$(( RANDOM + 1024 ))
+done
+```
 
 Then I timed KaraDAV, mod_dav and NextCloud (24) (all installed on my laptop, with Apache 2.4) with various WebDAV clients doing those tasks:
 
@@ -203,11 +209,11 @@ Then I timed KaraDAV, mod_dav and NextCloud (24) (all installed on my laptop, wi
 
 KaraDAV performance was very close to mod_dav, and NextCloud performance was incredibly poor.
 
-| Client | KaraDAV | NextCloud | mod_dav |
-| --- | --- | --- | --- |
-| Dolphin (KDE) | 5 seconds | 1 minute 15 seconds | 3 seconds |
-| Thunar (GTK) | 5 seconds | 1 minute 50 seconds | 5 seconds |
-| WebDAV Manager.js | 4 seconds (no delete) | -- | -- |
+| Client | KaraDAV | NextCloud | mod_dav | bewCloud |
+| --- | --- | --- | --- | --- |
+| Dolphin (KDE) | 5 seconds | 1 minute 15 seconds | 3 seconds | [N/A](https://github.com/bewcloud/bewcloud/issues/32) |
+| Thunar (GTK) | 5 seconds | 1 minute 50 seconds | 5 seconds | [N/A](https://github.com/bewcloud/bewcloud/issues/32) |
+| WebDAV Manager.js | 4 seconds (no delete) | -- | -- | -- |
 
 At the time of this test, WebDAV Manager.js didn't have the ability to select and delete multiple files at once, so the time shown is only for copy and refresh.
 
