@@ -298,7 +298,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		$quota = $this->users->quota($this->users->current());
 
 		if ($quota->free <= 0) {
-			throw new WebDAV_Exception('Your quota is exhausted', 403);
+			throw new WebDAV_Exception('Your quota is exhausted', 507);
 		}
 
 		$tmp_dir = sprintf(STORAGE_PATH, '_tmp');
@@ -331,7 +331,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		if ($delete) {
 			@unlink($tmp_file);
-			throw new WebDAV_Exception('Your quota is exhausted', 403);
+			throw new WebDAV_Exception('Your quota is exhausted', 507);
 		}
 		elseif ($hash && $hash_algo == 'MD5' && md5_file($tmp_file) != $hash) {
 			@unlink($tmp_file);
@@ -392,7 +392,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			$quota = $this->users->quota($this->users->current());
 
 			if (filesize($source) > $quota->free) {
-				throw new WebDAV_Exception('Your quota is exhausted', 403);
+				throw new WebDAV_Exception('Your quota is exhausted', 507);
 			}
 		}
 
@@ -446,7 +446,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function mkcol(string $uri): void
 	{
 		if (!$this->users->current()->quota) {
-			throw new WebDAV_Exception('Your quota is exhausted', 403);
+			throw new WebDAV_Exception('Your quota is exhausted', 507);
 		}
 
 		$target = $this->users->current()->path . $uri;
