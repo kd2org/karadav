@@ -30,6 +30,11 @@ const DEFAULT_TRASHBIN_DELAY = 60*60*24*30; // 30 days
 const STORAGE_PATH = __DIR__ . '/data/%s';
 
 /**
+ * Path to a directory containing the thumbnails of images
+ */
+const THUMBNAIL_CACHE_PATH = __DIR__ . '/data/.thumbnails';
+
+/**
  * SQLite3 database file
  * This is where the users, app sessions and stuff will be stored
  */

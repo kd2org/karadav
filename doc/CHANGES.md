@@ -1,6 +1,7 @@
 ## 0.6.0 - January 3, 2025
 
-* Implement support for NextCloud Notes API
+* Add support for NextCloud Notes API
+* Add thumbnails
 * Add sanity validation of file names, to avoid invalid characters in Windows
 * Fix: emptying the trashbin returned an error in NextCloud Android
 

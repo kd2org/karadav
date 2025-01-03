@@ -12,7 +12,7 @@ class WebDAV extends WebDAV_Server
 
 		if (null !== $out) {
 			if (WOPI_DISCOVERY_URL) {
-				$out = str_replace('<html', sprintf('<html data-wopi-discovery-url="%s" data-wopi-host-url="%s"', WOPI_DISCOVERY_URL, WWW_URL . 'wopi/'), $out);
+				$out = str_replace('<html', sprintf('<html data-nc-thumbnails="1" data-wopi-discovery-url="%s" data-wopi-host-url="%s"', WOPI_DISCOVERY_URL, WWW_URL . 'wopi/'), $out);
 			}
 
 			$out = str_replace('<body>', sprintf('<body style="opacity: 0"><script type="text/javascript" src="%swebdav.js"></script>', WWW_URL), $out);

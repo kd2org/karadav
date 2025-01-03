@@ -5,6 +5,7 @@ namespace KaraDAV;
 use KD2\WebDAV\NextCloud as WebDAV_NextCloud;
 use KD2\WebDAV\Exception as WebDAV_Exception;
 use KD2\Graphics\SVG\Avatar;
+use KD2\Graphics\Image;
 
 class NextCloud extends WebDAV_NextCloud
 {
@@ -196,5 +197,58 @@ class NextCloud extends WebDAV_NextCloud
 	{
 		header('Content-Type: image/svg+xml; charset=utf-8');
 		echo Avatar::beam($_SERVER['REQUEST_URI'] ?? '', ['colors' => ['#009', '#ccf', '#9cf']]);
+	}
+
+	public function serveThumbnail(string $uri, int $width, int $height, bool $crop = false, bool $preview = false): void
+	{
+		if (!preg_match('/\.(?:jpe?g|gif|png|webp)$/', $uri)) {
+			http_response_code(404);
+			return;
+		}
+
+		$this->requireAuth();
+		$uri = preg_replace(self::WEBDAV_BASE_REGEXP, '', $uri);
+
+		if (!$this->storage->exists($uri)) {
+			throw new WebDAV_Exception('Not found', 404);
+		}
+
+		if ($crop || $width < 400 || $height < 400) {
+			$size = 150;
+		}
+		elseif ($width >= 1200 || $height >= 1200) {
+			$size = 1200;
+		}
+		else {
+			$size = 500;
+		}
+
+		$hash = md5($uri . $size);
+		$cache_path = sprintf('%s/%.2s/%2$s', THUMBNAIL_CACHE_PATH, $hash);
+
+		if (!file_exists($cache_path)) {
+			try {
+				$i = new Image;
+				$i->openFromBlob($this->storage->fetch($uri));
+
+				if ($size === 150) {
+					$i->cropResize($size);
+				}
+				else {
+					$i->resize($size);
+				}
+
+				$perms = @fileperms(dirname(dirname(dirname($cache_path)))) ?: 0777;
+				mkdir(dirname($cache_path), $perms, true);
+				$i->save($cache_path, 'webp');
+				unset($i);
+			}
+			catch (\UnexpectedValueException $e) {
+				throw new WebDAV_Exception('Not an image', 404);
+			}
+		}
+
+		header('Content-Type: image/webp');
+		readfile($cache_path);
 	}
 }

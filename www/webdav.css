@@ -46,7 +46,18 @@ th {
 }
 
 td.thumb {
-	width: 5%;
+	width: 3.6em;
+	padding: 0;
+	text-align: center;
+}
+
+td.thumb img {
+	width: 100%;
+	display: block;
+}
+
+td.thumb .icon {
+	margin: .5em;
 }
 
 td.buttons {
@@ -66,7 +77,7 @@ table tr:nth-child(even) {
 .icon {
 	width: 2.6em;
 	height: 2.6em;
-	display: block;
+	display: inline-block;
 	border-radius: .2em;
 	background:var(--g3-color);
 	overflow: hidden;

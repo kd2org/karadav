@@ -22,6 +22,7 @@ $defaults = [
 	'DEFAULT_QUOTA'           => 200,
 	'DEFAULT_TRASHBIN_DELAY'  => 60*60*24*30,
 	'STORAGE_PATH'            => __DIR__ . '/../data/%s',
+	'THUMBNAIL_CACHE_PATH'    => __DIR__ . '/../.thumbnails',
 	'DB_FILE'                 => __DIR__ . '/../data/db.sqlite',
 	'WOPI_DISCOVERY_URL'      => null,
 	'ACCESS_CONTROL_ALL'      => false,

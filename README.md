@@ -1,5 +1,7 @@
 # KaraDAV - A lightweight WebDAV server, compatible with ownCloud and NextCloud clients
 
+[**Donate to this project**](https://kd2.org/donate)
+
 This is a simple and lightweight WebDAV server, allowing to easily set up a file sharing server compatible with WebDAV and NextCloud clients. It has no dependencies and good performance.
 
 It is written in PHP (8+). The only dependency is SQLite3 for the database.
@@ -332,7 +334,8 @@ But they mostly pass with litmus 0.13-3 supplied by Debian:
 
 ## Author
 
-Paheko.cloud / BohwaZ. Contact me on: Mastodon = https://mamot.fr/@bohwaz
+* [BohwaZ](https://mamot.fr/@bohwaz)
+* This project is provided by a non-profit organization, [**you can donate to help us maintain it**](https://kd2.org/donate).
 
 ### Contributors
 
