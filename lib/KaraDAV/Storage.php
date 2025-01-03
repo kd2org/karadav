@@ -128,6 +128,21 @@ class Storage extends AbstractStorage implements TrashInterface
 		return ['path' => $path];
 	}
 
+	public function fetch(string $uri): ?string
+	{
+		$path = $this->users->current()->path . $uri;
+
+		if (!file_exists($path)) {
+			return null;
+		}
+
+		if (!is_readable($path)) {
+			throw new WebDAV_Exception('You don\'t have the right to read this file', 403);
+		}
+
+		return file_get_contents($path);
+	}
+
 	public function exists(string $uri): bool
 	{
 		return file_exists($this->users->current()->path . $uri);
@@ -209,7 +224,10 @@ class Storage extends AbstractStorage implements TrashInterface
 				return '';
 			case NextCloud::PROP_OC_ID:
 				// fileId is required by NextCloud desktop client
-				return fileinode($target);
+				// We can't use inode here, as it is changed when we are doing a PUT
+				// instead we are using an integer generated from the first 64 bits
+				// of the MD5 hash of the file URI
+				return hexdec(substr(md5($uri), 0, 15));
 			case NextCloud::PROP_OC_PERMISSIONS:
 				$permissions = [];
 
@@ -820,7 +838,7 @@ class Storage extends AbstractStorage implements TrashInterface
 				NextCloud::PROP_NC_TRASHBIN_ORIGINAL_LOCATION => $info['Path'],
 				NextCloud::PROP_NC_TRASHBIN_DELETION_TIME => $info['DeletionDate'],
 				NextCloud::PROP_OC_SIZE => $size,
-				NextCloud::PROP_OC_ID => fileinode($file),
+				NextCloud::PROP_OC_ID => hexdec(substr(md5($name), 0, 15)),
 				'DAV::getcontentlength' => $size,
 				'DAV::getcontenttype' => $is_dir ? null : @mime_content_type($target),
 				'DAV::resourcetype' => $is_dir ? 'collection' : '',
