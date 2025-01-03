@@ -953,7 +953,7 @@ abstract class NextCloud
 					$pos = strrpos($key, ':');
 					$ns = substr($key, 0, $pos);
 					$tag = substr($key, $pos + 1);
-					$out .= sprintf('<%s xmlns="%s">%s</%1$s>', $tag, $ns, htmlspecialchars($value, ENT_XML1));
+					$out .= sprintf('<%s xmlns="%s">%s</%1$s>', $tag, $ns, htmlspecialchars((string) $value, ENT_XML1));
 				}
 
 				$out .= '</d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>' . PHP_EOL;
