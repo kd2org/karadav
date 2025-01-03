@@ -48,6 +48,7 @@ KaraDAV is compatible with ownCloud and NextCloud clients, because on Android th
 
 The following ownCloud/NextCloud specific features are supported:
 
+* [NextCloud Notes](https://github.com/nextcloud/notes) [API](https://github.com/nextcloud/notes/blob/main/docs/api/v1.md) (v1.3 only)
 * [Direct download](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
 * [Chunk upload](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/chunking.html)
 * [Trashbin](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/trashbin.html)
@@ -56,7 +57,6 @@ The following ownCloud/NextCloud specific features are supported:
 * Login via app-specific passwords (necessary for NextCloud desktop and Android clients)
 * Thumbnail/preview of images and files
 * Workspace notes (`README.md` displayed on top of directory listing on Android app) and workspace notes editing
-* [NextCloud Notes](https://github.com/nextcloud/notes) [API](https://github.com/nextcloud/notes/blob/main/docs/api/v1.md)
 
 ## Screenshots
 

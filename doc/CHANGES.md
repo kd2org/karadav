@@ -1,6 +1,7 @@
 ## 0.6.0 - January 3, 2025
 
 * Implement support for NextCloud Notes API
+* Add sanity validation of file names, to avoid invalid characters in Windows
 
 ## 0.5.1 - November 21, 2024
 
