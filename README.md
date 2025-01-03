@@ -57,7 +57,7 @@ The following ownCloud/NextCloud specific features are supported:
 * `X-OC-MTime` [header](https://gitlab.gnome.org/GNOME/gvfs/-/issues/637) to set file modification time (also supported by [rclone](https://rclone.org/webdav/#provider-notes))
 * `OC-Checksum` [header](https://github.com/owncloud-archive/documentation/issues/2964) to verify file upload integrity
 * Login via app-specific passwords (necessary for NextCloud desktop and Android clients)
-* Thumbnail/preview of images and files
+* Thumbnail/preview of images and files *(but the NextCloud Android client now uses a different API endpoint, so thumbnails don't work on Android)*
 * Workspace notes (`README.md` displayed on top of directory listing on Android app) and workspace notes editing
 
 ## Screenshots

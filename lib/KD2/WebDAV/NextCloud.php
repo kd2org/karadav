@@ -264,9 +264,18 @@ abstract class NextCloud
 		// see, e.g., https://github.com/nextcloud/android/issues/10993
 		'index.php/204' => 'ping',
 
-		// Other API endpoints
+		// https://github.com/nextcloud/notes/blob/main/docs/api/v1.md
+		'index.php/apps/notes/api/v1/' => 'notes',
+
+		// https://help.nextcloud.com/t/getting-image-preview-with-android-library-or-via-webdav/75743
 		'index.php/core/preview.png' => 'preview',
 		'index.php/apps/files/api/v1/thumbnail/' => 'thumbnail',
+
+		// New preview API, requires a file ID
+		// https://github.com/nextcloud/android/blob/d8c79db19d397df448f7bc79fd3ff5b372ab92f1/app/src/main/java/com/owncloud/android/datamodel/ThumbnailsCacheManager.java#L718C67-L718C99
+		'index.php/core/preview' => 'preview_v2',
+
+		// Other API endpoints
 		'ocs/v2.php/apps/text/workspace/direct' => 'workspace_edit',
 		'ocs/v2.php/core/apppassword' => 'delete_app_password',
 		'status.php' => 'status',
@@ -282,7 +291,6 @@ abstract class NextCloud
 		'ocs/v2.php/apps/dav/api/v1/direct' => 'direct_url',
 		'remote.php/direct/' => 'direct',
 		'avatars/' => 'avatar',
-		'index.php/apps/notes/api/v1/' => 'notes',
 	];
 
 	const AUTH_REDIRECT_URL = 'nc://login/server:%s&user:%s&password:%s';
@@ -746,6 +754,15 @@ abstract class NextCloud
 			'meta' => ['status' => 'ok', 'statuscode' => 200, 'message' => 'OK'],
 			'data' => $data,
 		]];
+	}
+
+	/**
+	 * File preview, new version, requires a file ID
+	 * @see https://help.nextcloud.com/t/getting-image-preview-with-android-library-or-via-webdav/75743/5
+	 */
+	protected function nc_preview_v2(string $uri): void
+	{
+		http_response_code(404);
 	}
 
 	/**

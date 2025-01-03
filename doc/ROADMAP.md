@@ -6,7 +6,7 @@ This might get supported in future (maybe):
 * Maybe: NextCloud files versioning
 	* [NextCloud API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/versions.html)
 	* [NextCloud versioning pattern](https://docs.nextcloud.com/server/latest/user_manual/en/files/version_control.html)
-	* [NextCloud implementation](https://github.com/nextcloud/server/blob/master/apps/files_versions/lib/Storage.php))
+	* [NextCloud implementation](https://github.com/nextcloud/server/blob/master/apps/files_versions/lib/Storage.php)
 	* [Mercurial revlog](https://www.mercurial-scm.org/wiki/Revlog)
 	* [Eric Sink on SCM versioning](https://ericsink.com/scm/scm_repositories.html)
 

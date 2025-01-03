@@ -1,7 +1,7 @@
 ## 0.6.0 - January 3, 2025
 
 * Add support for NextCloud Notes API
-* Add thumbnails
+* Add thumbnails (legacy NextCloud API, the new one requires file IDs, something we don't have here, but it works in KaraDAV UI, just not in NextCloud Android client)
 * Add sanity validation of file names, to avoid invalid characters in Windows
 * Fix: emptying the trashbin returned an error in NextCloud Android
 
