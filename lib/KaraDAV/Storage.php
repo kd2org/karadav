@@ -19,10 +19,35 @@ class Storage extends AbstractStorage implements TrashInterface
 	 */
 	const PUT_IGNORE_PATTERN = '!^~(?:lock\.|^\._)|^(?:\.DS_Store|Thumbs\.db|desktop\.ini)$!';
 
+	const FORBIDDEN_CHARACTERS = [
+		"\0", // NUL
+		'/', // slash
+		'\\', // anti-slash
+		// invalid characters in Windows
+		'\\', ':', '*', '?', '"', '<', '>', '|',
+	];
+
 	public function __construct(Users $users, NextCloud $nextcloud)
 	{
 		$this->users = $users;
 		$this->nextcloud = $nextcloud;
+	}
+
+	protected function validateFileName(string $name)
+	{
+		if (strlen($name) > 250) {
+			throw new WebDAV_Exception('File name is too long: ' . $name, 400);
+		}
+
+		if (strlen($name) < 1) {
+			throw new WebDAV_Exception('File name is too short', 400);
+		}
+
+		foreach (self::FORBIDDEN_CHARACTERS as $char) {
+			if (strpos($name, $char) !== false) {
+				throw new WebDAV_Exception('Forbidden character in filename: ' . $char, 400);
+			}
+		}
 	}
 
 	protected function ensureDirectoryExists(string $path): void
@@ -278,6 +303,8 @@ class Storage extends AbstractStorage implements TrashInterface
 			return false;
 		}
 
+		$this->validateFileName(basename($uri));
+
 		$target = $this->users->current()->path . $uri;
 		$parent = dirname($target);
 
@@ -350,6 +377,8 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function delete(string $uri): void
 	{
+		$this->validateFileName(basename($uri));
+
 		$target = $this->users->current()->path . $uri;
 
 		if (!file_exists($target)) {
@@ -374,6 +403,9 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function copymove(bool $move, string $uri, string $destination): bool
 	{
+		$this->validateFileName(basename($uri));
+		$this->validateFileName(basename($destination));
+
 		$source = $this->users->current()->path . $uri;
 		$target = $this->users->current()->path . $destination;
 		$parent = dirname($target);
@@ -445,6 +477,8 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function mkcol(string $uri): void
 	{
+		$this->validateFileName(basename($uri));
+
 		if (!$this->users->current()->quota) {
 			throw new WebDAV_Exception('Your quota is exhausted', 507);
 		}
