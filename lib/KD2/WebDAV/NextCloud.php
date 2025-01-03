@@ -370,7 +370,7 @@ abstract class NextCloud
 			header('Content-Type: text/xml; charset=utf-8', true);
 			echo '<?xml version="1.0"?>' . $this->xml($v);
 		}
-		elseif (is_array($v)) {
+		elseif (is_array($v) || is_object($v)) {
 			http_response_code(200);
 			header('Content-Type: application/json', true);
 			$json = json_encode($v, JSON_PRETTY_PRINT);

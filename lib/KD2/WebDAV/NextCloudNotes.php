@@ -2,6 +2,8 @@
 
 namespace KD2\WebDAV;
 
+use stdClass;
+
 trait NextCloudNotes
 {
 	protected string $notes_directory = 'Notes';
@@ -79,7 +81,7 @@ trait NextCloudNotes
 		return null;
 	}
 
-	protected function getNoteById(int $id, bool $with_content): ?array
+	protected function getNoteById(int $id, bool $with_content): ?stdClass
 	{
 		$path = $this->findNotePath($id, $this->notes_directory);
 
@@ -90,7 +92,7 @@ trait NextCloudNotes
 		return $this->getNote($path, $with_content);
 	}
 
-	protected function getNote(string $path, bool $with_content = false, int $not_before = 0): ?array
+	protected function getNote(string $path, bool $with_content = false, int $not_before = 0): ?stdClass
 	{
 		if (!$this->storage->exists($path)) {
 			return null;
@@ -116,9 +118,9 @@ trait NextCloudNotes
 
 		$title = substr($path, strrpos($path, '/') + 1, - strlen($this->notes_suffix));
 		$category = substr($path, strlen($this->notes_directory . '/'));
-		$category = substr($category, 0, -(strlen($title) + strlen($this->notes_suffix)));
+		$category = substr($category, 0, -(strlen($title) + strlen($this->notes_suffix) + 1));
 
-		$data = [
+		$data = (object) [
 			'id'       => (int) $props[self::PROP_OC_ID],
 			'etag'     => $props['DAV::getetag'],
 			'readonly' => false, // unsupported
@@ -130,19 +132,19 @@ trait NextCloudNotes
 		];
 
 		if ($with_content) {
-			$data['content'] = $this->storage->fetch($path);
+			$data->content = $this->storage->fetch($path);
 		}
 
 		return $data;
 	}
 
-	protected function writeNote(?array $note): array
+	protected function writeNote(?stdClass $note): stdClass
 	{
 		$data = json_decode(file_get_contents('php://input'));
 
 		if ($note) {
-			$data->title ??= $note['title'];
-			$data->category ??= $note['category'];
+			$data->title ??= $note->title;
+			$data->category ??= $note->category;
 		}
 		elseif (!isset($data->title, $data->category, $data->content)) {
 			throw new Exception('Missing required key', 400);
@@ -160,9 +162,9 @@ trait NextCloudNotes
 
 		if ($note) {
 			// If the note category or title have changed, we need to move the note
-			if ($note['category'] !== $data->category
-				|| $note['title'] !== $data->title) {
-				$this->storage->move($note['_path'], $path);
+			if ($note->category !== $data->category
+				|| $note->title !== $data->title) {
+				$this->storage->move($note->_path, $path);
 			}
 
 			if (!isset($data->content)) {
@@ -259,7 +261,7 @@ trait NextCloudNotes
 					throw new Exception('Unknown note ID', 404);
 				}
 
-				$this->storage->delete($note['_path']);
+				$this->storage->delete($note->_path);
 				http_response_code(200);
 				return null;
 			}

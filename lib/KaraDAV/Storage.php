@@ -435,7 +435,8 @@ class Storage extends AbstractStorage implements TrashInterface
 		$overwritten = file_exists($target);
 
 		if (!is_dir($parent)) {
-			throw new WebDAV_Exception('Target parent directory does not exist', 409);
+			$this->ensureDirectoryExists($parent);
+			//throw new WebDAV_Exception('Target parent directory does not exist', 409);
 		}
 
 		if (false === $move) {
@@ -453,7 +454,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		$method = $move ? 'rename' : 'copy';
 
 		if ($method == 'copy' && is_dir($source)) {
-			$this->ensureDirectoryExists($parent);
+			$this->ensureDirectoryExists($target);
 
 			if (!is_dir($target)) {
 				throw new WebDAV_Exception('Target directory could not be created', 409);
