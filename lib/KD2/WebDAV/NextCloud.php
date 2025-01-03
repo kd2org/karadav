@@ -1107,8 +1107,14 @@ abstract class NextCloud
 				rewind($fp);
 				$this->storage->put($path, $fp);
 
+				$props = $this->storage->propfind($path, [self::PROP_OC_ID], 0);
+
+				if (empty($props)) {
+					throw new Exception('Could not locate created note', 500);
+				}
+
 				http_response_code(200);
-				return null;
+				return $this->getNote((int)current($props), true);
 			}
 			else {
 				throw new Exception('Invalid method', 405);
