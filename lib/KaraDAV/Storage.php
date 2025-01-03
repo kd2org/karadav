@@ -224,9 +224,9 @@ class Storage extends AbstractStorage implements TrashInterface
 				return '';
 			case NextCloud::PROP_OC_ID:
 				// fileId is required by NextCloud desktop client
-				// We can't use inode here, as it is changed when we are doing a PUT
-				// instead we are using an integer generated from the first 64 bits
-				// of the MD5 hash of the file URI
+				// We can't use inode here, as it changes when we are doing a PUT.
+				// Instead we will be using an integer generated from the first 64 bits
+				// of the MD5 hash of the file URI. This should be sufficient to avoid collisions.
 				return hexdec(substr(md5($uri), 0, 15));
 			case NextCloud::PROP_OC_PERMISSIONS:
 				$permissions = [];
