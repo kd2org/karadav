@@ -168,7 +168,6 @@ class ErrorManager
 			E_USER_WARNING      => 'User warning',
 			E_NOTICE            => 'Notice',
 			E_USER_NOTICE       => 'User notice',
-			E_STRICT            => 'Strict standards',
 			E_DEPRECATED        => 'Deprecated',
 			E_USER_DEPRECATED   => 'User deprecated',
 		];
@@ -750,7 +749,7 @@ class ErrorManager
 	static public function setEnvironment(int $environment): void
 	{
 		self::$enabled = $environment;
-		error_reporting($environment & self::DEVELOPMENT ? -1 : E_ALL & ~E_DEPRECATED & ~E_STRICT);
+		error_reporting($environment & self::DEVELOPMENT ? -1 : E_ALL & ~E_DEPRECATED);
 
 		if ($environment & self::DEVELOPMENT && PHP_SAPI != 'cli') {
 			self::setHtmlHeader('<!DOCTYPE html><meta charset="utf-8" /><style type="text/css">
@@ -831,7 +830,7 @@ class ErrorManager
 		ini_set('error_append_string', null);
 		ini_set('log_errors', false);
 		ini_set('display_errors', false);
-		ini_set('error_reporting', E_ALL & ~E_DEPRECATED & ~E_STRICT);
+		ini_set('error_reporting', E_ALL & ~E_DEPRECATED);
 
 		restore_error_handler();
 		return restore_exception_handler();

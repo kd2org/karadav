@@ -82,6 +82,9 @@ abstract class NextCloud
 
 	protected bool $block_ios_clients = true;
 
+	protected string $notes_directory = 'Notes';
+	protected string $notes_suffix = '.md';
+
 	/**
 	 * Handle your authentication
 	 * you should handle real user login/password as well as app-specific passwords here
@@ -280,6 +283,7 @@ abstract class NextCloud
 		'ocs/v2.php/apps/dav/api/v1/direct' => 'direct_url',
 		'remote.php/direct/' => 'direct',
 		'avatars/' => 'avatar',
+		'index.php/apps/notes/api/v1/' => 'notes',
 	];
 
 	const AUTH_REDIRECT_URL = 'nc://login/server:%s&user:%s&password:%s';
@@ -574,6 +578,10 @@ abstract class NextCloud
 				'checksums' => [
 					'supportedTypes' => ['SHA1', 'MD5'],
 					'preferredUploadType' => 'MD5',
+				],
+				'notes' => [
+					'api_version' => ['1.3'],
+					'version' => '4.11.99',
 				],
 			],
 		]);
@@ -946,5 +954,204 @@ abstract class NextCloud
 		}
 
 		return null;
+	}
+
+	protected function iterateNotes(?string $root, bool $recursive, bool $with_content, int $not_before = 0): \Generator
+	{
+		$uri = $this->notes_directory;
+
+		if ($root) {
+			$uri .= '/' . $root;
+		}
+
+		$this->server->validateURI($uri);
+
+		$requested_properties = [
+			self::PROP_OC_ID, // id
+			'DAV::getetag', // etag
+			'DAV::getlastmodified', // modified
+			'DAV::resourcetype',
+		];
+
+		foreach ($this->storage->list($uri, $requested_properties) as $name => $props) {
+			$path = $uri . '/' . $name;
+			$props ??= $this->storage->propfind($path, $requested_properties, 0);
+
+			if (!isset($props[self::PROP_OC_ID], $props['DAV::getetag'],
+				$props['DAV::getlastmodified'], $props['DAV::resourcetype'])) {
+				throw new \LogicException('Missing required properties for notes API');
+			}
+
+			if ($props['DAV::resourcetype'] === 'collection') {
+				if (!$recursive) {
+					continue;
+				}
+
+				$category = substr($path, strlen($this->notes_directory . '/'));
+
+				yield from $this->iterateNotes($category, $recursive, $with_content, $not_before);
+				continue;
+			}
+
+			$ts = $props['DAV::getlastmodified']->getTimestamp();
+
+			// Skip
+			if ($not_before && $ts < $not_before) {
+				continue;
+			}
+
+			$title = substr($path, strrpos($path, '/') + 1, - strlen($this->notes_suffix));
+			$category = substr($path, strlen($this->notes_directory . '/'));
+			$category = substr($category, 0, -(strlen($title) + strlen($this->notes_suffix)));
+
+			$data = [
+				'id'       => (int) $props[self::PROP_OC_ID],
+				'etag'     => $props['DAV::getetag'],
+				'readonly' => false, // unsupported
+				'title'    => $title,
+				'category' => $category,
+				'favorite' => false, // unsupported
+				'modified' => $ts,
+				'_path'    => $path,
+			];
+
+			if ($with_content) {
+				$data['content'] = $this->storage->fetch($path);
+			}
+
+			yield $data;
+		}
+	}
+
+	protected function getNote(int $id, bool $with_content): ?array
+	{
+		foreach ($this->iterateNotes(null, true, false) as $note) {
+			if ($note['id'] !== $id) {
+				continue;
+			}
+
+			if ($with_content) {
+				$note['content'] = $this->storage->fetch($note['_path']);
+			}
+
+			return $note;
+		}
+
+		return null;
+	}
+
+	protected function nc_notes(string $uri)
+	{
+		$this->requireAuth();
+
+		$last = substr(rtrim($uri, '/'), strrpos($uri, '/') + 1);
+		$method = $_SERVER['REQUEST_METHOD'] ?? null;
+
+		$this->server->prefix = '';
+
+		if ($last === 'settings') {
+			if ($method === 'PUT') {
+				throw new Exception('This is not implemented currently', 405);
+			}
+			elseif ($method === 'GET') {
+				return ['notesPath' => $this->notes_directory, 'fileSuffix' => $this->notes_suffix];
+			}
+		}
+		elseif ($last === 'notes') {
+			if ($method === 'GET') {
+				$exclude = isset($_GET['exclude']) ? explode(',', $_GET['exclude']) : [];
+				$with_content = !in_array('content', $exclude);
+				$not_before = intval($_GET['pruneBefore'] ?? 0);
+				$root = $_GET['category'] ?? null;
+				$recursive = $root ? false : true;
+
+				$props = $this->storage->propfind($this->notes_directory, ['DAV::getetag', 'DAV::getlastmodified'], 1);
+
+				http_response_code(200);
+
+				if (isset($props['DAV::getetag'])) {
+					header('ETag: ' . $props['DAV::getetag']);
+				}
+
+				if (isset($props['DAV::getlastmodified'])) {
+					header('Last-Modified: ' . $props['DAV::getlastmodified']->format(\DATE_RFC7231));
+				}
+
+				$notes = $this->iterateNotes($root, $recursive, $with_content, $not_before);
+				$notes = iterator_to_array($notes, false);
+				return $notes;
+			}
+			elseif ($method === 'POST') {
+				$data = json_decode(file_get_contents('php://input'));
+
+				if (!isset($data->title, $data->content, $data->category)) {
+					throw new Exception('Missing required key', 400);
+				}
+
+				$path = $this->notes_directory . '/';
+
+				if ($data->category) {
+					$path .= $data->category . '/';
+				}
+
+				$path .= $data->title . '.md';
+
+				$this->server->validateURI($path);
+
+				if ($this->storage->exists($path)) {
+					throw new Exception('This note already exists', 409);
+				}
+
+				$fp = fopen('php://temp', 'w+');
+				fwrite($fp, $data->content);
+				rewind($fp);
+				$this->storage->put($path, $fp);
+
+				http_response_code(200);
+				return null;
+			}
+			else {
+				throw new Exception('Invalid method', 405);
+			}
+		}
+		elseif (ctype_digit($last)) {
+			if ($method === 'GET') {
+				$note = $this->getNote((int)$last, true);
+
+				if (!$note) {
+					throw new Exception('Unknown note ID', 404);
+				}
+
+				return $note;
+			}
+			elseif ($method === 'PUT') {
+				$note = $this->getNote((int)$last, false);
+
+				if (!$note) {
+					throw new Exception('Unknown note ID', 404);
+				}
+
+				$this->server->http_put($note['_path']);
+				http_response_code(200);
+				return null;
+			}
+			elseif ($method === 'DELETE') {
+				$note = $this->getNote((int)$last, false);
+
+				if (!$note) {
+					throw new Exception('Unknown note ID', 404);
+				}
+
+				$this->storage->delete($note['_path']);
+				http_response_code(200);
+				return null;
+			}
+			else {
+				throw new Exception('Invalid method', 405);
+			}
+		}
+		else {
+			throw new Exception('Invalid URL', 404);
+		}
 	}
 }

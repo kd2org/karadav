@@ -28,6 +28,14 @@ abstract class AbstractStorage
 	abstract public function get(string $uri): ?array;
 
 	/**
+	 * Return the requested resource contents
+	 *
+	 * @param  string $uri Path to resource
+	 * @return null|string
+	 */
+	abstract public function fetch(string $uri): ?string;
+
+	/**
 	 * Return TRUE if the requested resource exists, or FALSE
 	 *
 	 * @param  string $uri

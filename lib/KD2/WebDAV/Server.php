@@ -1233,7 +1233,7 @@ class Server
 		}
 	}
 
-	protected function validateURI(string $uri): string
+	public function validateURI(string $uri): string
 	{
 		$uri = preg_replace('!/{2,}!', '/', $uri);
 		$uri = str_replace('\\', '/', $uri);
