@@ -77,6 +77,7 @@ It has been successfully tested with:
 * [ownCloud Desktop](https://nextcloud.com/install/) (tested on Debian Linux)
 * [NextCloud Desktop](https://owncloud.com/desktop-app/) (tested on Debian Linux)
 * NextCloud Android app ([F-Droid](https://f-droid.org/en/packages/com.nextcloud.client/))
+* NextCloud Notes Android app ([F-Droid](https://f-droid.org/en/packages/it.niedermann.owncloud.notes/))
 * ownCloud Android app ([F-Droid](https://f-droid.org/en/packages/com.owncloud.android/))
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) (Debian Linux) *-- Note: make sure to pass options before parameters.*
 * [ownCloud CLI client](https://doc.owncloud.com/desktop/next/advanced_usage/command_line_client.html) (Debian Linux)
@@ -133,27 +134,7 @@ KaraDAV has been tested successfully with:
 
 ## Future development
 
-This might get supported in future (maybe):
-
-* Probably: [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html)
-* Maybe: NextCloud files versioning
-	* [NextCloud API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/versions.html)
-	* [NextCloud versioning pattern](https://docs.nextcloud.com/server/latest/user_manual/en/files/version_control.html)
-	* [NextCloud implementation](https://github.com/nextcloud/server/blob/master/apps/files_versions/lib/Storage.php))
-	* [Mercurial revlog](https://www.mercurial-scm.org/wiki/Revlog)
-	* [Eric Sink on SCM versioning](https://ericsink.com/scm/scm_repositories.html)
-
-This probably won't get supported anytime soon:
-
-* CalDAV/CardDAV support:
-  * this would require a [bunch of new stuff implemented](https://evertpot.com/227/)
-  * the only CalDAV test suite ([CavDAVtester](https://github.com/apple/ccs-caldavtester)) does not work anymore as it's written for Python 2
-  * for now the best option is to use [Baikal from Sabre/DAV](https://sabre.io/baikal/) for that
-  * Nice web clients to add to Baikal are [AgenDAV](https://github.com/agendav/agendav) and [InfCloud](https://inf-it.com/open-source/clients/infcloud/)
-* [Extended MKCOL](https://www.rfc-editor.org/rfc/rfc5689) required only if CalDAV support is implemented
-* [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
-* [Resumable upload via TUS](https://tus.io/protocols/resumable-upload.html)
-* [WebDAV sharing if it ever becomes a spec?](https://evertpot.com/webdav-caldav-carddav-sharing/)
+See [the roadmap](doc/ROADMAP.md).
 
 ## Install instructions
 
@@ -177,26 +158,6 @@ These don't support NextCloud or ownCloud clients:
 * [Pydio Cells](https://pydio.com/)
 * [Seafile](https://manual.seafile.com/12.0/extension/webdav/)
 * [BewCloud](https://github.com/bewcloud/bewcloud) ([doesn't support WebDAV currently](https://github.com/bewcloud/bewcloud/issues/32))
-
-### Calendar and contacts
-
-If you are looking for calendar (CalDAV) and contacts (CardDAV), KaraDAV doesn't have these, so have a look at these servers:
-
-* [Davis](https://github.com/tchapi/davis) (PHP, Baikal fork)
-* [Baikal](https://sabre.io/baikal/) (PHP)
-* [Radicale](https://radicale.org/) (Python)
-* [DAViCal](https://www.davical.org/) (PHP, calendar only)
-
-And these clients:
-
-* [AgenDAV](https://github.com/agendav/agendav) (web, PHP, calendar only)
-* [InfCloud](https://inf-it.com/open-source/clients/infcloud/) (web, javascript, calendar + contacts + todo lists)
-
-If looking for implementing a CalDAV/CardDAV client or server, look at these amazing resources from Sabre:
-
-* [Building a CalDAV client](https://sabre.io/dav/building-a-caldav-client/)
-* [Building a CardDAV client](https://sabre.io/dav/building-a-carddav-client/)
-* See also [SimpleCalDAV](https://github.com/wvrzel/simpleCalDAV) for a simple implementation.
 
 ## Performance
 

@@ -2,6 +2,7 @@
 
 * Implement support for NextCloud Notes API
 * Add sanity validation of file names, to avoid invalid characters in Windows
+* Fix: emptying the trashbin returned an error in NextCloud Android
 
 ## 0.5.1 - November 21, 2024
 
