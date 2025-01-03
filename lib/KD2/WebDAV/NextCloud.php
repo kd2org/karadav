@@ -895,7 +895,7 @@ abstract class NextCloud
 	{
 		$this->requireAuth();
 
-		$r = '!^remote\.php/dav/trashbin/([^/]+)/trash/([^/]*)$!';
+		$r = '!^remote\.php/dav/trashbin/([^/]+)/trash(?:/([^/]+))?$!';
 
 		if (!preg_match($r, $uri, $match)) {
 			throw new Exception('Invalid URL for trashbin API', 400);
