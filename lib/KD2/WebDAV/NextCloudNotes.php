@@ -175,7 +175,9 @@ trait NextCloudNotes
 		}
 
 		if (!$note && $this->storage->exists($path)) {
-			throw new Exception('This note already exists', 409);
+			// Not sure why, but sometimes app, is trying to create a new note,
+			// instead of writing to existing note
+			//throw new Exception('This note already exists', 409);
 		}
 
 		$fp = fopen('php://temp', 'w+');
