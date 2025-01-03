@@ -56,6 +56,7 @@ The following ownCloud/NextCloud specific features are supported:
 * Login via app-specific passwords (necessary for NextCloud desktop and Android clients)
 * Thumbnail/preview of images and files
 * Workspace notes (`README.md` displayed on top of directory listing on Android app) and workspace notes editing
+* [NextCloud Notes](https://github.com/nextcloud/notes) [API](https://github.com/nextcloud/notes/blob/main/docs/api/v1.md)
 
 ## Screenshots
 
@@ -190,6 +191,12 @@ And these clients:
 
 * [AgenDAV](https://github.com/agendav/agendav) (web, PHP, calendar only)
 * [InfCloud](https://inf-it.com/open-source/clients/infcloud/) (web, javascript, calendar + contacts + todo lists)
+
+If looking for implementing a CalDAV/CardDAV client or server, look at these amazing resources from Sabre:
+
+* [Building a CalDAV client](https://sabre.io/dav/building-a-caldav-client/)
+* [Building a CardDAV client](https://sabre.io/dav/building-a-carddav-client/)
+* See also [SimpleCalDAV](https://github.com/wvrzel/simpleCalDAV) for a simple implementation.
 
 ## Performance
 

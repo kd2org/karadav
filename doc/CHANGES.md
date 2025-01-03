@@ -1,3 +1,7 @@
+## 0.6.0 - January 3, 2025
+
+* Implement support for NextCloud Notes API
+
 ## 0.5.1 - November 21, 2024
 
 * Fix upload of files larger than 10MB in NC/OC clients (thanks to @nproth)
