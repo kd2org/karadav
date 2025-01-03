@@ -1040,6 +1040,68 @@ abstract class NextCloud
 		return null;
 	}
 
+	protected function writeNote(?array $note): array
+	{
+		$data = json_decode(file_get_contents('php://input'));
+
+		if ($note) {
+			$data->title ??= $note['title'];
+			$data->category ??= $note['category'];
+		}
+		elseif (!isset($data->title, $data->category, $data->content)) {
+			throw new Exception('Missing required key', 400);
+		}
+
+		$path = $this->notes_directory . '/';
+
+		if ($data->category) {
+			$path .= $data->category . '/';
+		}
+
+		$path .= $data->title . '.md';
+
+		$this->server->validateURI($path);
+
+		if ($note) {
+			// If the note category or title have changed, we need to move the note
+			if ($note['category'] !== $data->category
+				|| $note['title'] !== $data->title) {
+				$this->storage->move($note['_path'], $path);
+			}
+
+			if (!isset($data->content)) {
+				// No other changes, stop here
+				http_response_code(200);
+				return $this->getNote($note['id'], true);
+			}
+		}
+
+		if (!$note && $this->storage->exists($path)) {
+			throw new Exception('This note already exists', 409);
+		}
+
+		$fp = fopen('php://temp', 'w+');
+		fwrite($fp, $data->content);
+		rewind($fp);
+		$this->storage->put($path, $fp);
+
+		if (!$note) {
+			$props = $this->storage->propfind($path, [self::PROP_OC_ID], 0);
+
+			if (empty($props)) {
+				throw new Exception('Could not locate created note', 500);
+			}
+
+			$note = $this->getNote((int)current($props), true);
+		}
+		else {
+			$note = $this->getNote($note['id'], true);
+		}
+
+		http_response_code(200);
+		return $note;
+	}
+
 	protected function nc_notes(string $uri)
 	{
 		$this->requireAuth();
@@ -1082,39 +1144,7 @@ abstract class NextCloud
 				return $notes;
 			}
 			elseif ($method === 'POST') {
-				$data = json_decode(file_get_contents('php://input'));
-
-				if (!isset($data->title, $data->content, $data->category)) {
-					throw new Exception('Missing required key', 400);
-				}
-
-				$path = $this->notes_directory . '/';
-
-				if ($data->category) {
-					$path .= $data->category . '/';
-				}
-
-				$path .= $data->title . '.md';
-
-				$this->server->validateURI($path);
-
-				if ($this->storage->exists($path)) {
-					throw new Exception('This note already exists', 409);
-				}
-
-				$fp = fopen('php://temp', 'w+');
-				fwrite($fp, $data->content);
-				rewind($fp);
-				$this->storage->put($path, $fp);
-
-				$props = $this->storage->propfind($path, [self::PROP_OC_ID], 0);
-
-				if (empty($props)) {
-					throw new Exception('Could not locate created note', 500);
-				}
-
-				http_response_code(200);
-				return $this->getNote((int)current($props), true);
+				return $this->writeNote(null);
 			}
 			else {
 				throw new Exception('Invalid method', 405);
