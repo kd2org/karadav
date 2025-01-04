@@ -112,8 +112,9 @@ const WebDAVNavigator = (url, options) => {
 	const reqAndReload = (method, url, body, headers) => {
 		animateLoading();
 		req(method, url, body, headers).then(r => reqHandler(r, () => {
-			stopLoading() && reloadListing();
-		}).catch(e => {
+			stopLoading();
+			reloadListing();
+		})).catch(e => {
 			console.error(e);
 			alert(e);
 		});
