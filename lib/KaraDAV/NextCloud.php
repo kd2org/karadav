@@ -213,7 +213,7 @@ class NextCloud extends WebDAV_NextCloud
 			return;
 		}
 
-		$this->requiteAuth();
+		$this->requireAuth();
 		$uri = $this->storage->getFilePathFromId((int)$id);
 
 		if (!$uri) {
