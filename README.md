@@ -60,6 +60,38 @@ The following ownCloud/NextCloud specific features are supported:
 * Thumbnail/preview of images
 * Workspace notes (`README.md` displayed on top of directory listing on Android app) and workspace notes editing
 
+KaraDAV is not a drop-in replacement for NextCloud. It is not intended to be. It is just focused on files.
+
+### Comparison with NextCloud/ownCloud
+
+| Feature | KaraDAV | NextCloud |
+| -: | :- | :- | 
+| License | AGPL (commercial license on request) | AGPL |
+| Speed | Fast | Sloooow |
+| Package size | < 0.5 MB | > 800 MB |
+| Lines of code | ~7500 lines | ~2,200,000 lines |
+| WebDAV library | KD2 | SabreDAV |
+| WebDAV compliance | 3/5 | 4/5 |
+| Linux clients | Yes | Yes |
+| Windows clients | Yes | Yes |
+| Mac clients | Yes | Yes |
+| Android clients | Yes | Yes |
+| iOS clients | Untested | Yes |
+| Trashbin | Yes | Yes |
+| Chunked upload of large files | Yes | Yes |
+| Notes | Yes | Yes |
+| File versioning | - | Yes |
+| File sharing | - | Yes |
+| File searching | - | Yes |
+| Calendar | - | Yes |
+| Contacts | - | Yes |
+| Install other apps | - | Yes |
+| 2FA | - | Yes |
+| LDAP | Yes | Yes |
+| Database | SQLite | SQLite, PostgreSQL, MySQL |
+| Web UI | Minimal | Advanced, but clunky |
+| Commercial support | No | Yes |
+
 ## Screenshots
 
 ### Files management using the Web UI
