@@ -9,7 +9,7 @@ trait NextCloudNotes
 	protected string $notes_directory = 'Notes';
 	protected string $notes_suffix = '.md';
 
-	protected function iterateNotes(?string $root, bool $recursive, bool $with_content, int $not_before = 0): \Generator
+	protected function iterateNotes(?string $root, bool $recursive, bool $with_content, int $prune_before = 0): \Generator
 	{
 		$uri = $this->notes_directory;
 
@@ -31,10 +31,10 @@ trait NextCloudNotes
 
 				$category = substr($path, strlen($this->notes_directory . '/'));
 
-				yield from $this->iterateNotes($category, $recursive, $with_content, $not_before);
+				yield from $this->iterateNotes($category, $recursive, $with_content, $prune_before);
 			}
 			else {
-				$note = $this->getNote($path, $with_content, $not_before);
+				$note = $this->getNote($path, $with_content, $prune_before);
 
 				if ($note) {
 					yield $note;
@@ -92,7 +92,7 @@ trait NextCloudNotes
 		return $this->getNote($path, $with_content);
 	}
 
-	protected function getNote(string $path, bool $with_content = false, int $not_before = 0): ?stdClass
+	protected function getNote(string $path, bool $with_content = false, int $prune_before = 0): ?stdClass
 	{
 		if (!$this->storage->exists($path)) {
 			return null;
@@ -112,8 +112,8 @@ trait NextCloudNotes
 
 		$ts = $props['DAV::getlastmodified']->getTimestamp();
 
-		if ($ts < $not_before) {
-			return null;
+		if ($ts < $prune_before) {
+			return (object) ['id' => (int)$props[self::PROP_OC_ID]];
 		}
 
 		$title = substr($path, strrpos($path, '/') + 1, - strlen($this->notes_suffix));
@@ -210,7 +210,7 @@ trait NextCloudNotes
 			if ($method === 'GET') {
 				$exclude = isset($_GET['exclude']) ? explode(',', $_GET['exclude']) : [];
 				$with_content = !in_array('content', $exclude);
-				$not_before = intval($_GET['pruneBefore'] ?? 0);
+				$prune_before = intval($_GET['pruneBefore'] ?? 0);
 				$root = $_GET['category'] ?? null;
 				$recursive = $root ? false : true;
 
@@ -226,7 +226,7 @@ trait NextCloudNotes
 					header('Last-Modified: ' . $props['DAV::getlastmodified']->format(\DATE_RFC7231));
 				}
 
-				$notes = $this->iterateNotes($root, $recursive, $with_content, $not_before);
+				$notes = $this->iterateNotes($root, $recursive, $with_content, $prune_before);
 				$notes = iterator_to_array($notes, false);
 				return $notes;
 			}
