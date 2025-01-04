@@ -49,6 +49,7 @@ td.thumb {
 	width: 3.6em;
 	padding: 0;
 	text-align: center;
+	position: relative;
 }
 
 td.thumb img {
@@ -60,6 +61,32 @@ td.thumb img {
 td.thumb .icon {
 	margin: .5em;
 }
+
+td.thumb input, td.thumb label span::before {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: 0;
+	padding: 0;
+	opacity: 0;
+	display: block;
+	cursor: pointer;
+	user-select: none;
+}
+
+td.thumb input:checked + span::before {
+	content: "✔️";
+	font-size: 3em;
+	opacity: 1;
+	color: #fff;
+	text-shadow: 0px 0px 5px #000, 0px 0px 10px #000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
 
 td.buttons {
 	text-align: right;
