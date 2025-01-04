@@ -52,10 +52,6 @@ class DB extends \SQLite3
 			$st->bindValue(is_int($key) ? $key+1 : ':' . $key, $value);
 		}
 
-		if (stristr($sql, 'UPDATE files')) {
-			//var_dump($st->getSQL(true)); exit;
-		}
-
 		return $st->execute();
 	}
 
