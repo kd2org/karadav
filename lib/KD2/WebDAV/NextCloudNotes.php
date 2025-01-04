@@ -116,9 +116,10 @@ trait NextCloudNotes
 			return (object) ['id' => (int)$props[self::PROP_OC_ID]];
 		}
 
-		$title = substr($path, strrpos($path, '/') + 1, - strlen($this->notes_suffix));
+		$title = substr($path, strrpos($path, '/') + 1);
+		$title = substr($title, 0, strrpos($path, '.'));
 		$category = substr($path, strlen($this->notes_directory . '/'));
-		$category = substr($category, 0, -(strlen($title) + strlen($this->notes_suffix) + 1));
+		$category = substr($category, 0, strrpos($category, '/'));
 
 		$data = (object) [
 			'id'       => (int) $props[self::PROP_OC_ID],
