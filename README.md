@@ -80,8 +80,8 @@ KaraDAV is not a drop-in replacement for NextCloud. It is not intended to be. It
 | Trashbin | Yes | Yes |
 | Chunked upload of large files | Yes | Yes |
 | Notes | Yes | Yes |
-| File versioning | - | Yes |
-| File sharing | - | Yes |
+| File versioning | Planned | Yes |
+| File sharing | Planned | Yes |
 | File searching | - | Yes |
 | Calendar | - | Yes |
 | Contacts | - | Yes |
