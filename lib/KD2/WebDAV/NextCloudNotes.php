@@ -168,7 +168,7 @@ trait NextCloudNotes
 				$this->storage->move($note->_path, $path);
 			}
 
-			if (!isset($data->content)) {
+			if (!isset($data->content) || $data->content === $note->content) {
 				// No other changes, stop here
 				http_response_code(200);
 				return $this->getNote($path, true);
