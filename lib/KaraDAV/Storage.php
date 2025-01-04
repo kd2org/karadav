@@ -621,7 +621,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			$this->users->current()->id, $id);
 	}
 
-	public function getFileId(int $path): ?id
+	public function getFileId(string $path): ?id
 	{
 		return DB::getInstance()->firstColumn('SELECT path FROM files WHERE user = ? AND path = ?;',
 			$this->users->current()->id, $path);
