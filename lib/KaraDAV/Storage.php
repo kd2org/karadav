@@ -148,6 +148,26 @@ class Storage extends AbstractStorage implements TrashInterface
 		return file_exists($this->users->current()->path . $uri);
 	}
 
+	protected function getRecursiveFileProperty(string $uri, string $prop)
+	{
+		if ($prop === 'DAV::getcontentlength') {
+			$col = 'SUM(size)';
+		}
+		elseif ($prop === 'DAV::getlastmodified') {
+			$col = 'MAX(modified)';
+		}
+		else {
+			throw new \InvalidArgumentException('Unknown property: ' . $prop);
+		}
+
+		$db = DB::getInstance();
+
+		$sql = sprintf('SELECT %s FROM files WHERE user = ? AND path LIKE ? ESCAPE \'\\\';', $col);
+		$search = $db->getPathLikeExpression($uri);
+
+		return $db->firstColumn($sql, $this->users->current()->id, $search);
+	}
+
 	public function get_file_property(string $uri, string $name, int $depth)
 	{
 		$target = $this->users->current()->path . $uri;
@@ -162,8 +182,8 @@ class Storage extends AbstractStorage implements TrashInterface
 			case 'DAV::resourcetype':
 				return is_dir($target) ? 'collection' : '';
 			case 'DAV::getlastmodified':
-				if (!DISABLE_SLOW_OPERATIONS && !$uri && $depth == 0 && is_dir($target)) {
-					$mtime = self::getDirectoryMTime($target);
+				if (!$uri && $depth == 0 && is_dir($target)) {
+					$mtime = $this->getRecursiveFileProperty($uri, $name);
 				}
 				else {
 					$mtime = filemtime($target);
@@ -179,8 +199,9 @@ class Storage extends AbstractStorage implements TrashInterface
 			case 'DAV::ishidden':
 				return basename($target)[0] == '.';
 			case 'DAV::getetag':
-				if (!DISABLE_SLOW_OPERATIONS && !$uri && !$depth) {
-					$hash = self::getDirectorySize($target) . self::getDirectoryMTime($target);
+				if (!$uri && !$depth) {
+					$hash = $this->getRecursiveFileProperty($uri, 'DAV::getlastmodified')
+						. $this->getRecursiveFileProperty($uri, 'DAV::getcontentlength');
 				}
 				else {
 					$hash = filemtime($target) . filesize($target);
@@ -263,8 +284,8 @@ class Storage extends AbstractStorage implements TrashInterface
 			case 'DAV::quota-used-bytes':
 				return null;
 			case Nextcloud::PROP_OC_SIZE:
-				if (!DISABLE_SLOW_OPERATIONS && is_dir($target)) {
-					return self::getDirectorySize($target);
+				if (is_dir($target)) {
+					return $this->getRecursiveFileProperty($uri, $name);
 				}
 				else {
 					return filesize($target);
@@ -390,6 +411,9 @@ class Storage extends AbstractStorage implements TrashInterface
 			rename($tmp_file, $target);
 		}
 
+		DB::getInstance()->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, ?, ?);',
+			$this->users->current()->id, $uri, $size, time());
+
 		return $new;
 	}
 
@@ -416,7 +440,13 @@ class Storage extends AbstractStorage implements TrashInterface
 			@unlink($target);
 		}
 
+		$db = DB::getInstance();
+
+		$db->exec('BEGIN;');
+		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ? ESCAPE \'\\\');',
+			$this->users->current()->id, $uri, $db->getPathLikeExpression($uri));
 		$this->getResourceProperties($uri)->clear();
+		$db->exec('END;');
 	}
 
 	public function copymove(bool $move, string $uri, string $destination): bool
@@ -436,6 +466,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		if (!is_dir($parent)) {
 			$this->ensureDirectoryExists($parent);
+			// Not sure why this was here, commenting for now
 			//throw new WebDAV_Exception('Target parent directory does not exist', 409);
 		}
 
@@ -480,6 +511,16 @@ class Storage extends AbstractStorage implements TrashInterface
 				touch($target, filemtime($source));
 			}
 		}
+
+		$db = DB::getInstance();
+		$db->run('UPDATE files SET path = ? || SUBSTR(path, 1 + ?)
+			WHERE user = ? AND (path = ? OR path LIKE ? ESCAPE \'\\\');',
+			$destination,
+			strlen($uri),
+			$this->users->current()->id,
+			$uri,
+			$db->getPathLikeExpression($uri)
+		);
 
 		return $overwritten;
 	}
@@ -532,7 +573,12 @@ class Storage extends AbstractStorage implements TrashInterface
 			throw new WebDAV_Exception('You don\'t have the right to create a directory here', 403);
 		}
 
-		return touch($target, $datetime->getTimestamp());
+		$ts = $datetime->getTimestamp();
+
+		DB::getInstance()->run('UPDATE files SET modified = ? WHERE user = ? AND path = ?;',
+			$this->users->current()->id, $ts);
+
+		return touch($target, $ts);
 	}
 
 	public function getResourceProperties(string $uri): Properties
@@ -566,6 +612,11 @@ class Storage extends AbstractStorage implements TrashInterface
 		$db->exec('END');
 
 		return $out;
+	}
+
+	public function getFilePathFromId(int $id): ?string
+	{
+		return $db->firstColumn('SELECT path FROM files WHERE user = ? AND id = ?;', $this->users->current()->id, $id);
 	}
 
 	static protected function glob(string $path, string $pattern = '', int $flags = 0): array
@@ -618,30 +669,6 @@ class Storage extends AbstractStorage implements TrashInterface
 		closedir($dir);
 
 		rmdir($path);
-	}
-
-	static public function getDirectoryMTime(string $path): int
-	{
-		$last = 0;
-		$path = rtrim($path, '/');
-
-		foreach (self::glob($path, '/*', GLOB_NOSORT) as $f) {
-			if (is_dir($f)) {
-				$m = self::getDirectoryMTime($f);
-
-				if ($m > $last) {
-					$last = $m;
-				}
-			}
-
-			$m = filemtime($f);
-
-			if ($m > $last) {
-				$last = $m;
-			}
-		}
-
-		return $last;
 	}
 
 	protected function createWopiToken(string $uri): ?array

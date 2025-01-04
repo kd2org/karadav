@@ -385,4 +385,27 @@ class Users
 		$path = rtrim($user->path, '/') . '/.trash';
 		Storage::deleteDirectory($path);
 	}
+
+	public function indexAllFiles()
+	{
+		$db = DB::getInstance();
+		$st = $db->prepare('INSERT INTO files (user, path, size, modified) VALUES (?, ?, ?, ?);');
+
+		foreach ($this->list() as $user) {
+			$root = $user->path;
+
+			foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)) as $f) {
+				$path = substr($f->getPathName(), strlen($user->path));
+				$st->bindValue(1, $user->id);
+				$st->bindValue(2, $path);
+				$st->bindValue(3, $f->getSize());
+				$st->bindValue(4, $f->getMTime());
+				$st->execute();
+				$st->clear();
+				$st->reset();
+			}
+		}
+
+		$st->close();
+	}
 }

@@ -199,6 +199,31 @@ class NextCloud extends WebDAV_NextCloud
 		echo Avatar::beam($_SERVER['REQUEST_URI'] ?? '', ['colors' => ['#009', '#ccf', '#9cf']]);
 	}
 
+	/**
+	 * File preview, new version, requires a file ID
+	 */
+	protected function nc_preview_v2(): void
+	{
+		$id = $_GET['fileId'] ?? null;
+		$w = $_GET['x'] ?? null;
+		$h = $_GET['y'] ?? null;
+
+		if (!$id) {
+			http_response_code(404);
+			return;
+		}
+
+		$this->requiteAuth();
+		$uri = $this->storage->getFilePathFromId((int)$id);
+
+		if (!$uri) {
+			http_response_code(404);
+			return;
+		}
+
+		$this->serveThumbnail($uri, $w, $h, false, true);
+	}
+
 	public function serveThumbnail(string $uri, int $width, int $height, bool $crop = false, bool $preview = false): void
 	{
 		if (!preg_match('/\.(?:jpe?g|gif|png|webp)$/', $uri)) {

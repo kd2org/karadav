@@ -4,6 +4,8 @@ namespace KaraDAV;
 
 class DB extends \SQLite3
 {
+	const VERSION = 1;
+
 	static protected $instance;
 
 	static public function getInstance(): self
@@ -22,6 +24,24 @@ class DB extends \SQLite3
 		}
 
 		parent::__construct(DB_FILE);
+
+		$this->busyTimeout(10 * 1000);
+
+		$mode = strtoupper(DB_JOURNAL_MODE);
+		$set_mode = $this->querySingle('PRAGMA journal_mode;');
+		$set_mode = strtoupper($set_mode);
+
+		// Only set journal mode if it is different, as setting it every time may be slow
+		if ($set_mode !== $mode) {
+			// WAL = performance enhancement
+			// see https://www.cs.utexas.edu/~jaya/slides/apsys17-sqlite-slides.pdf
+			// https://ericdraken.com/sqlite-performance-testing/
+			$this->exec(sprintf(
+				'PRAGMA journal_mode = %s; PRAGMA synchronous = NORMAL; PRAGMA journal_size_limit = %d;',
+				$mode,
+				32 * 1024 * 1024
+			));
+		}
 	}
 
 	public function run(string $sql, ...$params)
@@ -30,6 +50,10 @@ class DB extends \SQLite3
 
 		foreach ($params as $key => $value) {
 			$st->bindValue(is_int($key) ? $key+1 : ':' . $key, $value);
+		}
+
+		if (stristr($sql, 'UPDATE files')) {
+			//var_dump($st->getSQL(true)); exit;
 		}
 
 		return $st->execute();
@@ -52,5 +76,29 @@ class DB extends \SQLite3
 	public function firstColumn(string $sql, ...$params)
 	{
 		return $this->run($sql, ...$params)->fetchArray(\SQLITE3_NUM)[0] ?? null;
+	}
+
+	public function getPathLikeExpression(string $path)
+	{
+		return str_replace(['?', '%'], ['\\?', '\\%'], $path) . '/%';
+	}
+
+	public function upgradeVersion(): void
+	{
+		$db_version = $this->firstColumn('PRAGMA user_version;');
+
+		if ($db_version === self::VERSION) {
+			return;
+		}
+
+		if ($db_version < 1) {
+			$this->exec('BEGIN;');
+			$this->exec(file_get_contents(ROOT . 'sql/migrate_0001.sql'));
+
+			$users = new Users;
+			$users->indexAllFiles();
+			$this->exec('END;');
+		}
+
 	}
 }

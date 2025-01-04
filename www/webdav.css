@@ -52,7 +52,8 @@ td.thumb {
 }
 
 td.thumb img {
-	width: 100%;
+	width: 3.6em;
+	height: 3.6em;
 	display: block;
 }
 

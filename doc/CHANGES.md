@@ -1,7 +1,12 @@
 ## 0.6.0 - January 3, 2025
 
 * Add support for NextCloud Notes API
-* Add thumbnails (legacy NextCloud API, the new one requires file IDs, something we don't have here, but it works in KaraDAV UI, just not in NextCloud Android client)
+* Add thumbnails support
+* KaraDAV now maintains a cache of file sizes and modification time inside the SQLite database
+	* This will make things faster for finding out if something has changed when you have a lot of files
+	* The `DISABLE_SLOW_OPERATIONS` constant has been removed and no longer has any effect
+* Add new configuration constant `DB_JOURNAL_MODE` to be able to set WAL mode for SQLite (recommended)
+* Add new configuration constant `THUMBNAIL_CACHE_PATH`
 * Add sanity validation of file names, to avoid invalid characters in Windows
 * Fix: emptying the trashbin returned an error in NextCloud Android
 

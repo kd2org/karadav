@@ -4,14 +4,16 @@ namespace KaraDAV;
 
 use KD2\ErrorManager;
 
+const ROOT = __DIR__ . '/../';
+
 spl_autoload_register(function ($class) {
     $class = str_replace('\\', '/', $class);
-    require_once __DIR__ . '/../lib/' . $class . '.php';
+    require_once ROOT . 'lib/' . $class . '.php';
 });
 
-ErrorManager::setLogFile(__DIR__ . '/../error.log');
+ErrorManager::setLogFile(ROOT . 'error.log');
 
-$cfg_file = __DIR__ . '/../config.local.php';
+$cfg_file = ROOT . 'config.local.php';
 
 if (file_exists($cfg_file)) {
 	require $cfg_file;
@@ -21,17 +23,17 @@ if (file_exists($cfg_file)) {
 $defaults = [
 	'DEFAULT_QUOTA'           => 200,
 	'DEFAULT_TRASHBIN_DELAY'  => 60*60*24*30,
-	'STORAGE_PATH'            => __DIR__ . '/../data/%s',
-	'THUMBNAIL_CACHE_PATH'    => __DIR__ . '/../.thumbnails',
-	'DB_FILE'                 => __DIR__ . '/../data/db.sqlite',
+	'STORAGE_PATH'            => ROOT . 'data/%s',
+	'THUMBNAIL_CACHE_PATH'    => ROOT . 'data/.thumbnails',
+	'DB_FILE'                 => ROOT . 'data/db.sqlite',
+	'DB_JOURNAL_MODE'         => 'TRUNCATE',
 	'WOPI_DISCOVERY_URL'      => null,
 	'ACCESS_CONTROL_ALL'      => false,
 	'LOG_FILE'                => null,
 	'ENABLE_XSENDFILE'        => false,
-	'DISABLE_SLOW_OPERATIONS' => false,
 	'ERRORS_SHOW'             => true,
 	'ERRORS_EMAIL'            => null,
-	'ERRORS_LOG'              => __DIR__ . '/../data/error.log',
+	'ERRORS_LOG'              => ROOT . 'data/error.log',
 	'ERRORS_REPORT_URL'       => null,
 	'AUTH_CALLBACK'           => null,
 	'LDAP_HOST'               => null,
@@ -64,8 +66,8 @@ if (ERRORS_EMAIL) {
 if (ERRORS_LOG) {
 	ErrorManager::setLogFile(ERRORS_LOG);
 }
-elseif (is_writeable(__DIR__ . '/../data/error.log')) {
-	ErrorManager::setLogFile(__DIR__ . '/../data/error.log');
+elseif (is_writeable(ROOT . 'data/error.log')) {
+	ErrorManager::setLogFile(ROOT . 'data/error.log');
 }
 
 if (ERRORS_REPORT_URL) {
@@ -121,7 +123,7 @@ if (!file_exists(DB_FILE)) {
 
 	$db = DB::getInstance();
 	$db->exec('BEGIN;');
-	$db->exec(file_get_contents(__DIR__ . '/../schema.sql'));
+	$db->exec(file_get_contents(ROOT . 'sql/schema.sql'));
 
 	if (!LDAP::enabled()) {
 		$users = new Users;
@@ -132,6 +134,10 @@ if (!file_exists(DB_FILE)) {
 	}
 
 	$db->exec('END;');
+}
+else {
+	$db = DB::getInstance();
+	$db->upgradeVersion();
 }
 
 function html_head(string $title): void

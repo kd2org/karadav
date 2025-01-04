@@ -1,0 +1,11 @@
+CREATE TABLE files (
+	id INTEGER PRIMARY KEY NOT NULL,
+	user INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	path TEXT NOT NULL,
+	modified INTEGER NOT NULL,
+	size INTEGER NOT NULL
+);
+
+CREATE UNIQUE INDEX files_path ON files (user, path);
+
+PRAGMA user_version = 1;
