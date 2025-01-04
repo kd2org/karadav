@@ -238,14 +238,14 @@ class NextCloud extends WebDAV_NextCloud
 			throw new WebDAV_Exception('Not found', 404);
 		}
 
-		if ($crop || $width < 400 || $height < 400) {
+		if ($crop || $width < 300 || $height < 300) {
 			$size = 150;
 		}
-		elseif ($width >= 1200 || $height >= 1200) {
-			$size = 1200;
+		elseif ($width <= 600 || $height <= 600) {
+			$size = 500;
 		}
 		else {
-			$size = 500;
+			$size = 1200;
 		}
 
 		$hash = md5($uri . $size);
