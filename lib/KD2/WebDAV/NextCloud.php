@@ -41,6 +41,7 @@ abstract class NextCloud
 	const OC_NAMESPACE = 'http://owncloud.org/ns';
 
 	const PROP_OC_ID = self::OC_NAMESPACE . ':id';
+	const PROP_OC_FILEID = self::OC_NAMESPACE . ':fileid';
 	const PROP_OC_SIZE = self::OC_NAMESPACE . ':size';
 	const PROP_OC_DOWNLOADURL = self::OC_NAMESPACE . ':downloadURL';
 	const PROP_OC_PERMISSIONS = self::OC_NAMESPACE . ':permissions';

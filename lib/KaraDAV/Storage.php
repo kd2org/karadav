@@ -249,6 +249,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 				return '';
 			case NextCloud::PROP_OC_ID:
+			case NextCloud::PROP_OC_FILEID:
 				return $this->getFileId($uri);
 			case NextCloud::PROP_OC_PERMISSIONS:
 				$permissions = [];
