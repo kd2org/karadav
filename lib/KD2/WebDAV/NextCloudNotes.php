@@ -168,7 +168,8 @@ trait NextCloudNotes
 				$this->storage->move($note->_path, $path);
 			}
 
-			if (!isset($data->content) || $data->content === $note->content) {
+			if (!isset($data->content)
+				|| $data->content === $note->content) {
 				// No other changes, stop here
 				http_response_code(200);
 				return $this->getNote($path, true);
@@ -249,7 +250,7 @@ trait NextCloudNotes
 				return $note;
 			}
 			elseif ($method === 'PUT') {
-				$note = $this->getNoteById((int)$last, false);
+				$note = $this->getNoteById((int)$last, true);
 
 				if (!$note) {
 					throw new Exception('Unknown note ID', 404);
