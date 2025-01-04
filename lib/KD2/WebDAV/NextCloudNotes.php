@@ -117,7 +117,7 @@ trait NextCloudNotes
 		}
 
 		$title = substr($path, strrpos($path, '/') + 1);
-		$title = substr($title, 0, strrpos($path, '.'));
+		$title = substr($title, 0, strrpos($title, '.'));
 		$category = substr($path, strlen($this->notes_directory . '/'));
 		$category = substr($category, 0, strrpos($category, '/'));
 
