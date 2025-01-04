@@ -117,7 +117,7 @@ const WebDAVNavigator = (url, options) => {
 		window.setTimeout(() => {
 			stopLoading();
 			reloadListing();
-		}, 500);
+		}, 200);
 		return false;
 	};
 

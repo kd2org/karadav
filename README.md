@@ -8,7 +8,7 @@ It is written in PHP (8+). The only dependency is SQLite3 for the database.
 
 Its original purpose was to serve as a demo and test for the KD2 WebDAV library, which we developed for [Paheko](https://paheko.cloud/), our non-profit management solution, but it can also be used as a simple but powerful file sharing server.
 
-![](doc/scr_index.jpg)
+![](doc/scr_index.png)
 
 If you are looking for an even lighter WebDAV server, try also our other server, [PicoDAV](https://fossil.kd2.org/picodav/). It isn't compatible with NextCloud/ownCloud clients, but it is a single file that you can drop anywhere in your document root, nothing to install!
 
