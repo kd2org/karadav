@@ -443,10 +443,20 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		$db = DB::getInstance();
+		$params = [$this->users->current()->id, $uri, $db->getPathLikeExpression($uri)];
+		$sql = 'SELECT id FROM files WHERE user = ? AND (path = ? OR path LIKE ? ESCAPE \'\\\')';
 
+		// Delete all thumbnails from cache
+		foreach ($db->iterate($sql, ...$params) as $file) {
+			foreach (self::THUMBNAIL_SIZES as $size) {
+				@unlink($this->getThumbnailCachePath($file->id, $size));
+			}
+		}
+
+		// Delete all files from DB
 		$db->exec('BEGIN;');
 		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ? ESCAPE \'\\\');',
-			$this->users->current()->id, $uri, $db->getPathLikeExpression($uri));
+			...$params);
 		$this->getResourceProperties($uri)->clear();
 		$db->exec('END;');
 	}
@@ -515,11 +525,15 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		$db = DB::getInstance();
+		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ?);',
+			$destination,
+			$db->getPathLikeExpression($destination),
+			$this->users->current()->id
+		);
 		$db->run('UPDATE files SET path = ? || SUBSTR(path, 1 + ?)
 			WHERE user = ? AND (path = ? OR path LIKE ? ESCAPE \'\\\');',
 			$destination,
 			strlen($uri),
-			$this->users->current()->id,
 			$uri,
 			$db->getPathLikeExpression($uri)
 		);
@@ -881,5 +895,11 @@ class Storage extends AbstractStorage implements TrashInterface
 				'DAV::resourcetype' => $is_dir ? 'collection' : '',
 			];
 		}
+	}
+
+	public function getThumbnailCachePath(string $uri, int $size): string
+	{
+		$hash = sha1($uri . $size);
+		return sprintf('%s/%.2s/%2$s', THUMBNAIL_CACHE_PATH, $hash);
 	}
 }

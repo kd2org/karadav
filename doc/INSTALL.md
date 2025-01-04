@@ -9,6 +9,8 @@
 5. Redirect all requests to `www/_router.php`
 6. Go to your new virtual host, a default admin user is created the first time you access the UX, with the login `demo` and the password `karadavdemo`, please change it.
 
+If you want to enable image thumbnails, installing `php-imagick` or `php-gd` will do the trick. Note that this will add a significant workload on your server, and will create a lot of files as well.
+
 ## Example Apache vhost
 
 ```

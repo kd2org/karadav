@@ -208,7 +208,7 @@ class NextCloud extends WebDAV_NextCloud
 		$w = $_GET['x'] ?? null;
 		$h = $_GET['y'] ?? null;
 
-		if (!$id) {
+		if (!THUMBNAILS_ENABLED || !$id) {
 			http_response_code(404);
 			return;
 		}
@@ -226,7 +226,7 @@ class NextCloud extends WebDAV_NextCloud
 
 	public function serveThumbnail(string $uri, int $width, int $height, bool $crop = false, bool $preview = false): void
 	{
-		if (!preg_match('/\.(?:jpe?g|gif|png|webp)$/', $uri)) {
+		if (!THUMBNAILS_ENABLED || !preg_match('/\.(?:jpe?g|gif|png|webp)$/', $uri)) {
 			http_response_code(404);
 			return;
 		}
@@ -248,11 +248,16 @@ class NextCloud extends WebDAV_NextCloud
 			$size = 1200;
 		}
 
-		$hash = md5($uri . $size);
-		$cache_path = sprintf('%s/%.2s/%2$s', THUMBNAIL_CACHE_PATH, $hash);
+		$id = $this->storage->getFileId($uri);
+
+		if (!$id) {
+			throw new WebDAV_Exception('Not found', 404);
+		}
+
+		$cache_path = $this->storage->getThumbnailCachePath($id, $size);
 
 		if (!file_exists($cache_path)) {
-			$this->server->log('NC Creating thumbnail (%d): %s', $size, $hash);
+			$this->server->log('NC Creating thumbnail (%d): %s', $size, basename($cache_path));
 			try {
 				$i = new Image;
 				$i->openFromBlob($this->storage->fetch($uri));
@@ -265,7 +270,7 @@ class NextCloud extends WebDAV_NextCloud
 				}
 
 				$perms = @fileperms(dirname(dirname(dirname($cache_path)))) ?: 0777;
-				mkdir(dirname($cache_path), $perms, true);
+				@mkdir(dirname($cache_path), $perms, true);
 				$i->save($cache_path, 'webp');
 				unset($i);
 			}
@@ -274,7 +279,7 @@ class NextCloud extends WebDAV_NextCloud
 			}
 		}
 		else {
-			$this->server->log('NC Cached thumbnail (%d): %s', $size, $hash);
+			$this->server->log('NC Cached thumbnail (%d)', $size);
 		}
 
 		header('Content-Type: image/webp');

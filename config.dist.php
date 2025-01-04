@@ -31,6 +31,8 @@ const STORAGE_PATH = __DIR__ . '/data/%s';
 
 /**
  * Path to a directory containing the thumbnails of images
+ *
+ * Set to NULL to disable thumbnails completely.
  */
 const THUMBNAIL_CACHE_PATH = __DIR__ . '/data/.thumbnails';
 

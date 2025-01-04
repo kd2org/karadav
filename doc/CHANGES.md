@@ -1,7 +1,7 @@
 ## 0.6.0 - January 3, 2025
 
 * Add support for NextCloud Notes API
-* Add thumbnails support
+* Add support for image thumbnails (documents are not supported), this can be disabled
 * KaraDAV now maintains a cache of file sizes and modification time inside the SQLite database
 	* This will make things faster for finding out if something has changed when you have a lot of files
 	* The `DISABLE_SLOW_OPERATIONS` constant has been removed and no longer has any effect

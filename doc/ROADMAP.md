@@ -9,6 +9,7 @@ This might get supported in future (maybe):
 	* [NextCloud implementation](https://github.com/nextcloud/server/blob/master/apps/files_versions/lib/Storage.php)
 	* [Mercurial revlog](https://www.mercurial-scm.org/wiki/Revlog)
 	* [Eric Sink on SCM versioning](https://ericsink.com/scm/scm_repositories.html)
+* Maybe: document thumbnails
 
 This probably won't get supported anytime soon:
 
@@ -36,7 +37,7 @@ And these clients:
 * [AgenDAV](https://github.com/agendav/agendav) (web, PHP, calendar only)
 * [InfCloud](https://inf-it.com/open-source/clients/infcloud/) (web, javascript, calendar + contacts + todo lists)
 
-If looking for implementing a CalDAV/CardDAV client or server, look at these amazing resources from Sabre:
+If you are looking at implementing a CalDAV/CardDAV client or server, look at these amazing resources from Sabre:
 
 * [Building a CalDAV client](https://sabre.io/dav/building-a-caldav-client/)
 * [Building a CardDAV client](https://sabre.io/dav/building-a-carddav-client/)

@@ -74,6 +74,10 @@ if (ERRORS_REPORT_URL) {
 	ErrorManager::setRemoteReporting(ERRORS_REPORT_URL, true);
 }
 
+// Detect thumbnails support
+$th = THUMBNAIL_CACHE_PATH && (class_exists('imagick') || function_exists('imagecreatefromwebp'));
+define('KaraDAV\THUMBNAILS_ENABLED', $th);
+
 // Create random secret key
 if (!defined('KaraDAV\SECRET_KEY')) {
 	$cfg = file_exists($cfg_file) ? file_get_contents($cfg_file) : "<?php\nnamespace KaraDAV;\n\n";

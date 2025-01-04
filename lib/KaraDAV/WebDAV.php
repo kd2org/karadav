@@ -11,7 +11,9 @@ class WebDAV extends WebDAV_Server
 		$out = parent::html_directory($uri, $list);
 
 		if (null !== $out) {
-			$out = str_replace('<html', '<html data-nc-thumbnails="1" ', $out);
+			if (THUMBNAILS_ENABLED) {
+				$out = str_replace('<html', '<html data-nc-thumbnails="1" ', $out);
+			}
 
 			if (WOPI_DISCOVERY_URL) {
 				$out = str_replace('<html', sprintf('<html data-wopi-discovery-url="%s" data-wopi-host-url="%s"', WOPI_DISCOVERY_URL, WWW_URL . 'wopi/'), $out);
