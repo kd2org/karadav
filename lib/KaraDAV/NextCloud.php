@@ -252,6 +252,7 @@ class NextCloud extends WebDAV_NextCloud
 		$cache_path = sprintf('%s/%.2s/%2$s', THUMBNAIL_CACHE_PATH, $hash);
 
 		if (!file_exists($cache_path)) {
+			$this->server->log('NC Creating thumbnail (%d): %s', $size, $hash);
 			try {
 				$i = new Image;
 				$i->openFromBlob($this->storage->fetch($uri));
@@ -271,6 +272,9 @@ class NextCloud extends WebDAV_NextCloud
 			catch (\UnexpectedValueException $e) {
 				throw new WebDAV_Exception('Not an image', 404);
 			}
+		}
+		else {
+			$this->server->log('NC Cached thumbnail (%d): %s', $size, $hash);
 		}
 
 		header('Content-Type: image/webp');
