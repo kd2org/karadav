@@ -150,10 +150,10 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	protected function getRecursiveFileProperty(string $uri, string $prop)
 	{
-		if ($prop === 'DAV::getcontentlength') {
+		if ($prop === 'size') {
 			$col = 'SUM(size)';
 		}
-		elseif ($prop === 'DAV::getlastmodified') {
+		elseif ($prop === 'modified') {
 			$col = 'MAX(modified)';
 		}
 		else {
@@ -183,7 +183,7 @@ class Storage extends AbstractStorage implements TrashInterface
 				return is_dir($target) ? 'collection' : '';
 			case 'DAV::getlastmodified':
 				if (!$uri && $depth == 0 && is_dir($target)) {
-					$mtime = $this->getRecursiveFileProperty($uri, $name);
+					$mtime = $this->getRecursiveFileProperty($uri, 'modified');
 				}
 				else {
 					$mtime = filemtime($target);
@@ -200,8 +200,8 @@ class Storage extends AbstractStorage implements TrashInterface
 				return basename($target)[0] == '.';
 			case 'DAV::getetag':
 				if (!$uri && !$depth) {
-					$hash = $this->getRecursiveFileProperty($uri, 'DAV::getlastmodified')
-						. $this->getRecursiveFileProperty($uri, 'DAV::getcontentlength');
+					$hash = $this->getRecursiveFileProperty($uri, 'modified')
+						. $this->getRecursiveFileProperty($uri, 'size');
 				}
 				else {
 					$hash = filemtime($target) . filesize($target);
@@ -285,7 +285,7 @@ class Storage extends AbstractStorage implements TrashInterface
 				return null;
 			case Nextcloud::PROP_OC_SIZE:
 				if (is_dir($target)) {
-					return $this->getRecursiveFileProperty($uri, $name);
+					return $this->getRecursiveFileProperty($uri, 'size');
 				}
 				else {
 					return filesize($target);
