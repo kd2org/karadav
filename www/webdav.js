@@ -94,7 +94,7 @@ const WebDAVNavigator = (url, options) => {
 			}).then(str => new window.DOMParser().parseFromString(str, "text/xml"));
 	};
 
-	const reqHandler = (r) => {
+	const reqHandler = (r, c) => {
 		if (!r.ok) {
 			return r.text().then(t => {
 				var message;
@@ -105,19 +105,18 @@ const WebDAVNavigator = (url, options) => {
 				throw new Error(r.status + ' ' + r.statusText + message);
 			});
 		}
+		window.setTimeout(c, 200);
 		return r;
 	};
 
 	const reqAndReload = (method, url, body, headers) => {
 		animateLoading();
-		req(method, url, body, headers).then(reqHandler).catch(e => {
+		req(method, url, body, headers).then(r => reqHandler(r, () => {
+			stopLoading() && reloadListing();
+		}).catch(e => {
 			console.error(e);
 			alert(e);
 		});
-		window.setTimeout(() => {
-			stopLoading();
-			reloadListing();
-		}, 200);
 		return false;
 	};
 
