@@ -342,6 +342,7 @@ But they mostly pass with litmus 0.13-3 supplied by Debian:
 Thank you:
 
 * Cédric Picard, for the security report
+* Everyone who have contributed bug reports, ideas or small PRs!
 
 ## License
 
