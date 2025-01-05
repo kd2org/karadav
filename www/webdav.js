@@ -762,7 +762,7 @@ const WebDAVNavigator = (url, options) => {
 						openDialog('<div class="md_preview"></div>', false);
 						$('dialog').className = 'preview';
 						req('GET', file_url).then(r => r.text()).then(t => {
-							$('.md_preview').innerHTML = microdown.parse(html(t));
+							$('.md_preview').innerHTML = microdown.parse(t);
 						});
 						return false;
 					}
@@ -885,7 +885,7 @@ const WebDAVNavigator = (url, options) => {
 								let pre = $('#md');
 
 								txt.oninput = () => {
-									pre.innerHTML = microdown.parse(html(txt.value));
+									pre.innerHTML = microdown.parse(txt.value);
 								};
 
 								txt.oninput();
