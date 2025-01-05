@@ -795,9 +795,90 @@ const WebDAVNavigator = (url, options) => {
 					$$('.edit').onclick = (e) => {
 						req('GET', file_url).then((r) => r.text().then((t) => {
 							let md = file_url.match(/\.md$/);
-							openDialog(md ? markdown_dialog : edit_dialog);
+							var tpl = dialog_tpl.replace(/%b/, '');
+							$('body').classList.add('dialog');
+							$('body').insertAdjacentHTML('beforeend', tpl.replace(/%s/, md ? markdown_dialog : edit_dialog));
+
+							var tb = $('.close');
+							tb.className = 'toolbar';
+							tb.innerHTML = `<input type="button" value="&#x2716; ${_('Cancel')}" class="close" />
+								<label><input type="checkbox" class="autosave" /> ${_('Autosave')}</label>
+								<span class="status"></span>
+								<input class="save" type="button" value="${_('Save and close')}" />`;
+
 							var txt = $('textarea[name=edit]');
 							txt.value = t;
+
+							var saved_status = $('.toolbar .status');
+							var close_btn = $('.toolbar .close');
+							var save_btn = $('.toolbar .save');
+							var autosave = $('.toolbar .autosave');
+
+							var c = localStorage.getItem('autosave') ?? options.autosave;
+							autosave.checked = c == 1 || c ===  true;
+							autosave.onchange = () => {
+								localStorage.setItem('autosave', autosave.checked ? 1 : 0);
+							};
+
+							var preventClose = (e) => {
+								if (txt.value == t) {
+									return;
+								}
+
+								e.preventDefault();
+								e.returnValue = '';
+								return true;
+							};
+
+							var close = () => {
+								if (txt.value !== t) {
+									if (!confirm(_('Your changes have not been saved. Do you want to cancel WITHOUT saving?'))) {
+										return;
+									}
+								}
+
+								window.removeEventListener('beforeunload', preventClose, {capture: true});
+								closeDialog();
+							};
+
+							var save = () => {
+								reqOrError('PUT', file_url, txt.value);
+								t = txt.value;
+								updateSaveStatus();
+							};
+
+							var updateSaveStatus = () => {
+								saved_status.innerHTML = txt.value !== t ? '⚠️ ' + _('Modified') : '✔️ ' + _('Saved');
+							};
+
+							save_btn.onclick = () => { save(); close(); };
+							close_btn.onclick = close;
+
+							// Prevent close of tab if content has changed and is not saved
+							window.addEventListener('beforeunload', preventClose, { capture: true });
+
+							txt.onkeydown = (e) => {
+								if (e.ctrlKey && e.key == 's') {
+									save();
+									e.preventDefault();
+									return false;
+								}
+								else if (e.key === 'Escape') {
+									close();
+									e.preventDefault();
+									return false;
+								}
+							};
+
+							txt.onkeyup = (e) => {
+								updateSaveStatus();
+							};
+
+							window.setInterval(() => {
+								if (autosave.checked && t != txt.value) {
+									save();
+								}
+							}, 10000);
 
 							// Markdown editor
 							if (md) {
@@ -858,6 +939,7 @@ const WebDAVNavigator = (url, options) => {
 	var wopi_mimes = {}, wopi_extensions = {};
 
 	const wopi_discovery_url = options.wopi_discovery_url || null;
+	options.autosave = options.autosave || false;
 
 	document.querySelector('html').innerHTML = html_tpl;
 

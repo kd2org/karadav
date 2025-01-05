@@ -120,6 +120,12 @@ It has been successfully tested with:
 
 Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients if their publishers decide so.
 
+Other clients:
+
+* NextCloud / ownCloud iOS clients have issues and so they are currently blocked, to make sure they can't delete any data by error. I don't own an Apple device. If someone with an Apple device wants to do some testing and suggest a patch, please change `$block_ios_clients` to `false` in `lib/KD2/WebDAV/NextCloud.php`.
+* qOwnNotes does not work, as it expecting a specific application to be installed on the server. It's not using the NextCloud Notes API.
+* [Iotas](https://gitlab.gnome.org/World/iotas): untested, this is not yet available in Debian stable.
+
 ## WebDAV clients compatibility
 
 ### Recommended (tested with KaraDAV)

@@ -1,9 +1,12 @@
-## 0.6.0 - January 3, 2025
+## 0.6.0 - January 5, 2025
 
 * Add support for NextCloud Notes API (note: read-only/favorites are not supported)
 * Add support for image thumbnails (documents are not supported), this can be disabled
-* Add multiple file upload in web UI
-* Add multiple file selection and deletion in web UI
+* Web UI enhancements:
+	* Multiple file upload using "Upload" button
+	* Select multiple files and delete them
+	* Image thumbnails
+	* Editing text/MarkDown files: save without closing, auto-save, protect against accidental closing of the tab, press Ctrl+S to save
 * KaraDAV now maintains a cache of file sizes and modification time inside the SQLite database
 	* This will make things faster for finding out if something has changed when you have a lot of files
 	* The `DISABLE_SLOW_OPERATIONS` constant has been removed and no longer has any effect

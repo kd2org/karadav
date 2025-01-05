@@ -154,7 +154,7 @@ table tr:nth-child(even) {
 	text-align: right;
 }
 
-input[type=button], input[type=submit], .btn {
+input[type=button], input[type=submit], .btn, a.btn {
 	font-size: 1.2em;
 	padding: .3em .5em;
 	margin: .2em .3em;
@@ -163,7 +163,7 @@ input[type=button], input[type=submit], .btn {
 	border-radius: .2em;
 	cursor: pointer;
 	text-decoration: none;
-	color: var(--fg-color) !important;
+	color: var(--fg-color);
 	font-family: inherit;
 }
 
@@ -198,8 +198,32 @@ input[type=button]:hover, input[type=submit]:hover, .btn:hover {
 	margin: 0;
 }
 
-.close input {
+input.close {
 	font-size: .8em;
+}
+
+.toolbar {
+	margin: 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.toolbar label {
+	padding: .5em;
+	background: var(--bg-color);
+	cursor: pointer;
+	border-radius: .5em;
+}
+
+.toolbar .save {
+	background: DarkSlateBlue;
+	color: #fff;
+}
+
+.toolbar .status {
+	width: 10em;
+	display: block;
 }
 
 input[type=submit] {
@@ -249,6 +273,10 @@ dialog form div {
 	grid-gap: .2em;
 	background: var(--g1-color);
 	height: 82vh;
+}
+
+#md img, #md video, #md iframe, #md embed, #md object {
+	max-width: 100%;
 }
 
 dialog.preview {
