@@ -1,3 +1,7 @@
+## 0.6.1 - January 10, 2025
+
+* Fix issue with NextCloud desktop and directories
+
 ## 0.6.0 - January 5, 2025
 
 * Add support for NextCloud Notes API (note: read-only/favorites are not supported)
