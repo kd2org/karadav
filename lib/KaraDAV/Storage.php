@@ -199,7 +199,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			case 'DAV::ishidden':
 				return basename($target)[0] == '.';
 			case 'DAV::getetag':
-				if (!$uri && !$depth) {
+				if ($depth) {
 					$hash = $this->getRecursiveFileProperty($uri, 'modified')
 						. $this->getRecursiveFileProperty($uri, 'size');
 				}
@@ -553,7 +553,15 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function mkcol(string $uri): void
 	{
-		$this->validateFileName(basename($uri));
+		$parts = explode('/', $uri);
+		$paths = [];
+		$path = '';
+
+		foreach ($parts as $part) {
+			$this->validateFileName(basename($part));
+			$paths[] = $path . $part;
+			$path .= $part . '/';
+		}
 
 		if (!$this->users->current()->quota) {
 			throw new WebDAV_Exception('Your quota is exhausted', 507);
@@ -573,6 +581,17 @@ class Storage extends AbstractStorage implements TrashInterface
 		if (!is_writeable($parent)) {
 			throw new WebDAV_Exception('You don\'t have the right to create a directory here', 403);
 		}
+
+		$db = DB::getInstance();
+
+		$db->exec('BEGIN;');
+
+		foreach ($paths as $path) {
+			$db->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, 0, 0);',
+				$this->users->current()->id, $path);
+		}
+
+		$db->exec('COMMIT;');
 
 		$this->ensureDirectoryExists($target);
 	}
