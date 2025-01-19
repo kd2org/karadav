@@ -388,36 +388,8 @@ class Users
 
 	public function indexAllFiles()
 	{
-		$db = DB::getInstance();
-		$st = $db->prepare('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, ?, ?);');
-
 		foreach ($this->list() as $user) {
-			$root = $user->path;
-
-			foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root, \FilesystemIterator::UNIX_PATHS)) as $f) {
-				if ($f->getFileName() === '..') {
-					continue;
-				}
-
-				$path = substr($f->getPathName(), strlen($user->path));
-
-				if ($path === '.') {
-					continue;
-				}
-				elseif ($f->getFileName() === '.') {
-					$path = substr($path, 0, -2);
-				}
-
-				$st->bindValue(1, $user->id);
-				$st->bindValue(2, $path);
-				$st->bindValue(3, $f->isDir() ? 0 : $f->getSize());
-				$st->bindValue(4, $f->isDir() ? 0 : $f->getMTime());
-				$st->execute();
-				$st->clear();
-				$st->reset();
-			}
+			Storage::indexFiles($user, null);
 		}
-
-		$st->close();
 	}
 }

@@ -525,22 +525,75 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		$db = DB::getInstance();
-		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ?);',
-			$this->users->current()->id,
-			$destination,
-			$db->getPathLikeExpression($destination)
-		);
 
-		$db->run('UPDATE files SET path = ? || SUBSTR(path, 1 + ?)
-			WHERE user = ? AND (path = ? OR path LIKE ? ESCAPE \'\\\');',
-			$destination,
-			strlen($uri),
+		$db->exec('BEGIN;');
+		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ? OR path = ? OR path LIKE ?);',
 			$this->users->current()->id,
+			$destination,
+			$db->getPathLikeExpression($destination),
 			$uri,
 			$db->getPathLikeExpression($uri)
 		);
 
+		self::indexFiles($this->users->current(), $destination);
+
+		$db->exec('END;');
+
 		return $overwritten;
+	}
+
+	static public function indexFiles(\stdClass $user, ?string $path): void
+	{
+		$db = DB::getInstance();
+
+		static $st = null;
+		$st ??= $db->prepare('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, ?, ?);');
+
+		$root = $user->path;
+		$filter = null;
+
+		if (null !== $path) {
+			$root .= $path;
+		}
+
+		if (!is_dir($root)) {
+			$filter = basename($root);
+			$root = dirname($root);
+		}
+
+		$root .= '/';
+
+		if (0 !== strpos(realpath($root), realpath($user->path))) {
+			throw new \RuntimeException('Invalid path: ' . $root);
+		}
+
+		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root, \FilesystemIterator::UNIX_PATHS)) as $f) {
+			if ($f->getFileName() === '..') {
+				continue;
+			}
+
+			if ($filter !== null
+				&& $filter !== $f->getFileName()) {
+				continue;
+			}
+
+			$path = substr($f->getPathName(), strlen($user->path));
+
+			if ($path === '.') {
+				continue;
+			}
+			elseif ($f->getFileName() === '.') {
+				$path = substr($path, 0, -2);
+			}
+
+			$st->bindValue(1, $user->id);
+			$st->bindValue(2, $path);
+			$st->bindValue(3, $f->isDir() ? 0 : $f->getSize());
+			$st->bindValue(4, $f->isDir() ? 0 : $f->getMTime());
+			$st->execute();
+			$st->clear();
+			$st->reset();
+		}
 	}
 
 	public function copy(string $uri, string $destination): bool
