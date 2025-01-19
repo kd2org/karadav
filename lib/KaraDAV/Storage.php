@@ -526,14 +526,16 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$db = DB::getInstance();
 		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ?);',
+			$this->users->current()->id,
 			$destination,
-			$db->getPathLikeExpression($destination),
-			$this->users->current()->id
+			$db->getPathLikeExpression($destination)
 		);
+
 		$db->run('UPDATE files SET path = ? || SUBSTR(path, 1 + ?)
 			WHERE user = ? AND (path = ? OR path LIKE ? ESCAPE \'\\\');',
 			$destination,
 			strlen($uri),
+			$this->users->current()->id,
 			$uri,
 			$db->getPathLikeExpression($uri)
 		);

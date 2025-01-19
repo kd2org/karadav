@@ -67,6 +67,7 @@ abstract class NextCloud
 
 	const NC_PROPERTIES = [
 		self::PROP_OC_ID,
+		self::PROP_OC_FILEID,
 		self::PROP_OC_SIZE,
 		self::PROP_OC_DOWNLOADURL,
 		self::PROP_OC_PERMISSIONS,
