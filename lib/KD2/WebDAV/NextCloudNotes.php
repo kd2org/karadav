@@ -33,6 +33,9 @@ trait NextCloudNotes
 
 				yield from $this->iterateNotes($category, $recursive, $with_content, $prune_before);
 			}
+			elseif (!preg_match('/\.(?:md|txt)$/i', $name)) {
+				continue;
+			}
 			else {
 				$note = $this->getNote($path, $with_content, $prune_before);
 
@@ -157,7 +160,7 @@ trait NextCloudNotes
 			$path .= $data->category . '/';
 		}
 
-		$path .= $data->title . '.md';
+		$path .= $data->title . $this->notes_suffix;
 
 		$this->server->validateURI($path);
 
@@ -166,6 +169,10 @@ trait NextCloudNotes
 			if ($note->category !== $data->category
 				|| $note->title !== $data->title) {
 				$this->storage->move($note->_path, $path);
+			}
+			else {
+				// Keep the original note path
+				$path = $note->_path;
 			}
 
 			if (!isset($data->content)
