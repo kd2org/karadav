@@ -249,6 +249,10 @@ class Storage extends AbstractStorage implements TrashInterface
 
 				return '';
 			case NextCloud::PROP_OC_ID:
+				$id = $this->getFileId($uri);
+				// ID = fileid (padded with zeros to be at least 8 characters long) + instanceid
+				$id = str_pad((string)$id, 8, '0', STR_PAD_LEFT) . sha1(WWW_URL);
+				return $id;
 			case NextCloud::PROP_OC_FILEID:
 				return $this->getFileId($uri);
 			case NextCloud::PROP_OC_PERMISSIONS:
@@ -316,7 +320,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		if (null === $properties) {
-			$properties = array_merge(WebDAV::BASIC_PROPERTIES, ['DAV::getetag', Nextcloud::PROP_OC_ID]);
+			$properties = array_merge(WebDAV::BASIC_PROPERTIES, ['DAV::getetag', Nextcloud::PROP_OC_ID, Nextcloud::PROP_OC_FILEID]);
 		}
 
 		$out = [];
