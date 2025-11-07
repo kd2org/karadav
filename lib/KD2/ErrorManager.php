@@ -328,7 +328,7 @@ class ErrorManager
 		}
 	}
 
-	static public function reportExceptionSilent(\Throwable $e): void
+	static public function reportExceptionSilent(\Throwable $e): string
 	{
 		$report = self::logException($e);
 		extract($report);
@@ -336,6 +336,8 @@ class ErrorManager
 		if (self::$email_errors) {
 			self::sendEmail($title, $report, $log, $html_report);
 		}
+
+		return $report->context->id;
 	}
 
 	static public function logException(\Throwable $e): array
@@ -660,7 +662,15 @@ class ErrorManager
 		$out = [];
 		$start = max(0, $line - 5);
 
-		if (!file_exists($file)) {
+		try {
+			// Make sure we ignore errors here, as file_exists can trigger an error from open_basedir
+			$exists = file_exists($file);
+		}
+		catch (\Throwable $e) {
+			$exists = false;
+		}
+
+		if (!$exists) {
 			return [$line => 'Source file not found'];
 		}
 
@@ -958,11 +968,10 @@ class ErrorManager
 	 * @param  integer $level Indentation level (internal use)
 	 * @return string
 	 */
-	static public function dump($var, $hide_values = false, $level = 0)
+	static public function dump($var, bool $hide_values = false, int $level = 0, array $stack = []): string
 	{
-		if ($level > 20)
-		{
-			return '*RECURSION*';
+		if ($level > 10) {
+			return '*REACHED_MAX_RECURSION_LEVEL*';
 		}
 
 		switch (gettype($var))
@@ -981,12 +990,11 @@ class ErrorManager
 				return 'resource(' . (int)$var . ') of type (' . get_resource_type($var) . ')';
 			case 'array':
 			case 'object':
-				if (is_object($var))
-				{
-					$out = 'object(' . get_class($var) . ') (' . count((array) $var) . ') {' . PHP_EOL;
+				if (is_object($var)) {
+					$id = spl_object_id($var);
+					$out = sprintf('object(%s)#%d (%d) {' . PHP_EOL, get_class($var), $id, count((array) $var));
 				}
-				else
-				{
+				else {
 					$out = 'array(' . count((array) $var) . ') {' . PHP_EOL;
 				}
 
@@ -1009,18 +1017,22 @@ class ErrorManager
 					$var = $var2;
 				}
 
-				foreach ((array)$var as $key=>$value)
+				$stack[] =& $var;
+
+				foreach ((array)$var as $key => $value)
 				{
 					$out .= str_repeat(' ', $level * 2);
 					$out .= is_string($key) ? '["' . $key . '"]' : '[' . $key . ']';
 
-					if ($value === $var) {
+					if ($value === $var || in_array($value, $stack, true)) {
 						$out .= '=> *RECURSION*' . PHP_EOL;
 					}
 					else {
-						$out .= '=> ' . self::dump($value, $hide_values, $level + 1) . PHP_EOL;
+						$out .= '=> ' . self::dump($value, $hide_values, $level + 1, $stack) . PHP_EOL;
 					}
 				}
+
+				array_pop($stack);
 
 				$out .= str_repeat(' ', $level * 2) . '}';
 				return $out;

@@ -996,7 +996,7 @@ class Server
 
 		$return = $this->storage->proppatch($uri, $properties);
 
-		if ($set_time && $this->touch($uri, $set_time)) {
+		if ($set_time && $this->storage->touch($uri, $set_time)) {
 			$return[$set_time_name] = 200;
 		}
 

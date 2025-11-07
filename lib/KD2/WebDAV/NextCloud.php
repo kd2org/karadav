@@ -40,8 +40,11 @@ abstract class NextCloud
 	const NC_NAMESPACE = 'http://nextcloud.org/ns';
 	const OC_NAMESPACE = 'http://owncloud.org/ns';
 
-	const PROP_OC_ID = self::OC_NAMESPACE . ':id';
+	// Numeric file ID
+	// see https://help.nextcloud.com/t/difference-between-id-and-fileid-in-webdav/91414
 	const PROP_OC_FILEID = self::OC_NAMESPACE . ':fileid';
+	// id = 00012345ocrb3ervk02w (fileid with padding zeros to be at least 8 numberes)
+	const PROP_OC_ID = self::OC_NAMESPACE . ':id';
 	const PROP_OC_SIZE = self::OC_NAMESPACE . ':size';
 	const PROP_OC_DOWNLOADURL = self::OC_NAMESPACE . ':downloadURL';
 	const PROP_OC_PERMISSIONS = self::OC_NAMESPACE . ':permissions';
