@@ -13,6 +13,8 @@ class Storage extends AbstractStorage implements TrashInterface
 	protected NextCloud $nextcloud;
 	protected array $properties = [];
 
+	const THUMBNAIL_SIZES = [150, 500, 1200];
+
 	/**
 	 * These file names will be ignored when doing a PUT
 	 * as they are garbage, coming from some OS
