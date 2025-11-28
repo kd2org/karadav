@@ -1,6 +1,6 @@
 ## 0.6.2 - November 28, 2025
 
-* Update dependencies, fix issues for PHP 8.5
+* Update dependencies, fix issues for PHP 8.5 (please report any issue on PHP 8.5)
 
 ## 0.6.1 - January 10, 2025
 
