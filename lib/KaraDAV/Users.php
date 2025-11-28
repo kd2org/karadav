@@ -89,7 +89,7 @@ class Users
 	public function create(string $login, string $password, int $quota = DEFAULT_QUOTA, bool $is_admin = false)
 	{
 		$login = strtolower(trim($login));
-		$hash = password_hash(trim($password), null);
+		$hash = password_hash(trim($password), \PASSWORD_DEFAULT);
 		DB::getInstance()->run('INSERT OR IGNORE INTO users (login, password, quota, is_admin) VALUES (?, ?, ?, ?);',
 			$login, $hash, $quota * 1024 * 1024, $is_admin ? 1 : 0);
 	}
@@ -106,7 +106,7 @@ class Users
 		$new_login = null;
 
 		if (!empty($data['password'])) {
-			$params['password'] = password_hash(trim($data['password']), null);
+			$params['password'] = password_hash(trim($data['password']), \PASSWORD_DEFAULT);
 		}
 
 		if (!empty($data['login'])) {
@@ -259,7 +259,7 @@ class Users
 			// The app password contains the user password hash
 			// this way we can invalidate all sessions if we change
 			// the user password
-			$hash = password_hash($password . $current->password, null);
+			$hash = password_hash($password . $current->password, \PASSWORD_DEFAULT);
 			$token = $this->generatePassword();
 		}
 
@@ -294,7 +294,7 @@ class Users
 		// this way we can invalidate all sessions if we change
 		// the user password
 		$user = $this->getById($session->user);
-		$hash = password_hash($session->password . $user->password, null);
+		$hash = password_hash($session->password . $user->password, \PASSWORD_DEFAULT);
 		$session->token = self::generatePassword();
 		$session->password = $session->token . ':' . $session->password;
 
