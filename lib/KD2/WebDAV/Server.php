@@ -97,6 +97,11 @@ class Server
 	const EXCLUSIVE_LOCK = 'exclusive';
 
 	/**
+	 * This is only to get around PHP 8.5 useless depreciation
+	 */
+	const DATE_RFC7231 = "D, d M Y H:i:s \\G\\M\\T";
+
+	/**
 	 * Enable on-the-fly gzip compression
 	 * This can use a large amount of resources
 	 * @var boolean
@@ -329,7 +334,7 @@ class Server
 		}
 
 		if ($date = $this->getHeader('If-Unmodified-Since')) {
-			$date = \DateTime::createFromFormat(\DateTime::RFC7231, $date);
+			$date = \DateTime::createFromFormat(self::DATE_RFC7231, $date);
 			$prop = $this->storage->propfind($uri, ['DAV::getlastmodified'], 0);
 			if ($date && $prop && $prop instanceof \DateTimeInterface) {
 				if ($date != $prop) {
@@ -410,7 +415,7 @@ class Server
 
 		if (isset($props['DAV::getlastmodified'])
 			&& $props['DAV::getlastmodified'] instanceof \DateTimeInterface) {
-			header(sprintf('Last-Modified: %s', $props['DAV::getlastmodified']->format(\DATE_RFC7231)));
+			header(sprintf('Last-Modified: %s', $props['DAV::getlastmodified']->format(self::DATE_RFC7231)));
 		}
 
 		if (!empty($props['DAV::getetag'])) {
@@ -810,7 +815,7 @@ class Server
 					// Change value to GMT
 					$value = clone $value;
 					$value->setTimezone(new \DateTimeZone('GMT'));
-					$value = $value->format(DATE_RFC7231);
+					$value = $value->format(self::DATE_RFC7231);
 				}
 				elseif (is_array($value)) {
 					$attributes = $value['attributes'] ?? '';

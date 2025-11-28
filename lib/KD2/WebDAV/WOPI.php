@@ -310,11 +310,17 @@ class WOPI
 				throw new \RuntimeException(sprintf("Discovery URL returned an error: %d\n%s", $code, $r));
 			}
 
-			curl_close($c);
+			if (PHP_VERSION_ID < 80500) {
+				curl_close($c);
+			}
 		}
 		else {
 			$r = file_get_contents($url);
 			$ok = false;
+
+			if (function_exists('http_get_last_response_headers')) {
+				$http_response_header = http_get_last_response_headers();
+			}
 
 			foreach ($http_response_header as $h) {
 				if (0 === strpos($h, 'HTTP/') && false !== strpos($h, '200')) {

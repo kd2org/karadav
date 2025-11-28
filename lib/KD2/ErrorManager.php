@@ -178,6 +178,7 @@ class ErrorManager
 		// Catch ASSERT_BAIL errors differently because throwing an exception
 		// in this case results in an execution shutdown, and shutdown handler
 		// isn't even called. See https://bugs.php.net/bug.php?id=53619
+		// TODO: remove when minimum supported version is 8.0+
 		if (PHP_VERSION_ID < 80000 && assert_options(ASSERT_ACTIVE) && assert_options(ASSERT_BAIL) && substr($message, 0, 18) == 'Warning: assert():')
 		{
 			$message .= ' (ASSERT_BAIL detected)';
@@ -1086,8 +1087,11 @@ class ErrorManager
 			$body = file_get_contents($url, false, stream_context_create($opts));
 			$code = null;
 
-			foreach ($http_response_header as $header)
-			{
+			if (function_exists('http_get_last_response_headers')) {
+				$http_response_header = http_get_last_response_headers();
+			}
+
+			foreach ($http_response_header as $header) {
 				$a = substr($header, 0, 7);
 
 				if ($a == 'HTTP/1.')
