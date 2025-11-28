@@ -1118,7 +1118,11 @@ class Image
 
 	protected function gd_close()
 	{
-		return imagedestroy($this->pointer);
+		if (PHP_VERSION_ID < 80500) {
+			return imagedestroy($this->pointer);
+		}
+
+		return true;
 	}
 
 	protected function gd_save($destination, $format)
@@ -1181,7 +1185,11 @@ class Image
 		$src_y = floor(($this->height - $new_height) / 2);
 
 		imagecopy($new, $this->pointer, 0, 0, $src_x, $src_y, (int)$new_width, (int)$new_height);
-		imagedestroy($this->pointer);
+
+		if (PHP_VERSION_ID < 80500) {
+			imagedestroy($this->pointer);
+		}
+
 		$this->pointer = $new;
 	}
 
@@ -1213,7 +1221,10 @@ class Image
 			imagecopyresampled($new, $this->pointer, 0, 0, 0, 0, (int)$new_width, (int)$new_height, $this->width, $this->height);
 		}
 
-		imagedestroy($this->pointer);
+		if (PHP_VERSION_ID < 80500) {
+			imagedestroy($this->pointer);
+		}
+
 		$this->pointer = $new;
 	}
 
@@ -1265,7 +1276,10 @@ class Image
 
 			imagecopyresized($temp, $src_image, 0, 0, (int)$src_x, (int)$src_y, $temp_w, $temp_h, (int)$src_w, (int)$src_h);
 			imagecopyresampled($dst_image, $temp, (int)$dst_x, (int)$dst_y, 0, 0, (int)$dst_w, (int)$dst_h, intval($dst_w * $quality), intval($dst_h * $quality));
-			imagedestroy($temp);
+
+			if (PHP_VERSION_ID < 80500) {
+				imagedestroy($temp);
+			}
 		}
 		else
 		{

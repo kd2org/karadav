@@ -13,7 +13,12 @@ php-deps:
 	wget -O lib/KD2/WebDAV/Server.php '${KD2FW_URL}WebDAV/Server.php'
 	wget -O lib/KD2/WebDAV/AbstractStorage.php '${KD2FW_URL}WebDAV/AbstractStorage.php'
 	wget -O lib/KD2/WebDAV/NextCloud.php '${KD2FW_URL}WebDAV/NextCloud.php'
+	wget -O lib/KD2/WebDAV/TrashInterface.php '${KD2FW_URL}WebDAV/TrashInterface.php'
+	wget -O lib/KD2/WebDAV/NextCloudNotes.php '${KD2FW_URL}WebDAV/NextCloudNotes.php'
 	wget -O lib/KD2/WebDAV/WOPI.php '${KD2FW_URL}WebDAV/WOPI.php'
+	wget -O lib/KD2/HTTP/Server.php '${KD2FW_URL}HTTP/Server.php'
+	wget -O lib/KD2/Graphics/Image.php '${KD2FW_URL}Graphics/Image.php'
+	wget -O lib/KD2/Graphics/SVG/Avatar.php '${KD2FW_URL}Graphics/SVG/Avatar.php'
 
 server:
 	php -S 0.0.0.0:8080 -t www www/_router.php
