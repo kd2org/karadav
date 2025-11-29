@@ -718,8 +718,18 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function getFileId(string $path): ?int
 	{
-		return DB::getInstance()->firstColumn('SELECT id FROM files WHERE user = ? AND path = ?;',
-			$this->users->current()->id, $path);
+		$id = DB::getInstance()->firstColumn('SELECT id FROM files WHERE user = ? AND path = ?;',
+			$this->users->current()->id,
+			$path
+		);
+
+		// root path doesn't exist in database, just assign a very large value
+		// if you have more than 100 million files well… you might miss one
+		if (!$id && $path === '') {
+			$id = 99999999;
+		}
+
+		return $id;
 	}
 
 	static protected function glob(string $path, string $pattern = '', int $flags = 0): array
