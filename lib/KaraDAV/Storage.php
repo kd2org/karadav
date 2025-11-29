@@ -724,9 +724,9 @@ class Storage extends AbstractStorage implements TrashInterface
 		);
 
 		// root path doesn't exist in database, just assign a very large value
-		// if you have more than 100 million files well… you might miss one
+		// if you have more than 1 trillion files well… you might miss one
 		if (!$id && $path === '') {
-			$id = 99999999;
+			$id = 999999999999;
 		}
 
 		return $id;
