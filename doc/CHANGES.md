@@ -1,3 +1,7 @@
+## 0.6.3 - November 29, 2025
+
+* Assign an ID to the root webdav directory, as it's not in the database in KaraDAV (fixes crash in Nextcloud Android app)
+
 ## 0.6.2 - November 28, 2025
 
 * Update dependencies, fix issues for PHP 8.5 (please report any issue on PHP 8.5)
