@@ -113,6 +113,7 @@ It has been successfully tested with:
 * NextCloud Android app ([F-Droid](https://f-droid.org/en/packages/com.nextcloud.client/))
 * NextCloud Notes Android app ([F-Droid](https://f-droid.org/en/packages/it.niedermann.owncloud.notes/))
 * ownCloud Android app ([F-Droid](https://f-droid.org/en/packages/com.owncloud.android/))
+* MyOwnNotes Android app ([F-Droid](https://f-droid.org/en/packages/org.aykit.MyOwnNotes/))
 * [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) (Debian Linux) *-- Note: make sure to pass options before parameters.*
 * [ownCloud CLI client](https://doc.owncloud.com/desktop/next/advanced_usage/command_line_client.html) (Debian Linux)
 
