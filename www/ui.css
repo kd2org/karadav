@@ -9,7 +9,7 @@ html, body, #all {
 
 body {
 	background: #333;
-	font-family: sans-serif;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
 }
 
 #all {
@@ -170,7 +170,8 @@ main {
 	background: #fff;
 	border-radius: 1rem;
 	padding: 2rem;
-	margin: 2rem;
+	margin: 1rem;
+	margin-left: 2rem;
 	width: auto;
 	flex-grow: 1;
 }
@@ -221,6 +222,7 @@ progress[value] {
 	border-radius: 3px;
 	box-shadow: 0 2px 3px rgba(0,0,0,.5) inset;
 	position: relative;
+	max-width: 20em;
 }
 
 progress[value]::-webkit-progress-bar {

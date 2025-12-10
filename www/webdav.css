@@ -1,18 +1,22 @@
 :root {
 	--bg-color: #fff;
 	--fg-color: #000;
-	--g1-color: #eee;
-	--g2-color: #ccc;
-	--g3-color: #999;
+	--g1-color: #f5f7f7;
+	--g2-color: #ccd8d6;
+	--g3-color: #7c9696;
 	--link-color: blue;
 	--visited-color: purple;
 	--active-color: darkred;
 }
 
+* {
+	margin: 0;
+	padding: 0;
+}
+
 body {
 	text-align: center;
-	font-size: 1.1em;
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
 	background: var(--bg-color);
 	color: var(--fg-color);
 }
@@ -30,67 +34,108 @@ a:hover {
 }
 
 table {
-	margin: 2em auto;
+	margin: 0 auto;
 	border-collapse: collapse;
-	width: 90%;
+	width: 100%;
 }
 
-th, td {
-	padding: .5em;
+thead button {
+	width: 100%;
+	border: none;
+	text-align: inherit;
+	font: inherit;
+	background: none;
+	cursor: pointer;
+	font-size: .9em;
+	color: #666;
+	padding: 0 .5em;
+}
+
+td.name, tbody th, td.date {
 	text-align: left;
-	border: 2px solid var(--g2-color);
 }
 
-th {
+tr:has(.check input:checked) {
+	background: #fdefdc;
+}
+
+tbody th, tbody td {
+	padding: 0 .5em;
+	text-align: left;
+	border-top: 1px solid var(--g2-color);
+	border-bottom: 1px solid var(--g2-color);
+	vertical-align: middle;
+}
+
+tbody th {
 	word-break: break-all;
+	font-weight: normal;
 }
 
-td.thumb {
-	width: 3.6em;
-	padding: 0;
-	text-align: center;
+tbody th a {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 1em;
+}
+
+tbody th img {
+	width: 2em;
+	height: 2em;
+	border-radius: .2em;
+}
+
+tbody th .icon {
+	width: 2em;
+	height: 2em;
+	border-radius: .2em;
+	overflow: hidden;
+	background: no-repeat center center;
+	background-size: 100%;
 	position: relative;
 }
 
-td.thumb img {
-	width: 3.6em;
-	height: 3.6em;
-	display: block;
-}
-
-td.thumb .icon {
-	margin: .5em;
-}
-
-td.thumb input, td.thumb label span::before {
+th .icon b {
+	font-size: 7pt;
+	font-weight: normal;
+	text-decoration: none;
+	display: inline-block;
+	background: #eee;
+	border-radius: .3em;
+	padding: 0 .2em;
+	color: #2e3c3a;
 	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
 	bottom: 0;
-	margin: 0;
-	padding: 0;
-	opacity: 0;
-	display: block;
+	right: 0;
+	border: 1px solid #2e3c3a;
+}
+
+td.check {
+	width: 1.5em;
+	text-align: center;
+}
+
+td.check input {
 	cursor: pointer;
-	user-select: none;
+	width: 1.5em;
+	height: 1.5em;
+	border: 2px solid #999;
+	border-radius: .2em;
+	background: none;
+	appearance: none;
+	outline: 0;
 }
 
-td.thumb input:checked + span::before {
-	content: "✔️";
-	font-size: 3em;
-	opacity: 1;
-	color: #fff;
-	text-shadow: 0px 0px 5px #000, 0px 0px 10px #000;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+td.check input:checked {
+	box-shadow: 0px 0px 5px darkorange;
+	background: no-repeat center center;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="none" stroke="%23666" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 12l5 5L20 7"/></svg>');
+	background-size: contain;
 }
-
 
 td.buttons {
 	text-align: right;
-	width: 20em;
+	width: 5em;
 }
 
 td.buttons div {
@@ -98,60 +143,64 @@ td.buttons div {
 	flex-direction: row-reverse;
 }
 
-table tr:nth-child(even) {
+tbody tr:nth-child(even) {
 	background: var(--g1-color);
 }
 
-.icon {
-	width: 2.6em;
-	height: 2.6em;
-	display: inline-block;
-	border-radius: .2em;
-	background:var(--g3-color);
-	overflow: hidden;
-	color: var(--bg-color);
-	text-align: center;
+tbody th .icon {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2"/></g></svg>');
 }
 
-.icon b {
-	font-weight: normal;
-	display: inline-block;
-	transform: rotate(-30deg);
-	line-height: 2.6rem;
+th .icon.JPEG, th .icon.PNG, th .icon.JPG, th .icon.GIF, th .icon.SVG, th .icon.WEBP {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 8h.01M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/><path d="m3 16l5-5c.928-.893 2.072-.893 3 0l5 5"/><path d="m14 14l1-1c.928-.893 2.072-.893 3 0l3 3"/></g></svg>');
 }
 
-.icon.JPEG, .icon.PNG, .icon.JPG, .icon.GIF, .icon.SVG, .icon.WEBP {
-	background: #966;
+th .icon.TXT, th .icon.MD {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2M9 9h1m-1 4h6m-6 4h6"/></g></svg>');
 }
 
-.icon.TXT, .icon.MD {
-	background: var(--fg-color);
+th .icon.MP4, th .icon.MKV, th .icon.MP3, th .icon.M4A, th .icon.WAV, th .icon.FLAC, th .icon.OGG, th .icon.OGV, th .icon.AAC, th .icon.WEBM {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14zM3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>');
 }
 
-.icon.MP4, .icon.MKV, .icon.MP3, .icon.M4A, .icon.WAV, .icon.FLAC, .icon.OGG, .icon.OGV, .icon.AAC, .icon.WEBM {
-	background: #669;
+th .icon.document {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="%23955906"><path d="m12 2l.117.007a1 1 0 0 1 .876.876L13 3v4l.005.15a2 2 0 0 0 1.838 1.844L15 9h4l.117.007a1 1 0 0 1 .876.876L20 10v9a3 3 0 0 1-2.824 2.995L17 22H7a3 3 0 0 1-2.995-2.824L4 19V5a3 3 0 0 1 2.824-2.995L7 2z"/><path d="M19 7h-4l-.001-4.001z"/></g></svg>');
 }
 
-.icon.document {
-	background: #696;
+th .icon.document b {
+	position: relative;
+	background: none;
+	border: none;
+	color: #fff;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
 }
 
-.icon.PDF {
-	background: #969;
+.dir th .icon {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2"/></svg>');
 }
 
-.icon.dir {
-	background: var(--g2-color);
-	color: var(--fg-color);
+.parent th .icon {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 11l-4 4l4 4m-4-4h11a4 4 0 0 0 0-8h-1"/></svg>');
 }
 
-.icon.dir b {
-	font-size: 2em;
-	transform: none;
+.dir th .icon b, .parent th .icon b {
+	display: none;
 }
 
-.size {
+td.size {
 	text-align: right;
+	font-size: .9em;
+	color: #666;
+}
+
+td.date {
+	font-size: .9em;
+	color: #666;
 }
 
 input[type=button], input[type=submit], .btn, a.btn {
@@ -189,7 +238,7 @@ input:focus, textarea:focus {
 input[type=button]:hover, input[type=submit]:hover, .btn:hover {
 	color: var(--active-color);
 	text-decoration: underline;
-	background: var(--bg-color);
+	background-color: var(--bg-color);
 	box-shadow: 0px 0px 5px var(--fg-color);
 }
 
@@ -249,8 +298,22 @@ dialog form div {
 	text-align: center;
 }
 
-.upload {
-	margin: 1em 0;
+div.buttons {
+	display: flex;
+	justify-content: space-between;
+	margin: 1em;
+	margin-bottom: 0;
+}
+
+div.buttons input {
+	overflow: visible;
+	text-indent: 0;
+	width: auto;
+	height: auto;
+	background-position: .2em center;
+	padding: .3em .5em;
+	padding-left: 2em;
+	background-size: 1.3em;
 }
 
 #mdp div, #mdp textarea {
@@ -272,7 +335,7 @@ dialog form div {
 	grid-template-columns: 1fr 1fr;
 	grid-gap: .2em;
 	background: var(--g1-color);
-	height: 82vh;
+	height: 90vh;
 }
 
 #md img, #md video, #md iframe, #md embed, #md object {
@@ -335,9 +398,19 @@ iframe, iframe body, .md_preview {
 
 .md_preview {
 	width: calc(100vw - 2em);
-	height: calc(100vh - 2em);
+	height: calc(100vh - 4em);
 	padding: 1em;
 	text-align: left;
+	padding-bottom: 2em;
+}
+
+.md_preview ul, .md_preview ol, .md_preview p, .md_preview blockquote, .md_preview pre,
+.md_preview h1, .md_preview h2, .md_preview h3, .md_preview h4, .md_preview h5, .md_preview h6  {
+	margin: 1rem 0;
+}
+
+.md_preview ul, .md_preview ol, .md_preview blockquote {
+	margin-left: 2em;
 }
 
 .preview .close {
@@ -426,11 +499,63 @@ input[name=rename], input[name=paste_name] {
 
 dialog {
 	transition: all .3s;
+	margin: auto;
+	padding: 1em;
+}
+
+dialog:has(#mdp) {
+	margin: 0;
+	padding: .5em;
+	border-radius: none;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 100vh;
 }
 
 progress {
 	height: 2em;
 	width: 90%;
+}
+
+input.icon, a[download] {
+	background: #e0e6e6 no-repeat center center;
+	background-size: contain;
+	width: 1.8em;
+	height: 1.8em;
+	padding: 0;
+	overflow: hidden;
+	text-indent: 100em;
+	display: inline-block;
+}
+
+input.delete {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg>');
+}
+
+input.rename {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 512 512"><path fill="%232e3c3a" fill-rule="evenodd" d="M405.334 64v21.333h-42.667v341.333h42.667V448l-42.667-.001V448h-21.333l-.001-.001l-42.666.001v-21.333l42.666-.001V85.333h-42.666V64zm64 64v256H384v-42.667h42.667V170.667H384V128zM320 128v256H42.667V128zm-98.133 25.6H192v145.067c0 13.333-.833 21.666-1.458 29.687l-.082 1.068l-.079 1.067c-.296 4.09-.514 8.207-.514 12.978h29.867v-19.2a42.67 42.67 0 0 0 38.4 21.333a45.65 45.65 0 0 0 36.266-17.067a99.63 99.63 0 0 0 19.2-53.333c0-40.533-21.333-68.267-53.333-68.267a48.43 48.43 0 0 0-38.4 19.2zm-59.733 72.533a54.61 54.61 0 0 0-44.8-17.066a102.2 102.2 0 0 0-49.067 10.666l8.533 21.334a96.2 96.2 0 0 1 36.267-10.667a27.093 27.093 0 0 1 29.867 29.867v2.133H121.6a89.2 89.2 0 0 0-38.4 6.4a35.63 35.63 0 0 0-21.333 36.267a38.187 38.187 0 0 0 42.667 38.4a50.35 50.35 0 0 0 40.533-17.067v14.933H172.8a172.4 172.4 0 0 1-2.133-34.133v-38.4a66.77 66.77 0 0 0-8.533-42.667m-21.334 51.2v25.6a37.12 37.12 0 0 1-29.866 19.2a17.92 17.92 0 0 1-19.2-19.2c0-14.933 10.666-23.466 36.266-25.6zM251.734 230.4c17.066 0 29.866 17.067 29.866 44.8S270.934 320 253.867 320a35.84 35.84 0 0 1-32-21.333v-46.934a40.32 40.32 0 0 1 29.867-21.333"/></svg>');
+}
+
+a[download], input.download {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 11l5 5l5-5m-5-7v12"/></svg>');
+}
+
+input.edit {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20h4L18.5 9.5a2.828 2.828 0 1 0-4-4L4 16zm9.5-13.5l4 4"/></svg>');
+}
+
+input.mkdir {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4l3 3h7a2 2 0 0 1 2 2v3.5M16 19h6m-3-3v6"/></svg>');
+}
+
+input.mkfile {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2m-5-10v6m-3-3h6"/></g></svg>');
+}
+
+input.upload {
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="%232e3c3a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 9l5-5l5 5m-5-5v12"/></svg>');
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
