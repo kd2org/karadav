@@ -2,7 +2,7 @@
 
 namespace KaraDAV;
 
-require_once __DIR__ . '/_inc.php';
+require_once __DIR__ . '/../init.php';
 
 $uri = parse_url($_SERVER['REQUEST_URI'], \PHP_URL_PATH) ?: '/';
 $base_uri = parse_url(WWW_URL, \PHP_URL_PATH);

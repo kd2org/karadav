@@ -33,6 +33,9 @@ else {
 	$title = _($app->label);
 }
 
+// Make sure we allow frames to work
+header('X-Frame-Options: SAMEORIGIN', true);
+
 $tpl->assign(compact('url', 'title'));
 
 $tpl->display('frame.tpl');

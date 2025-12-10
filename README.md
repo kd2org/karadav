@@ -89,12 +89,14 @@ KaraDAV is not a drop-in replacement for NextCloud. It is not intended to be. It
 | File searching | Planned | ✅ | ✅ |
 | Calendar | ❌ | ✅ | ✅ |
 | Contacts | ❌ |  ✅ | ✅ |
-| Install other apps | ❌ |  ✅ | ✅ |
+| Install other apps | ✅¹ | ✅ | ✅ |
 | 2FA | ❌ |  ✅ | ✅ |
 | LDAP | ✅ |  ✅ | ✅ |
-| Database | SQLite | SQLite, PostgreSQL, MySQL | MySQL |
+| Database | SQLite | SQLite, PostgreSQL, MySQL | Filesystem |
 | Web UI | Minimal | Advanced, but clunky | Basic |
 | Commercial support | ❌ |  ✅ | ✅ |
+
+1. Other apps are embedded in an iframe.
 
 ## Screenshots
 

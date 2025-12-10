@@ -89,7 +89,7 @@ class DB extends \SQLite3
 
 		if ($db_version < 1) {
 			$this->exec('BEGIN;');
-			$this->exec(file_get_contents(ROOT . 'sql/migrate_0001.sql'));
+			$this->exec(file_get_contents(ROOT . '/sql/migrate_0001.sql'));
 
 			$users = new Users;
 			$users->indexAllFiles();
