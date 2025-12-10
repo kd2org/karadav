@@ -32,13 +32,15 @@ const WebDAVNavigator = (url, options) => {
 
 	const body_tpl = `
 		<div class="buttons">
-			<input type="button" class="icon download" value="${_('Download selected')}" />
-			<input type="button" class="icon delete" value="${_('Delete selected')}" />
+			<div class="selected">
+				<input type="button" class="icon download" value="${_('Download')}" />
+				<input type="button" class="icon delete" value="${_('Delete')}" />
+			</div>
 		</div>
 		<table>
 			<thead>
 				<tr>
-					<td scope="col"></td>
+					<td scope="col" class="check"><input type="checkbox" name="delete" value="%uri%" /><label><span></span></label></td>
 					<td scope="col" class="name" data-sort="name"><button>${_('Name')}</button></td>
 					<td scope="col" class="size" data-sort="size"><button>${_('Size')}</button></td>
 					<td scope="col" class="date" data-sort="date"><button>${_('Date')}</button></td>
@@ -54,7 +56,7 @@ const WebDAVNavigator = (url, options) => {
 		<input class="icon upload" type="button" value="${_('Upload files')}" />`;
 
 	const dir_row_tpl = `<tr data-permissions="%permissions%" class="%class%">
-		<td class="check"></td>
+		<td class="check"><input type="checkbox" name="delete" value="%uri%" /><label><span></span></label></td>
 		<th colspan="2"><a href="%uri%">%thumb% %name%</a></th>
 		<td class="date">%modified%</td>
 		<td class="buttons"><div></div></td>
@@ -606,6 +608,12 @@ const WebDAVNavigator = (url, options) => {
 		document.title = title;
 		document.querySelector('main').innerHTML = template(body_tpl, {'title': html(document.title), 'base_url': base_url, 'table': table});
 
+		var parent_check = document.querySelector('tbody tr.parent .check');
+
+		if (parent_check) {
+			parent_check.innerHTML = '';
+		}
+
 		var column = document.querySelector('thead td[data-sort="' + sort_order + '"]').className += ' selected ' + (sort_order_desc ? 'desc' : 'asc');
 
 		document.querySelectorAll('thead td[data-sort] button').forEach(elm => elm.onclick = (e) => {
@@ -621,6 +629,10 @@ const WebDAVNavigator = (url, options) => {
 			window.localStorage.setItem('sort_order_desc', sort_order_desc ? '1' : '0');
 			reloadListing();
 		});
+
+		document.querySelector('thead td.check input').onchange = (e) => {
+			document.querySelectorAll('tbody td.check input').forEach(i => i.checked = e.target.checked);
+		};
 
 		if (!items.length) {
 			$('div.buttons .download').disabled = true;
@@ -655,7 +667,7 @@ const WebDAVNavigator = (url, options) => {
 		};
 
 		if (!root_permissions || root_permissions.indexOf('C') != -1 || root_permissions.indexOf('K') != -1) {
-			$('.buttons').insertAdjacentHTML('afterbegin', create_buttons);
+			$('.buttons').insertAdjacentHTML('beforeend', create_buttons);
 
 			$('.mkdir').onclick = () => {
 				openDialog(mkdir_dialog);

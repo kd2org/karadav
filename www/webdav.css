@@ -39,6 +39,11 @@ table {
 	width: 100%;
 }
 
+thead td {
+	height: 2em;
+	vertical-align: bottom;
+}
+
 thead button {
 	width: 100%;
 	border: none;
@@ -47,8 +52,8 @@ thead button {
 	background: none;
 	cursor: pointer;
 	font-size: .9em;
-	color: #666;
-	padding: 0 .5em;
+	color: #999;
+	padding: .4em;
 }
 
 thead .selected button::after {
@@ -64,7 +69,7 @@ td.name, tbody th, td.date {
 	text-align: left;
 }
 
-tr:has(.check input:checked) {
+tbody tr:has(.check input:checked) {
 	background: #fdefdc;
 }
 
@@ -309,9 +314,18 @@ dialog form div {
 
 div.buttons {
 	display: flex;
-	justify-content: space-between;
-	margin: 1em;
+	justify-content: flex-end;
+	margin: .5em;
 	margin-bottom: 0;
+}
+
+div.buttons .selected {
+	margin-right: auto;
+	display: none;
+}
+
+body:has(tbody .check input:checked) div.buttons .selected {
+	display: block;
 }
 
 div.buttons input {
