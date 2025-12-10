@@ -32,7 +32,7 @@ const WebDAVNavigator = (url, options) => {
 
 	const body_tpl = `
 		<div class="buttons">
-			<input type="button" class="icon download" value="${_('Download all files')}" />
+			<input type="button" class="icon download" value="${_('Download selected')}" />
 			<input type="button" class="icon delete" value="${_('Delete selected')}" />
 		</div>
 		<table>
@@ -359,14 +359,18 @@ const WebDAVNavigator = (url, options) => {
 		window.onbeforeunload = null;
 	};
 
-	const download_all = async () => {
+	const download_selected = async () => {
+		var items = document.querySelectorAll('tbody input[type=checkbox]:checked');
 		for (var i = 0; i < items.length; i++) {
-			var item = items[i];
-			if (item.is_dir) {
-				continue;
+			var input = items[i];
+			var row = input.parentNode.parentNode;
+
+			// Skip directories
+			if (!row.dataset.mime) {
+				return;
 			}
 
-			await download(item.name, item.size, item.uri)
+			await download(row.dataset.name, row.dataset.size, row.querySelector('th a').href);
 		}
 	};
 
@@ -622,7 +626,7 @@ const WebDAVNavigator = (url, options) => {
 			$('div.buttons .download').disabled = true;
 		}
 		else {
-			$('div.buttons .download').onclick = download_all;
+			$('div.buttons .download').onclick = download_selected;
 		}
 
 		$('div.buttons .delete').onclick = () => {

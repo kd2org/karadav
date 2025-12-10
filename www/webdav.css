@@ -51,6 +51,15 @@ thead button {
 	padding: 0 .5em;
 }
 
+thead .selected button::after {
+	content: "🠇";
+	margin-left: .5em;
+}
+
+thead .selected.desc button::after {
+	content: "🠅";
+}
+
 td.name, tbody th, td.date {
 	text-align: left;
 }
