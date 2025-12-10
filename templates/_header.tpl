@@ -19,7 +19,7 @@
 		<ul>
 		{if $logged_user}
 			<li class="index{if $current === 'index'} current{/if}"><a href="{$www_url}"><img src="{$logged_user.avatar_url}" alt="" /> <span>{{My account}}</span></a></li>
-			<li class="files{if $current === $logged_user.dav_url} current{/if}"><a href="{$www_url}frame.php?url={$logged_user.dav_url|rawurlencode}"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 3v4a1 1 0 0 0 1 1h4"/><path d="M18 17h-7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4l5 5v7a2 2 0 0 1-2 2"/><path d="M16 17v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2"/></g></svg> <span>{{My files}}</span></a></li>
+			<li class="files{if $current === $logged_user.dav_url} current{/if}"><a href="{$www_url}frame.php?url=files"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 3v4a1 1 0 0 0 1 1h4"/><path d="M18 17h-7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4l5 5v7a2 2 0 0 1-2 2"/><path d="M16 17v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2"/></g></svg> <span>{{My files}}</span></a></li>
 			{if $logged_user.is_admin}
 			<li class="users{if $current === 'users'} current{/if}"><a href="{$www_url}users/"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m1-17.87a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85"/></svg> <span>{{Manage users}}</span></a></li>
 			{/if}

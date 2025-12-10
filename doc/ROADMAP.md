@@ -1,7 +1,10 @@
 # Roadmap
 
+Patches are welcome!
+
 This might get supported in future (maybe):
 
+* Localization: allow to translate UI
 * Likely: OpenIDConnect support for login
 * Probably: [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html)
 * Maybe: NextCloud files versioning
@@ -10,7 +13,10 @@ This might get supported in future (maybe):
 	* [NextCloud implementation](https://github.com/nextcloud/server/blob/master/apps/files_versions/lib/Storage.php)
 	* [Mercurial revlog](https://www.mercurial-scm.org/wiki/Revlog)
 	* [Eric Sink on SCM versioning](https://ericsink.com/scm/scm_repositories.html)
-* Maybe: document thumbnails
+* Maybe: document thumbnails (using Collabora API)
+* Maybe: Web files UI: move files/directories by drag and drop?
+* Probably: Web files UI: Cut/Copy/Paste files and directories, like OpenCloud does (nicely)
+* Probably: Web files UI: gallery view
 
 This probably won't get supported anytime soon:
 

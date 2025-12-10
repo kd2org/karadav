@@ -16,7 +16,7 @@ namespace KaraDAV;
  * Default: 200 MB
  * @var int
  */
-const DEFAULT_QUOTA = 200;
+//const DEFAULT_QUOTA = 200;
 
 /**
  * Default delay after which files should be deleted from the trashbin
@@ -25,7 +25,7 @@ const DEFAULT_QUOTA = 200;
  * Default: 30 days
  * @var int
  */
-const DEFAULT_TRASHBIN_DELAY = 60*60*24*30; // 30 days
+//const DEFAULT_TRASHBIN_DELAY = 60*60*24*30; // 30 days
 
 /**
  * Enable or disable thumbnail generation
@@ -33,38 +33,38 @@ const DEFAULT_TRASHBIN_DELAY = 60*60*24*30; // 30 days
  * Default: true
  * @var bool
  */
-const ENABLE_THUMBNAILS = true;
+//const ENABLE_THUMBNAILS = true;
 
 /**
  * Directory where all data will be stored
  * Default: 'data' inside root of KaraDAV
  * @var string
  */
-const DATA_ROOT = __DIR__ . '/data';
+//const DATA_ROOT = __DIR__ . '/data';
 
 /**
  * Users file storage path
  * %s is replaced by the login name of the user
  * @var string
  */
-const STORAGE_PATH = DATA_ROOT . '/%s';
+//const STORAGE_PATH = DATA_ROOT . '/%s';
 
 /**
  * Path to a directory containing cache files (templates, thumbnails)
  * @var string
  */
-const CACHE_PATH = DATA_ROOT . '/.cache';
+//const CACHE_PATH = DATA_ROOT . '/.cache';
 
 /**
  * SQLite3 database file
  * This is where the users, app sessions and stuff will be stored
  * @var string
  */
-const DB_FILE = DATA_ROOT . '/db.sqlite';
+//const DB_FILE = DATA_ROOT . '/db.sqlite';
 
 /**
  * SQLite3 journaling mode
- * Default: TRUNCATE (slower)
+ * Default: TRUNCATE (slower, but safer)
  * Recommended: WAL (faster, but read below)
  *
  * If your database file is on a local disk, you will get better performance by using
@@ -74,7 +74,9 @@ const DB_FILE = DATA_ROOT . '/db.sqlite';
  * @see https://www.sqlite.org/pragma.html#pragma_journal_mode
  * @see https://www.sqlite.org/wal.html
  * @see https://stackoverflow.com/questions/52378361/which-nfs-implementation-is-safe-for-sqlite-database-accessed-by-multiple-proces
-
+ *
+ * Default: TRUNCATE (safe)
+ * @var string
  */
 //const DB_JOURNAL_MODE = 'WAL';
 
@@ -84,34 +86,57 @@ const DB_FILE = DATA_ROOT . '/db.sqlite';
  * If you don't define it, KaraDAV will try to auto-detects it as well as it can.
  * But you may have to assign something static instead if that fails, for example:
  *
- * const WWW_URL = 'https://dav.website.example/';
+ * Default: will be automatically created using SERVER_NAME and REQUEST_URI
+ * @var string
  */
-#const WWW_URL = 'http://karadav.localhost/';
+//const WWW_URL = 'http://karadav.localhost/';
 
 /**
  * WOPI client discovery URL
  * eg. http://onlyoffice.domain.tld/hosting/discovery for OnlyOffice
  * If set to NULL, WOPI support is disabled
+ * @var string|null
  */
-const WOPI_DISCOVERY_URL = null;
+//const WOPI_DISCOVERY_URL = null;
 
 /**
  * Set this to TRUE if you want 'Access-Control-Allow-Origin' header to be set to '*'
  * and allow remote JS clients to make WebDAV requests.
+ * @var bool
  */
-const ACCESS_CONTROL_ALL = false;
+//const ACCESS_CONTROL_ALL = false;
 
 /**
  * Path to a log file (eg. __DIR__ . '/debug.log')
  * This will log all HTTP requests and responses received by the server
+ * @var string|null
  */
-const LOG_FILE = null;
+//const LOG_FILE = null;
 
 /**
  * Set to TRUE if you have X-SendFile module installed and configured
  * see https://tn123.org/mod_xsendfile/
+ * @var bool
  */
-const ENABLE_XSENDFILE = false;
+//const ENABLE_XSENDFILE = false;
+
+/**
+ * List of external apps that will be added to the menu
+ * Each item will be an element in the menu, and will be opened in
+ * an iframe, unless the 'target' key is supplied, in that case the
+ * URL will be opened in the specified target.
+ *
+ * See doc/APPS.md for details.
+ * Default: null
+ * @var array|null
+ */
+//const EXTERNAL_APPS = [
+//	'podcasts' => [
+//		'label' => 'Podcasts',
+//		'icon'  => 'https://opodsync.example.org/logo.svg',
+//		'url'   => 'https://opodsync.example.org/',
+//	],
+//];
 
 /**
  * External authentication callback
@@ -125,9 +150,9 @@ const ENABLE_XSENDFILE = false;
  * If the callback returned TRUE and the user does not exist in the database,
  * it will be created with the default quota.
  *
- * @var string|array
+ * Default: null
+ * @var string|array|null
  */
-const AUTH_CALLBACK = null;
 //const AUTH_CALLBACK = ['MyAuthClass', 'login'];
 //const AUTH_CALLBACK = 'KaraDAV\my_login';
 //function my_login(string $user, string $password) {
@@ -144,43 +169,42 @@ const AUTH_CALLBACK = null;
  * will be created locally and have the default quota.
  *
  * Example strings are taken from https://yunohost.org/en/packaging_sso_ldap_integration#ldap-integration
+ *
+ * Default: null
+ * @var string|null
  */
-const LDAP_HOST = null;
 //const LDAP_HOST = '127.0.0.1';
 
 /**
  * LDAP server port
- * @var integer
+ * @var int
  */
-const LDAP_PORT = 389;
+//const LDAP_PORT = 389;
 
 /**
  * LDAP security
  * Set to TRUE if using LDAPS
  * @var bool
  */
-const LDAP_SECURE = false;
+//const LDAP_SECURE = false;
 
 /**
  * LDAP user DN
  * This is used in bind. Use %s for user login string.
  * @var string
  */
-const LDAP_LOGIN = null;
 //const LDAP_LOGIN = 'uid=%s,ou=users,dc=yunohost,dc=org';
 
 /**
  * LDAP base DN
  * @var string
  */
-const LDAP_BASE = null;
 //const LDAP_BASE = 'dc=yunohost,dc=org';
 
 /**
  * LDAP display name attribute
  * @var string
  */
-const LDAP_DISPLAY_NAME = null;
 //const LDAP_DISPLAY_NAME = 'displayname';
 
 /**
@@ -189,7 +213,6 @@ const LDAP_DISPLAY_NAME = null;
  * Use %s for the user login.
  * @var string
  */
-const LDAP_FIND_USER = null;
 //const LDAP_FIND_USER = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.main,ou=permission,dc=yunohost,dc=org))';
 
 /**
@@ -198,7 +221,6 @@ const LDAP_FIND_USER = null;
  * Use %s for the user login
  * @var string
  */
-const LDAP_FIND_IS_ADMIN = null;
 //const LDAP_FIND_IS_ADMIN = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.admin.main,ou=permission,dc=yunohost,dc=org))';
 
 /**
@@ -210,7 +232,7 @@ const LDAP_FIND_IS_ADMIN = null;
  * or patches!
  * @var bool
  */
-const BLOCK_IOS_APPS = true;
+//const BLOCK_IOS_APPS = true;
 
 /**
  * Show PHP errors details to users?
@@ -222,7 +244,7 @@ const BLOCK_IOS_APPS = true;
  *
  * @var bool
  */
-const ERRORS_SHOW = true;
+//const ERRORS_SHOW = true;
 
 /**
  * Send PHP errors to this email address
@@ -231,7 +253,7 @@ const ERRORS_SHOW = true;
  *
  * @var string|null
  */
-const ERRORS_EMAIL = null;
+//const ERRORS_EMAIL = null;
 
 /**
  * Log PHP errors in this file.
@@ -239,7 +261,7 @@ const ERRORS_EMAIL = null;
  *
  * @var string
  */
-const ERRORS_LOG = __DIR__ . '/data/error.log';
+//const ERRORS_LOG = __DIR__ . '/data/error.log';
 
 /**
  * Send errors reports to this errbit/airbrake compatible API endpoint
@@ -250,7 +272,7 @@ const ERRORS_LOG = __DIR__ . '/data/error.log';
  * @see https://errbit.com/images/error_summary.png
  * @see https://airbrake.io/docs/api/#create-notice-v3
  */
-const ERRORS_REPORT_URL = null;
+//const ERRORS_REPORT_URL = null;
 
 /**
  * Randomly generated secret key
