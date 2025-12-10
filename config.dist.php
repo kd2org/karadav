@@ -13,6 +13,8 @@ namespace KaraDAV;
 
 /**
  * Default quota for new users (in MB)
+ * Default: 200 MB
+ * @var int
  */
 const DEFAULT_QUOTA = 200;
 
@@ -20,27 +22,45 @@ const DEFAULT_QUOTA = 200;
  * Default delay after which files should be deleted from the trashbin
  * (in seconds)
  * Set to zero (0) to disable the trashbin (files will be deleted directly)
+ * Default: 30 days
+ * @var int
  */
 const DEFAULT_TRASHBIN_DELAY = 60*60*24*30; // 30 days
 
 /**
- * Users file storage path
- * %s is replaced by the login name of the user
+ * Enable or disable thumbnail generation
+ * This might consume a lot of CPU and storage if you have a lot of images.
+ * Default: true
+ * @var bool
  */
-const STORAGE_PATH = __DIR__ . '/data/%s';
+const ENABLE_THUMBNAILS = true;
 
 /**
- * Path to a directory containing the thumbnails of images
- *
- * Set to NULL to disable thumbnails completely.
+ * Directory where all data will be stored
+ * Default: 'data' inside root of KaraDAV
+ * @var string
  */
-const THUMBNAIL_CACHE_PATH = __DIR__ . '/data/.thumbnails';
+const DATA_ROOT = __DIR__ . '/data';
+
+/**
+ * Users file storage path
+ * %s is replaced by the login name of the user
+ * @var string
+ */
+const STORAGE_PATH = DATA_ROOT . '/%s';
+
+/**
+ * Path to a directory containing cache files (templates, thumbnails)
+ * @var string
+ */
+const CACHE_PATH = DATA_ROOT . '/.cache';
 
 /**
  * SQLite3 database file
  * This is where the users, app sessions and stuff will be stored
+ * @var string
  */
-const DB_FILE = __DIR__ . '/data/db.sqlite';
+const DB_FILE = DATA_ROOT . '/db.sqlite';
 
 /**
  * SQLite3 journaling mode

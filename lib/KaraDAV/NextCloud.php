@@ -226,7 +226,7 @@ class NextCloud extends WebDAV_NextCloud
 		$w = $_GET['x'] ?? null;
 		$h = $_GET['y'] ?? null;
 
-		if (!THUMBNAILS_ENABLED || !$id) {
+		if (!ENABLE_THUMBNAILS_OK || !$id) {
 			http_response_code(404);
 			return;
 		}
@@ -244,7 +244,8 @@ class NextCloud extends WebDAV_NextCloud
 
 	public function serveThumbnail(string $uri, int $width, int $height, bool $crop = false, bool $preview = false): void
 	{
-		if (!THUMBNAILS_ENABLED || !preg_match('/\.(?:jpe?g|gif|png|webp)$/', $uri)) {
+		if (!ENABLE_THUMBNAILS_OK
+			|| !preg_match('/\.(?:jpe?g|gif|png|webp)$/', $uri)) {
 			http_response_code(404);
 			return;
 		}

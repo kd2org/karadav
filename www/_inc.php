@@ -3,6 +3,8 @@
 namespace KaraDAV;
 
 use KD2\ErrorManager;
+use KD2\Translate;
+use KD2\Smartyer;
 
 const ROOT = __DIR__ . '/../';
 
@@ -19,32 +21,37 @@ if (file_exists($cfg_file)) {
 	require $cfg_file;
 }
 
+if (!defined(__NAMESPACE__ . '\DATA_ROOT')) {
+	define(__NAMESPACE__ . '\DATA_ROOT', ROOT . 'data');
+}
+
 // Default configuration constants
 $defaults = [
-	'DEFAULT_QUOTA'           => 200,
-	'DEFAULT_TRASHBIN_DELAY'  => 60*60*24*30,
-	'STORAGE_PATH'            => ROOT . 'data/%s',
-	'THUMBNAIL_CACHE_PATH'    => ROOT . 'data/.thumbnails',
-	'DB_FILE'                 => ROOT . 'data/db.sqlite',
-	'DB_JOURNAL_MODE'         => 'TRUNCATE',
-	'WOPI_DISCOVERY_URL'      => null,
-	'ACCESS_CONTROL_ALL'      => false,
-	'LOG_FILE'                => null,
-	'ENABLE_XSENDFILE'        => false,
-	'ERRORS_SHOW'             => true,
-	'ERRORS_EMAIL'            => null,
-	'ERRORS_LOG'              => ROOT . 'data/error.log',
-	'ERRORS_REPORT_URL'       => null,
-	'AUTH_CALLBACK'           => null,
-	'LDAP_HOST'               => null,
-	'LDAP_PORT'               => null,
-	'LDAP_SECURE'             => null,
-	'LDAP_LOGIN'              => null,
-	'LDAP_BASE'               => null,
-	'LDAP_DISPLAY_NAME'       => null,
-	'LDAP_FIND_USER'          => null,
-	'LDAP_FIND_IS_ADMIN'      => null,
-	'BLOCK_IOS_APPS'          => true,
+	'DEFAULT_QUOTA'          => 200,
+	'DEFAULT_TRASHBIN_DELAY' => 60*60*24*30,
+	'ENABLE_THUMBNAILS'      => true,
+	'STORAGE_PATH'           => DATA_ROOT . '/%s',
+	'CACHE_PATH'             => DATA_ROOT . '/.cache',
+	'DB_FILE'                => DATA_ROOT . '/db.sqlite',
+	'DB_JOURNAL_MODE'        => 'TRUNCATE',
+	'WOPI_DISCOVERY_URL'     => null,
+	'ACCESS_CONTROL_ALL'     => false,
+	'LOG_FILE'               => null,
+	'ENABLE_XSENDFILE'       => false,
+	'ERRORS_SHOW'            => true,
+	'ERRORS_EMAIL'           => null,
+	'ERRORS_LOG'             => DATA_ROOT . '/error.log',
+	'ERRORS_REPORT_URL'      => null,
+	'AUTH_CALLBACK'          => null,
+	'LDAP_HOST'              => null,
+	'LDAP_PORT'              => null,
+	'LDAP_SECURE'            => null,
+	'LDAP_LOGIN'             => null,
+	'LDAP_BASE'              => null,
+	'LDAP_DISPLAY_NAME'      => null,
+	'LDAP_FIND_USER'         => null,
+	'LDAP_FIND_IS_ADMIN'     => null,
+	'BLOCK_IOS_APPS'         => true,
 ];
 
 foreach ($defaults as $const => $value) {
@@ -52,6 +59,8 @@ foreach ($defaults as $const => $value) {
 		define('KaraDAV\\' . $const, $value);
 	}
 }
+
+class UserException extends \RuntimeException {}
 
 if (!ERRORS_SHOW) {
 	ErrorManager::enable(ErrorManager::PRODUCTION);
@@ -76,8 +85,8 @@ if (ERRORS_REPORT_URL) {
 }
 
 // Detect thumbnails support
-$th = THUMBNAIL_CACHE_PATH && (class_exists('imagick') || function_exists('imagecreatefromwebp'));
-define('KaraDAV\THUMBNAILS_ENABLED', $th);
+$th = ENABLE_THUMBNAILS && (class_exists('imagick') || function_exists('imagecreatefromwebp'));
+define('KaraDAV\ENABLE_THUMBNAILS_OK', $th);
 
 // Create random secret key
 if (!defined('KaraDAV\SECRET_KEY')) {
@@ -145,57 +154,6 @@ else {
 	$db->upgradeVersion();
 }
 
-function html_head(string $title): void
-{
-	$title = htmlspecialchars($title);
-
-	echo <<<EOF
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, target-densitydpi=device-dpi" />
-		<title>{$title}</title>
-		<link rel="stylesheet" type="text/css" href="ui.css?2025" />
-		<link rel="icon" type="image/svg+xml" href="logo.svg" />
-	</head>
-	<body>
-	<header><h1>{$title}</h1></header>
-	<main>
-EOF;
-
-	if (isset($_SESSION['install_password'])) {
-		printf('<p class="info">Your server has been installed with a user named <tt>demo</tt> and the password <tt>%s</tt>, please change it.<br /><br />This message will disappear when you log out.</p>', htmlspecialchars($_SESSION['install_password']));
-	}
-}
-
-function html_foot(): void
-{
-	echo '
-	</main>
-	<footer>
-		Powered by <a href="https://github.com/kd2org/karadav/">KaraDAV</a>
-	</footer>
-	</body>
-	</html>';
-}
-
-function format_bytes(int $bytes, string $unit = 'B'): string
-{
-	if ($bytes >= 1024*1024*1024) {
-		return round($bytes / (1024*1024*1024), 1) . ' G' . $unit;
-	}
-	elseif ($bytes >= 1024*1024) {
-		return round($bytes / (1024*1024), 1) . ' M' . $unit;
-	}
-	elseif ($bytes >= 1024) {
-		return round($bytes / 1024, 1) . ' K' . $unit;
-	}
-	else {
-		return $bytes . ' ' . $unit;
-	}
-}
-
 function http_log(string $message, ...$params): void
 {
 	if (!LOG_FILE) {
@@ -207,16 +165,6 @@ function http_log(string $message, ...$params): void
 	if (LOG_FILE) {
 		file_put_contents(LOG_FILE, $msg, FILE_APPEND);
 	}
-}
-
-function html_csrf()
-{
-	$expire = time() + 1800;
-	$random = random_bytes(10);
-	$action = $_SERVER['REQUEST_URI'];
-	$token = hash_hmac('sha256', $expire . $random . $action, STORAGE_PATH . session_id());
-
-	return sprintf('<input type="hidden" name="_c_" value="%s:%s:%s" />', $token, base64_encode($random), $expire);
 }
 
 function csrf_check(): bool
@@ -271,3 +219,79 @@ if (LOG_FILE && isset($_SERVER['REMOTE_ADDR'])) {
 		http_log("ROUTER: <= Request body:\n%s", file_get_contents('php://input'));
 	}
 }
+
+$users = new Users;
+$logged_user = $users->current();
+
+if (!$logged_user
+	&& basename($_SERVER['PHP_SELF']) !== 'login.php') {
+	header(sprintf('Location: %slogin.php', WWW_URL));
+	exit;
+}
+
+$tpl = new Smartyer;
+$tpl->setTemplatesDir(ROOT . 'templates');
+$tpl->setCompiledDir(CACHE_PATH . '/compiled');
+
+$tpl->assign('www_url', WWW_URL);
+$tpl->assign(compact('logged_user', 'users'));
+
+$tpl->register_function('form_csrf', function (): string {
+	$expire = time() + 1800;
+	$random = random_bytes(10);
+	$action = $_SERVER['REQUEST_URI'];
+	$token = hash_hmac('sha256', $expire . $random . $action, STORAGE_PATH . session_id());
+
+	return sprintf('<input type="hidden" name="_c_" value="%s:%s:%s" />', $token, base64_encode($random), $expire);
+});
+
+$tpl->register_modifier('format_bytes', function (int $bytes, string $unit = 'B'): string {
+	if ($bytes >= 1024*1024*1024) {
+		return round($bytes / (1024*1024*1024), 1) . ' G' . $unit;
+	}
+	elseif ($bytes >= 1024*1024) {
+		return round($bytes / (1024*1024), 1) . ' M' . $unit;
+	}
+	elseif ($bytes >= 1024) {
+		return round($bytes / 1024, 1) . ' K' . $unit;
+	}
+	else {
+		return $bytes . ' ' . $unit;
+	}
+});
+
+$tpl->assign('form_error' , null);
+
+function form_exec_if($condition, callable $fn, ?string $redirect = null): void
+{
+    global $tpl;
+
+    if (is_string($condition)) {
+        $condition = !empty($_POST[$condition]);
+    }
+
+    if (!$condition) {
+        return;
+    }
+
+    try {
+        if (!csrf_check()) {
+            throw new UserException(_('Temporary error, please re-submit the form'));
+        }
+
+        $fn();
+
+        if ($redirect) {
+            header('Location: ' . WWW_URL . $redirect);
+            exit;
+        }
+    }
+    catch (UserException|\UnexpectedValueException $e) {
+        $tpl->assign('form_error', $e->getMessage());
+    }
+}
+
+
+Translate::extendSmartyer($tpl);
+Translate::setLocale('en_NZ');
+

@@ -990,6 +990,6 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function getThumbnailCachePath(string $uri, int $size): string
 	{
 		$hash = sha1($uri . $size);
-		return sprintf('%s/%.2s/%2$s', THUMBNAIL_CACHE_PATH, $hash);
+		return sprintf('%s/thumbnails/%.2s/%2$s', CACHE_PATH, $hash);
 	}
 }

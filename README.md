@@ -399,6 +399,7 @@ But they mostly pass with litmus 0.13-3 supplied by Debian:
 
 * [BohwaZ](https://mamot.fr/@bohwaz)
 * This project is provided by a non-profit organization, [**you can donate to help us maintain it**](https://kd2.org/donate).
+* Icons: [Tabler](https://github.com/tabler/tabler-icons)
 
 ### Contributors
 

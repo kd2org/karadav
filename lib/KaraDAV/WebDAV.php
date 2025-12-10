@@ -11,7 +11,7 @@ class WebDAV extends WebDAV_Server
 		$out = parent::html_directory($uri, $list);
 
 		if (null !== $out) {
-			if (THUMBNAILS_ENABLED) {
+			if (ENABLE_THUMBNAILS_OK) {
 				$out = str_replace('<html', '<html data-nc-thumbnails="1" ', $out);
 			}
 

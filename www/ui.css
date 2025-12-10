@@ -1,27 +1,121 @@
-* { margin: 0; padding: 0; }
+* {
+	margin: 0;
+	padding: 0;
+}
+
+html, body, #all {
+	height: 100%;
+}
 
 body {
 	background: #333;
 	font-family: sans-serif;
 }
 
-body > header {
+#all {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+}
+
+#skip {
+	width: 0;
+	height: 0;
+	margin: 0;
+	padding: 0;
+}
+
+#skip a {
+    position: fixed;
+    left: -99999rem;
+    z-index: 10000;
+    padding: .5em;
+    background: #fff;
+    color: darkblue;
+}
+
+#skip a:hover, #skip a:focus, #skip a:active {
+    left: 0;
+}
+
+#nav {
+	width: 12vw;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
 	background: #ccd8d6;
 }
 
-body > header h1 {
-	font-size: 1em;
-	padding: .2rem;
-	padding-top: 3rem;
-	text-align: left;
-	background: no-repeat 0 center url("logo.svg");
-	background-size: 4em;
-	color: #2e3c3a;
-	font-size: 3rem;
-	max-width: 30rem;
-	margin: 0 auto;
-	padding-left: 14rem;
+#nav h1 {
+	text-align: center;
 }
+
+#nav h1 img {
+	width: 70%;
+}
+
+#nav ul {
+	list-style-type: none;
+}
+
+#nav ul li {
+	position: relative;
+	margin: .2em 0;
+}
+
+#nav ul a {
+	display: block;
+	padding: .5em;
+	padding-left: .2em;
+	text-decoration: none;
+	color: #2e3c3a;
+	font-size: 1.2em;
+	background: no-repeat .3em center;
+	transition: all .2s;
+}
+
+#nav ul a svg, #nav ul a img {
+	vertical-align: bottom;
+	margin-right: .3em;
+	height: 24px;
+	width: 24px;
+}
+
+#nav ul .current a, #nav ul a:hover {
+	background-color: #6f918a;
+	color: #fff;
+	border-radius: 0 .5em .5em 0;
+	margin-right: -1em;
+}
+
+#nav ul .current a {
+	box-shadow: 0px 0px 5px #2e3c3a;
+}
+
+#nav footer {
+	color: #999;
+	text-align: center;
+	padding: 1em;
+	font-size: .9em;
+	margin-top: auto;
+}
+
+#nav footer a {
+	color: #666;
+	display: block;
+}
+
+#nav footer a::before {
+	content: "";
+	background: url("logo.svg") no-repeat center center;
+	background-size: contain;
+	width: 28px;
+	height: 28px;
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: .5em;
+}
+
 
 a {
 	color: #005c97;
@@ -75,8 +169,9 @@ main {
 	background: #fff;
 	border-radius: 1em;
 	padding: 2em;
-	max-width: 40em;
-	margin: 2rem auto;
+	margin: 2em;
+	margin-left: 3em;
+	min-width: 30vw;
 }
 
 fieldset {
@@ -89,29 +184,6 @@ fieldset {
 legend {
 	font-size: 1.3em;
 	padding: 0 1em;
-}
-
-footer {
-	color: #999;
-	text-align: center;
-}
-
-footer a {
-	color: #999;
-	background: #fff;
-	border-radius: .5em;
-	padding: .3em;
-}
-
-footer a::before {
-	content: "";
-	background: url("logo.svg") no-repeat center center;
-	background-size: contain;
-	width: 28px;
-	height: 28px;
-	display: inline-block;
-	vertical-align: middle;
-	margin-right: .5em;
 }
 
 dl dt {
@@ -220,15 +292,73 @@ p.actions {
 }
 
 @media screen and (max-width: 900px) {
-	main {
-		border-radius: 0;
-		margin-top: 0;
-		padding: 1em .5em;
+	body {
+		background: #eee;
+	}
+	#all {
+		display: block;
+		display: flex;
+		flex-direction: column-reverse;
+		justify-content: flex-end;
 	}
 
-	h2.myfiles {
-		float: none;
-		margin: 1em 0;
-		text-align: center;
+	#nav {
+		width: auto;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		background: #ccd8d6;
+		margin-top: auto;
+	}
+
+	#nav footer, #nav h1 {
+		display: none;
+	}
+
+	#nav nav {
+		width: 100%;
+		margin: 0 .3em;
+	}
+
+	#nav ul {
+		display: flex;
+		flex-direction: row-reverse;
+		width: 100%;
+		justify-content: space-between;
+	}
+
+	#nav ul li {
+		margin: 0;
+	}
+
+	#nav ul a {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: .5em;
+	}
+
+	#nav ul a img, #nav ul a svg {
+		margin: 0;
+	}
+
+	#nav ul a span {
+		display: none;
+	}
+
+	#nav ul .current a, #nav ul a:hover {
+		border-radius: .5em .5em 0 0;
+		margin: 0;
+		margin-top: -.3em;
+		padding-top: .8em;
+	}
+
+	main {
+		margin: 0;
+		padding: .5em;
+		border-radius: 0;
+		background: none;
+		overflow: auto;
 	}
 }
