@@ -89,6 +89,26 @@ abstract class NextCloud
 
 	protected bool $block_ios_clients = true;
 
+	// Some default values, just in case clients expect URLs and stuff, as documentation is lacking
+	// https://docs.nextcloud.com/server/stable/developer_manual/client_apis/OCS/ocs-api-overview.html#theming-capabilities
+	protected array $theme = [
+		'name'                 => 'WebDAV',
+		'url'                  => 'https://fossil.kd2.org/kd2fw/',
+		'slogan'               => 'NextCloud is slow',
+		'color'                => '#00679e',
+		'color-text'           => '#ffffff',
+		'color-element'        => '#00679e',
+		'color-element-bright' => '#00679e',
+		'color-element-dark'   => '#00679e',
+		'logo'                 => 'https://upload.wikimedia.org/wikipedia/commons/6/60/Nextcloud_Logo.svg',
+		'background'           => '#333333',
+		'background-text'      => '#ffffff',
+		'background-plain'     => '',
+		'background-default'   => '',
+		'logoheader'           => 'https://upload.wikimedia.org/wikipedia/commons/6/60/Nextcloud_Logo.svg',
+		'favicon'              => 'https://upload.wikimedia.org/wikipedia/commons/6/60/Nextcloud_Logo.svg'
+	];
+
 	/**
 	 * Handle your authentication
 	 * you should handle real user login/password as well as app-specific passwords here
@@ -595,6 +615,7 @@ abstract class NextCloud
 					'api_version' => ['1.3'],
 					'version' => '4.11.99',
 				],
+				'theming' => $this->theme,
 			],
 		]);
 	}

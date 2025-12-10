@@ -21,7 +21,25 @@ class NextCloud extends WebDAV_NextCloud
 
 		// KaraDAV users are allowed to try iOS clients if they wish
 		// @see https://github.com/kd2org/karadav/issues/22
-		$this->block_ios_clients = false;
+		$this->block_ios_clients = BLOCK_IOS_APPS;
+
+		$this->theme = [
+			'name'                 => 'KaraDAV',
+			'url'                  => 'https://fossil.kd2.org/karadav/',
+			'slogan'               => 'lighter than NextCloud',
+			'color'                => '#6f918a',
+			'color-text'           => '#ffffff',
+			'color-element'        => '#6f918a',
+			'color-element-bright' => '#6f918a',
+			'color-element-dark'   => '#6f918a',
+			'logo'                 => '',
+			'background'           => '#d3dddb',
+			'background-text'      => '#000000',
+			'background-plain'     => '',
+			'background-default'   => '',
+			'logoheader'           => $this->root_url . '/logo.svg',
+			'favicon'              => $this->root_url . '/logo.svg',
+		];
 	}
 
 	public function auth(?string $login, ?string $password): bool
