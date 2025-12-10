@@ -182,6 +182,17 @@ const LDAP_FIND_IS_ADMIN = null;
 //const LDAP_FIND_IS_ADMIN = '(&(|(objectclass=posixAccount))(uid=%s)(permission=cn=karadav.admin.main,ou=permission,dc=yunohost,dc=org))';
 
 /**
+ * Block iOS apps
+ * This is enabled by default as they have been reported as not working,
+ * and I don't have an iOS device to make any test.
+ * To avoid any data loss, they are disabled.
+ * If you want to test iOS apps, set this to FALSE, and if you can, send us logs
+ * or patches!
+ * @var bool
+ */
+const BLOCK_IOS_APPS = true;
+
+/**
  * Show PHP errors details to users?
  * If set to TRUE, full error messages and source code will be displayed to visitors.
  * If set to FALSE, just a generic "an error happened" message will be displayed.
