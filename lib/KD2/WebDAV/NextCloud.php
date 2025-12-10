@@ -316,7 +316,7 @@ abstract class NextCloud
 		'ocs/v2.php/apps/user_status' => 'empty',
 		'ocs/v2.php/core/navigation/apps' => 'empty',
 		// OpenCloud spaces, see https://github.com/opencloud-eu/android/blob/80764e22f50ab38411b7230c71709430514079e9/opencloudComLibrary/src/main/java/eu/opencloud/android/lib/resources/spaces/GetRemoteSpacesOperation.kt#L96
-		'graph/v1.0/me/drives' => 'empty_json',
+		'graph/v1.0/me/drives' => 'opencloud_graph',
 		'index.php/avatar' => 'avatar',
 		'ocs/v2.php/apps/dav/api/v1/direct' => 'direct_url',
 		'remote.php/direct/' => 'direct',
@@ -414,6 +414,12 @@ abstract class NextCloud
 			$json = json_encode($v, JSON_PRETTY_PRINT);
 			echo $json;
 			$this->server->log("NC => Body:\n%s", $json);
+		}
+		elseif (is_string($v)) {
+			http_response_code(200);
+			header('Content-Type: application/json', true);
+			echo $v;
+			$this->server->log("NC => Body:\n%s", $v);
 		}
 
 		$this->server->log('NC Sent response: %d', http_response_code());
@@ -667,9 +673,9 @@ abstract class NextCloud
 		return $this->nc_ocs([]);
 	}
 
-	protected function nc_empty_json(): array
+	protected function nc_opencloud_graph(): string
 	{
-		return [];
+		return '{"value":[]}';
 	}
 
 	protected function nc_avatar(): void

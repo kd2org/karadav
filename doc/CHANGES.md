@@ -4,6 +4,7 @@
 * Update README for app support, report on more NextCloud clients working (or not): Iotas, Yaga, Memories, LesPas, Quillpad
 * Add support for LesPas Android app
 * Allow to unblock iOS clients in config file if anyone wants to test them
+* Add support for OpenCloud Android client
 
 ## 0.6.3 - November 29, 2025
 

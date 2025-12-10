@@ -12,7 +12,7 @@ Its original purpose was to serve as a demo and test for the KD2 WebDAV library,
 
 ![](doc/scr_index.webp)
 
-If you are looking for an even lighter WebDAV server, try also our other server, [PicoDAV](https://fossil.kd2.org/picodav/). It isn't compatible with NextCloud/ownCloud clients, but it is a single file that you can drop anywhere in your document root, nothing to install!
+If you are looking for an even lighter WebDAV server, try also our other server, [PicoDAV](https://fossil.kd2.org/picodav/). It isn't compatible with NextCloud/ownCloud/OpenCloud clients, but it is a single file that you can drop anywhere in your document root, nothing to install!
 
 * Fossil development repository: <https://fossil.kd2.org/karadav/>
 * Git mirror: <https://github.com/kd2org/karadav/> (PR and issues accepted)
@@ -46,11 +46,11 @@ If you are looking for an even lighter WebDAV server, try also our other server,
 * Trashbin: files are moved to a `.trash` folder before being deleted completely
 * Good performance!
 
-### NextCloud/ownCloud features
+### NextCloud/ownCloud/OpenCloud features
 
-KaraDAV is compatible with ownCloud and NextCloud clients, because on Android there is not much nice WebDAV clients, and on desktop their clients allow for two-way sync, which no other WebDAV client provides.
+KaraDAV is compatible with ownCloud, OpenCloud and NextCloud clients, because on Android there is not much nice WebDAV clients, and on desktop their clients allow for two-way sync, which no other WebDAV client provides.
 
-The following ownCloud/NextCloud specific features are supported:
+The following specific (not part of WebDAV) features are supported:
 
 * [NextCloud Notes](https://github.com/nextcloud/notes) [API](https://github.com/nextcloud/notes/blob/main/docs/api/v1.md) (v1.3 only)
 * [Direct download](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#direct-download)
@@ -66,33 +66,35 @@ KaraDAV is not a drop-in replacement for NextCloud. It is not intended to be. It
 
 ### Comparison with NextCloud/ownCloud
 
-| Feature | KaraDAV | NextCloud |
-| -: | :- | :- | 
-| License | AGPL (commercial license on request) | AGPL |
-| Speed | Fast | Sloooow |
-| Package size | < 0.5 MB | > 800 MB |
-| Lines of code | ~7500 lines | ~2,200,000 lines |
-| WebDAV library | KD2 | SabreDAV |
-| WebDAV compliance | 3/5 | 4/5 |
-| Linux clients | Yes | Yes |
-| Windows clients | Yes | Yes |
-| Mac clients | Yes | Yes |
-| Android clients | Yes | Yes |
-| iOS clients | Untested | Yes |
-| Trashbin | Yes | Yes |
-| Chunked upload of large files | Yes | Yes |
-| Notes | Yes | Yes |
-| File versioning | Planned | Yes |
-| File sharing | Planned | Yes |
-| File searching | - | Yes |
-| Calendar | - | Yes |
-| Contacts | - | Yes |
-| Install other apps | - | Yes |
-| 2FA | - | Yes |
-| LDAP | Yes | Yes |
-| Database | SQLite | SQLite, PostgreSQL, MySQL |
-| Web UI | Minimal | Advanced, but clunky |
-| Commercial support | No | Yes |
+| Feature | KaraDAV | NextCloud | OCIS/OpenCloud |
+| -: | :- | :- |  :- | 
+| License | AGPL (commercial license on request) | AGPL | AGPL |
+| Language | PHP (no framework) | PHP | Go |
+| Ease of setup | Easy | Easy | Very complex |
+| Speed | Fast | Sloooow | Average? |
+| Package size | < 0.5 MB | > 800 MB | ~200 MB |
+| Lines of code | ~7500 lines | ~2,200,000 lines | ~3,150,000 lines |
+| WebDAV library | KD2 | SabreDAV | gowebdav/Radicale |
+| WebDAV compliance | 3/5 | 4/5 | 4/5 |
+| Linux clients | ✅ | ✅ | ✅ |
+| Windows clients | ✅ | ✅ | ✅ |
+| Mac clients | ✅ | ✅ | ✅ |
+| Android clients | ✅ | ✅ | ✅
+| iOS clients | Untested | ✅ | ✅ |
+| Trashbin | ✅ | ✅ | ✅ |
+| Chunked upload of large files | ✅ | ✅ | ✅ |
+| Notes | ✅ | ✅ | ✅ |
+| File versioning | Planned | ✅ | ✅ |
+| File sharing | Planned | ✅ | ✅ |
+| File searching | Planned | ✅ | ✅ |
+| Calendar | ❌ | ✅ | ✅ |
+| Contacts | ❌ |  ✅ | ✅ |
+| Install other apps | ❌ |  ✅ | ✅ |
+| 2FA | ❌ |  ✅ | ✅ |
+| LDAP | ✅ |  ✅ | ✅ |
+| Database | SQLite | SQLite, PostgreSQL, MySQL | MySQL |
+| Web UI | Minimal | Advanced, but clunky | Basic |
+| Commercial support | ❌ |  ✅ | ✅ |
 
 ## Screenshots
 
@@ -110,7 +112,7 @@ KaraDAV is not a drop-in replacement for NextCloud. It is not intended to be. It
 
 This server should be compatible with ownCloud and NextCloud synchronization clients (desktop, mobile, CLI).
 
-**We recommend the ownCloud apps**, as they are more stable and lighter :)
+**We recommend the ownCloud or OpenCloud apps**, as they are more stable and lighter :)
 
 Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients if their publishers decide so.
 
@@ -122,6 +124,7 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 | [ownCloud CLI](https://doc.owncloud.com/desktop/next/advanced_usage/command_line_client.html) | Files sync | ✅ | |
 | [NextCloud](https://nextcloud.com/install/) | Files sync | ✅ | |
 | [NextCloud CLI](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) | Files sync | ✅ | *make sure to pass options before parameters* |
+| [OpenCloud](hhttps://opencloud.eu/) | Files sync | ? | Untested. Should work (ownCloud fork). |
 | [Iotas](https://gitlab.gnome.org/World/iotas) (GNOME App) | Notes | ✅ | Available in Debian stable (Trixie) |
 | qOwnNotes | Notes | ❌ | No support for NextCloud Notes API, requires a [custom PHP app on the server](https://apps.nextcloud.com/apps/qownnotesapi) |
 
@@ -130,6 +133,7 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 | Client | Type | Working? | Notes |
 | -: | :-: | :-: | :- |
 | [ownCloud](https://f-droid.org/en/packages/com.owncloud.android/) | Files sync | ✅ | **Recommended** |
+| [OpenCloud](https://f-droid.org/en/packages/eu.opencloud.android/) | Files sync | ✅ | **Recommended** (ownCloud fork) |
 | [NextCloud](https://f-droid.org/en/packages/com.nextcloud.client/) | Files sync | ✅ | Will consume a lot of battery on some phones |
 | [NextCloud Notes](https://f-droid.org/en/packages/com.nextcloud.client/) | Notes | ✅ | Requires the NextCloud Android app |
 | [MyOwnNotes](https://f-droid.org/en/packages/com.owncloud.android/) | Notes | ✅ | Requires the ownCloud Android app |
@@ -238,11 +242,11 @@ Then I timed KaraDAV, mod_dav and NextCloud (24) (all installed on my laptop, wi
 
 KaraDAV performance was very close to mod_dav, and NextCloud performance was incredibly poor.
 
-| Client | KaraDAV | NextCloud | mod_dav | bewCloud |
+| Client | KaraDAV | NextCloud | mod_dav |
 | --- | --- | --- | --- | --- |
-| Dolphin (KDE) | 5 seconds | 1 minute 15 seconds | 3 seconds | [N/A](https://github.com/bewcloud/bewcloud/issues/32) |
-| Thunar (GTK) | 5 seconds | 1 minute 50 seconds | 5 seconds | [N/A](https://github.com/bewcloud/bewcloud/issues/32) |
-| WebDAV Manager.js | 4 seconds (no delete) | -- | -- | -- |
+| Dolphin (KDE) | 5 seconds | 1 minute 15 seconds | 3 seconds |
+| Thunar (GTK) | 5 seconds | 1 minute 50 seconds | 5 seconds |
+| WebDAV Manager.js | 4 seconds (no delete) | -- | -- |
 
 At the time of this test, WebDAV Manager.js didn't have the ability to select and delete multiple files at once, so the time shown is only for copy and refresh.
 

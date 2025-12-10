@@ -791,11 +791,12 @@ class Server
 				$alias = $root_namespaces[$ns] ?? null;
 				$attributes = '';
 
-				// The ownCloud Android app doesn't like formatted dates, it makes it crash.
+				// The ownCloud/OpenCloud Android app doesn't like formatted dates, it makes it crash.
 				// so force it to have a timestamp
+				// see https://github.com/opencloud-eu/android/issues/74
 				if ($name == 'DAV::creationdate'
 					&& ($value instanceof \DateTimeInterface)
-					&& false !== stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'owncloud')) {
+					&& false !== preg_match('/owncloud|opencloud/', $_SERVER['HTTP_USER_AGENT'] ?? '')) {
 					$value = $value->getTimestamp();
 				}
 				// ownCloud app crashes if mimetype is provided for a directory
