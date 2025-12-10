@@ -636,7 +636,7 @@ abstract class NextCloud
 		$user = $this->getUserName() ?? 'null';
 
 		return $this->nc_ocs([
-			'id' => sha1($user),
+			'id' => $user,
 			'enabled' => true,
 			'email' => null,
 			'storageLocation' => '/secret/whoknows/' . sha1($user),
