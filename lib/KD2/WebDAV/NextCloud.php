@@ -330,7 +330,7 @@ abstract class NextCloud
 	// ownCloud Android: /remote.php/dav/files/ (note the missing user part)
 	// -> only at first, then it queries the correct path, WTF
 	// See also https://github.com/nextcloud/server/issues/25867
-	const WEBDAV_BASE_REGEXP = '~^.*(?:remote\.php/|/)(?:webdav/|dav/files/(?:(?:(?!/).)+(?:/+|$)|/*$))~';
+	const WEBDAV_BASE_REGEXP = '~^.*(?:remote\.php/)?(?:webdav/|dav/files/(?:[^/]+(?:/+|$)|/*$))~';
 
 	public function setRootURL(string $url)
 	{
