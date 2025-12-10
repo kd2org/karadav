@@ -206,9 +206,9 @@ They are lightweight and easy to use in your own software to add support for Web
 
 ## Similar software alternatives
 
+* [dav-next](https://codeberg.org/lunae/dav-next): a nginx module with support for Android app login flow and chunked uploads, currently the closest to KaraDAV
 * [Davros](https://github.com/mnutt/davros/) used to be compatible with NextCloud client [before version 2.5.0](https://github.com/owncloud/client/issues/6775)
-* [FileRun](https://filerun.com) is a proprietary solution compatible with the NextCloud Android app
-* [dav-next](https://codeberg.org/lunae/dav-next): a nginx module
+* [FileRun](https://filerun.com/) is a proprietary solution compatible with the NextCloud Android app
 * [webdav](https://github.com/faust93/webdav): a Go WebDAV server that supports NextCloud thumbnail API
 
 These don't support NextCloud or ownCloud clients:
@@ -218,7 +218,7 @@ These don't support NextCloud or ownCloud clients:
 * [Pydio Cells](https://pydio.com/)
 * [Seafile](https://manual.seafile.com/12.0/extension/webdav/)
 * [BewCloud](https://github.com/bewcloud/bewcloud) ([doesn't support all of WebDAV currently](https://github.com/bewcloud/bewcloud/issues/32))
-* [OxiCloud](https://github.com/DioCrafts/OxiCloud) ()
+* [OxiCloud](https://github.com/DioCrafts/OxiCloud) (work in progress)
 
 ## Performance
 
