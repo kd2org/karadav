@@ -278,6 +278,7 @@ abstract class NextCloud
 		// Main routes
 		'remote.php/webdav/' => 'webdav', // desktop client
 		'remote.php/dav' => 'webdav', // android client
+		'dav/files/' => 'webdav', // LesPas Android client
 
 		// Login v1, for Android app
 		'index.php/login/flow' => 'login_v1',
