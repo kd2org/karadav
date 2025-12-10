@@ -117,7 +117,7 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 ### Desktop
 
 | Client | Type | Working? | Notes |
-| -: | :-: | :-: | :-: | :- |
+| -: | :-: | :-: | :- |
 | [ownCloud](https://owncloud.com/desktop-app/) | Files sync | ✅ | **Recommended** |
 | [ownCloud CLI](https://doc.owncloud.com/desktop/next/advanced_usage/command_line_client.html) | Files sync | ✅ | |
 | [NextCloud](https://nextcloud.com/install/) | Files sync | ✅ | |
@@ -128,7 +128,7 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 ### Android
 
 | Client | Type | Working? | Notes |
-| -: | :-: | :-: | :-: | :- |
+| -: | :-: | :-: | :- |
 | [ownCloud](https://f-droid.org/en/packages/com.owncloud.android/) | Files sync | ✅ | **Recommended** |
 | [NextCloud](https://f-droid.org/en/packages/com.nextcloud.client/) | Files sync | ✅ | Will consume a lot of battery on some phones |
 | [NextCloud Notes](https://f-droid.org/en/packages/com.nextcloud.client/) | Notes | ✅ | Requires the NextCloud Android app |
