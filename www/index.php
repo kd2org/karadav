@@ -58,11 +58,13 @@ echo <<<EOF
 	<dd><tt>{$www_url}</tt></dd>
 	<dd class="help">Use this URL to setup a NextCloud or ownCloud client to access your files.</dd>
 </dl>
-<p><a class="btn sm" href="?logout">Logout</a></p>
+<p class="actions">
 EOF;
 
 if ($user->is_admin) {
-	echo '<p><a class="btn sm" href="users.php">Manager users</a></p>';
+	echo '<a class="btn sm" href="users.php"><strong>Manager users</strong></a>';
 }
+
+echo '<a class="btn sm" href="?logout">Logout</a></p>';
 
 html_foot();

@@ -1,5 +1,7 @@
 # KaraDAV - A lightweight WebDAV server, compatible with ownCloud and NextCloud clients
 
+<div style="float:right">![](www/logo.svg)</div>
+
 [**Donate to this project**](https://kd2.org/donate)
 
 This is a simple and lightweight WebDAV server, allowing to easily set up a file sharing server compatible with WebDAV and NextCloud clients. It has no dependencies and good performance.
@@ -8,7 +10,7 @@ It is written in PHP (8+). The only dependency is SQLite3 for the database.
 
 Its original purpose was to serve as a demo and test for the KD2 WebDAV library, which we developed for [Paheko](https://paheko.cloud/), our non-profit management solution, but it can also be used as a simple but powerful file sharing server.
 
-![](doc/scr_index.png)
+![](doc/scr_index.webp)
 
 If you are looking for an even lighter WebDAV server, try also our other server, [PicoDAV](https://fossil.kd2.org/picodav/). It isn't compatible with NextCloud/ownCloud clients, but it is a single file that you can drop anywhere in your document root, nothing to install!
 
@@ -96,36 +98,50 @@ KaraDAV is not a drop-in replacement for NextCloud. It is not intended to be. It
 
 ### Files management using the Web UI
 
-![](https://raw.githubusercontent.com/kd2org/webdav-manager.js/main/scr_desktop.png)
+![](doc/scr_files.png)
 
 ### Login from NextCloud client
 
-![](doc/scr_login.jpg)
+![](doc/scr_login.webp)
 
-## NextCloud/ownCloud compatibility
+# Clients compatibility
+
+## NextCloud/ownCloud clients
 
 This server should be compatible with ownCloud and NextCloud synchronization clients (desktop, mobile, CLI).
-
-It has been successfully tested with:
-
-* [ownCloud Desktop](https://nextcloud.com/install/) (tested on Debian Linux)
-* [NextCloud Desktop](https://owncloud.com/desktop-app/) (tested on Debian Linux)
-* NextCloud Android app ([F-Droid](https://f-droid.org/en/packages/com.nextcloud.client/))
-* NextCloud Notes Android app ([F-Droid](https://f-droid.org/en/packages/it.niedermann.owncloud.notes/))
-* ownCloud Android app ([F-Droid](https://f-droid.org/en/packages/com.owncloud.android/))
-* MyOwnNotes Android app ([F-Droid](https://f-droid.org/en/packages/org.aykit.MyOwnNotes/))
-* [NextCloud CLI client](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) (Debian Linux) *-- Note: make sure to pass options before parameters.*
-* [ownCloud CLI client](https://doc.owncloud.com/desktop/next/advanced_usage/command_line_client.html) (Debian Linux)
 
 **We recommend the ownCloud apps**, as they are more stable and lighter :)
 
 Note that even though it has been tested with NC/OC clients, KaraDAV might stop working at any time with these clients if their publishers decide so.
 
-Other clients:
+### Desktop
 
-* NextCloud / ownCloud iOS clients have issues and so they are currently blocked, to make sure they can't delete any data by error. I don't own an Apple device. If someone with an Apple device wants to do some testing and suggest a patch, please change `$block_ios_clients` to `false` in `lib/KD2/WebDAV/NextCloud.php`.
-* qOwnNotes does not work, as it expecting a specific application to be installed on the server. It's not using the NextCloud Notes API.
-* [Iotas](https://gitlab.gnome.org/World/iotas): untested, this is not yet available in Debian stable.
+| Client | Type | Working? | Notes |
+| -: | :-: | :-: | :-: | :- |
+| [ownCloud](https://owncloud.com/desktop-app/) | Files sync | ✅ | |
+| [ownCloud CLI](https://doc.owncloud.com/desktop/next/advanced_usage/command_line_client.html) | Files sync | ✅ | |
+| [NextCloud](https://nextcloud.com/install/) | Files sync | ✅ | |
+| [NextCloud CLI](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) | Files sync | ✅ | *make sure to pass options before parameters* |
+| [Iotas](https://gitlab.gnome.org/World/iotas) (GNOME App) | Notes | ✅ | Available in Debian stable (Trixie). |
+| qOwnNotes | Notes | ❌ | Doesn't use standard NextCloud Notes API, requires a [custom PHP app on the server](https://apps.nextcloud.com/apps/qownnotesapi) |
+
+### Android
+
+| Client | Type | Working? | Notes |
+| -: | :-: | :-: | :-: | :- |
+| [ownCloud](https://f-droid.org/en/packages/com.owncloud.android/) | Files sync | ✅ | |
+| [NextCloud](https://f-droid.org/en/packages/com.nextcloud.client/) | Files sync | ✅ | |
+| [NextCloud Notes](https://f-droid.org/en/packages/com.nextcloud.client/) | Notes | ✅ | |
+| [MyOwnNotes](https://f-droid.org/en/packages/com.owncloud.android/) | Notes | ✅ | |
+| [Quillpad](https://f-droid.org/packages/io.github.quillpad/) (Android) | Notes | ✅ | |
+| [Yaga](https://vauvenal5.github.io/yaga-docs/sync_flow/) (Android) | Photo gallery | ? | Not sure how this app is supposed to work? |
+| [Memories Android](https://f-droid.org/en/packages/gallery.memories/) | Photo gallery | ❌ | Doesn't use standard NextCloud APIs, requires a [custom PHP app on the server](https://apps.nextcloud.com/apps/memories) |
+
+### iOS
+
+The NextCloud and ownCloud iOS clients have issues. They are currently blocked in KaraDAV, to make sure they can't delete any data by error.
+
+I don't own an Apple device. If someone with an Apple device wants to do some testing and suggest a patch, please change `BLOCK_IOS_APPS` to `false` in `config.local.php` (see configuration doc).
 
 ## WebDAV clients compatibility
 

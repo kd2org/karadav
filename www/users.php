@@ -132,13 +132,13 @@ elseif ($delete) {
 EOF;
 }
 else {
-	echo '<p><a href="./" class="btn sm">&larr; Back</a></p>';
+	echo '<p class="actions"><a href="./" class="btn sm">&larr; Back</a>';
 
 	if (!$ldap) {
-		echo '<p><a href="?create" class="btn sm">Create new user</a></p>';
+		echo '<a href="?create" class="btn sm">Create new user</a>';
 	}
 
-	echo '
+	echo '</p>
 	<table>
 	<thead>
 		<tr>

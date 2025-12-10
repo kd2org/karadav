@@ -1,16 +1,26 @@
 * { margin: 0; padding: 0; }
 
 body {
-	background: #222;
+	background: #333;
 	font-family: sans-serif;
 }
 
-body > h1 {
-	background: linear-gradient(to bottom, #005c97, #363795);
-	padding: 2rem;
-	text-align: center;
-	color: #fff;
-	font-size: 4rem;
+body > header {
+	background: #ccd8d6;
+}
+
+body > header h1 {
+	font-size: 1em;
+	padding: .2rem;
+	padding-top: 3rem;
+	text-align: left;
+	background: no-repeat 0 center url("logo.svg");
+	background-size: 4em;
+	color: #2e3c3a;
+	font-size: 3rem;
+	max-width: 30rem;
+	margin: 0 auto;
+	padding-left: 14rem;
 }
 
 a {
@@ -34,8 +44,8 @@ input[type=submit], .btn {
 	cursor: pointer;
 	padding: .5em;
 	border-radius: .5em;
-	background: linear-gradient(to bottom, #2c3e50, #3498db);
-	color: #fff;
+	background: #ccd8d6;
+	color: #2e3c3a;
 	font-size: 1.5em;
 	text-decoration: none;
 	display: inline-block;
@@ -44,7 +54,7 @@ input[type=submit], .btn {
 
 input:focus {
 	box-shadow: 0 0 10px orange;
-	border-color: darkred;
+	border-color: #2e3c3a;
 	outline: none;
 }
 
@@ -71,7 +81,7 @@ main {
 
 fieldset {
 	text-align: center;
-	border: 3px solid #005c97;
+	border: 3px solid #6f918a;
 	border-radius: 1em;
 	padding: 2em;
 }
@@ -87,7 +97,21 @@ footer {
 }
 
 footer a {
-	color: #fff;
+	color: #999;
+	background: #fff;
+	border-radius: .5em;
+	padding: .3em;
+}
+
+footer a::before {
+	content: "";
+	background: url("logo.svg") no-repeat center center;
+	background-size: contain;
+	width: 28px;
+	height: 28px;
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: .5em;
 }
 
 dl dt {
@@ -137,10 +161,14 @@ table {
 	width: 100%;
 	border-collapse: collapse;
 	margin: 1em 0;
+	border-radius: .5em;
+	overflow: hidden;
+	background: #f5f7f7;
 }
 
 table tbody tr:nth-child(even) {
-	background: #eee;
+	background: #fef4e7;
+	border-radius: .5em
 }
 
 table th, table td {
@@ -160,7 +188,8 @@ table progress[value] {
 p.info {
 	margin: 1em 0;
 	padding: .5em;
-	background: #cfc;
+	background: #ccd8d6;
+	box-shadow: 0px 0px 10px #2e3c3a;
 	border-radius: .5em;
 	font-size: 1.2em;
 }
@@ -183,6 +212,11 @@ p.info tt {
 h3 img {
 	vertical-align: middle;
 	margin: 0 1em;
+}
+
+p.actions {
+	display: flex;
+	justify-content: space-between;
 }
 
 @media screen and (max-width: 900px) {

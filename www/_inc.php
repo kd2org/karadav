@@ -44,6 +44,7 @@ $defaults = [
 	'LDAP_DISPLAY_NAME'       => null,
 	'LDAP_FIND_USER'          => null,
 	'LDAP_FIND_IS_ADMIN'      => null,
+	'BLOCK_IOS_APPS'          => true,
 ];
 
 foreach ($defaults as $const => $value) {
@@ -155,10 +156,11 @@ function html_head(string $title): void
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, target-densitydpi=device-dpi" />
 		<title>{$title}</title>
-		<link rel="stylesheet" type="text/css" href="ui.css?2024" />
+		<link rel="stylesheet" type="text/css" href="ui.css?2025" />
+		<link rel="icon" type="image/svg+xml" href="logo.svg" />
 	</head>
 	<body>
-	<h1>{$title}</h1>
+	<header><h1>{$title}</h1></header>
 	<main>
 EOF;
 
