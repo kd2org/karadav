@@ -1,3 +1,10 @@
+## 0.6.4 - December 10, 2025
+
+* Add logo, update CSS
+* Update README for app support, report on more NextCloud clients working (or not): Iotas, Yaga, Memories, LesPas, Quillpad
+* Add support for LesPas Android app
+* Allow to unblock iOS clients in config file if anyone wants to test them
+
 ## 0.6.3 - November 29, 2025
 
 * Assign an ID to the root webdav directory, as it's not in the database in KaraDAV (fixes crash in Nextcloud Android app)

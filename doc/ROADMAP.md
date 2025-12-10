@@ -2,6 +2,7 @@
 
 This might get supported in future (maybe):
 
+* Likely: OpenIDConnect support for login
 * Probably: [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html)
 * Maybe: NextCloud files versioning
 	* [NextCloud API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/versions.html)

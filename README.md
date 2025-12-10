@@ -1,6 +1,6 @@
 # KaraDAV - A lightweight WebDAV server, compatible with ownCloud and NextCloud clients
 
-<div style="float:right">![](www/logo.svg)</div>
+<img align="right" style="float: right" src="www/logo.svg" />
 
 [**Donate to this project**](https://kd2.org/donate)
 
@@ -118,24 +118,25 @@ Note that even though it has been tested with NC/OC clients, KaraDAV might stop 
 
 | Client | Type | Working? | Notes |
 | -: | :-: | :-: | :-: | :- |
-| [ownCloud](https://owncloud.com/desktop-app/) | Files sync | ✅ | |
+| [ownCloud](https://owncloud.com/desktop-app/) | Files sync | ✅ | **Recommended** |
 | [ownCloud CLI](https://doc.owncloud.com/desktop/next/advanced_usage/command_line_client.html) | Files sync | ✅ | |
 | [NextCloud](https://nextcloud.com/install/) | Files sync | ✅ | |
 | [NextCloud CLI](https://docs.nextcloud.com/desktop/3.5/advancedusage.html) | Files sync | ✅ | *make sure to pass options before parameters* |
-| [Iotas](https://gitlab.gnome.org/World/iotas) (GNOME App) | Notes | ✅ | Available in Debian stable (Trixie). |
-| qOwnNotes | Notes | ❌ | Doesn't use standard NextCloud Notes API, requires a [custom PHP app on the server](https://apps.nextcloud.com/apps/qownnotesapi) |
+| [Iotas](https://gitlab.gnome.org/World/iotas) (GNOME App) | Notes | ✅ | Available in Debian stable (Trixie) |
+| qOwnNotes | Notes | ❌ | No support for NextCloud Notes API, requires a [custom PHP app on the server](https://apps.nextcloud.com/apps/qownnotesapi) |
 
 ### Android
 
 | Client | Type | Working? | Notes |
 | -: | :-: | :-: | :-: | :- |
-| [ownCloud](https://f-droid.org/en/packages/com.owncloud.android/) | Files sync | ✅ | |
-| [NextCloud](https://f-droid.org/en/packages/com.nextcloud.client/) | Files sync | ✅ | |
-| [NextCloud Notes](https://f-droid.org/en/packages/com.nextcloud.client/) | Notes | ✅ | |
-| [MyOwnNotes](https://f-droid.org/en/packages/com.owncloud.android/) | Notes | ✅ | |
-| [Quillpad](https://f-droid.org/packages/io.github.quillpad/) (Android) | Notes | ✅ | |
-| [Yaga](https://vauvenal5.github.io/yaga-docs/sync_flow/) (Android) | Photo gallery | ? | Not sure how this app is supposed to work? |
-| [Memories Android](https://f-droid.org/en/packages/gallery.memories/) | Photo gallery | ❌ | Doesn't use standard NextCloud APIs, requires a [custom PHP app on the server](https://apps.nextcloud.com/apps/memories) |
+| [ownCloud](https://f-droid.org/en/packages/com.owncloud.android/) | Files sync | ✅ | **Recommended** |
+| [NextCloud](https://f-droid.org/en/packages/com.nextcloud.client/) | Files sync | ✅ | Will consume a lot of battery on some phones |
+| [NextCloud Notes](https://f-droid.org/en/packages/com.nextcloud.client/) | Notes | ✅ | Requires the NextCloud Android app |
+| [MyOwnNotes](https://f-droid.org/en/packages/com.owncloud.android/) | Notes | ✅ | Requires the ownCloud Android app |
+| [Quillpad](https://f-droid.org/packages/io.github.quillpad/) | Notes | ✅ | |
+| [LesPas](https://f-droid.org/packages/site.leos.apps.lespas/) | Photo gallery | ✅ |  |
+| [Yaga](https://vauvenal5.github.io/yaga-docs/sync_flow/) | Photo gallery | ? | Not sure how this app is supposed to work? |
+| [Memories Android](https://f-droid.org/en/packages/gallery.memories/) | Photo gallery | ❌ | Requires a [custom PHP app on the server](https://apps.nextcloud.com/apps/memories) |
 
 ### iOS
 
@@ -182,7 +183,7 @@ I don't own an Apple device. If someone with an Apple device wants to do some te
   * [WebDAV Nav+](https://apps.apple.com/app/webdav-nav/id412341302) (proprietary, untested)
   * [WebDAV Navigator](https://apps.apple.com/app/webdav-navigator/id382551345) (proprietary, untested)
 
-## WOPI (office document editing) compatibility
+## WOPI (office document editing) server compatibility
 
 KaraDAV has been tested successfully with:
 
@@ -207,6 +208,8 @@ They are lightweight and easy to use in your own software to add support for Web
 
 * [Davros](https://github.com/mnutt/davros/) used to be compatible with NextCloud client [before version 2.5.0](https://github.com/owncloud/client/issues/6775)
 * [FileRun](https://filerun.com) is a proprietary solution compatible with the NextCloud Android app
+* [dav-next](https://codeberg.org/lunae/dav-next): a nginx module
+* [webdav](https://github.com/faust93/webdav): a Go WebDAV server that supports NextCloud thumbnail API
 
 These don't support NextCloud or ownCloud clients:
 
@@ -214,7 +217,8 @@ These don't support NextCloud or ownCloud clients:
 * [SFTPGo](https://sftpgo.com/)
 * [Pydio Cells](https://pydio.com/)
 * [Seafile](https://manual.seafile.com/12.0/extension/webdav/)
-* [BewCloud](https://github.com/bewcloud/bewcloud) ([doesn't support WebDAV currently](https://github.com/bewcloud/bewcloud/issues/32))
+* [BewCloud](https://github.com/bewcloud/bewcloud) ([doesn't support all of WebDAV currently](https://github.com/bewcloud/bewcloud/issues/32))
+* [OxiCloud](https://github.com/DioCrafts/OxiCloud) ()
 
 ## Performance
 
