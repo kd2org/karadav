@@ -315,6 +315,8 @@ abstract class NextCloud
 		'ocs/v2.php/apps/files_sharing/api/v1/shares' => 'shares',
 		'ocs/v2.php/apps/user_status' => 'empty',
 		'ocs/v2.php/core/navigation/apps' => 'empty',
+		// OpenCloud spaces, see https://github.com/opencloud-eu/android/blob/80764e22f50ab38411b7230c71709430514079e9/opencloudComLibrary/src/main/java/eu/opencloud/android/lib/resources/spaces/GetRemoteSpacesOperation.kt#L96
+		'graph/v1.0/me/drives' => 'empty_json',
 		'index.php/avatar' => 'avatar',
 		'ocs/v2.php/apps/dav/api/v1/direct' => 'direct_url',
 		'remote.php/direct/' => 'direct',
@@ -506,6 +508,8 @@ abstract class NextCloud
 			'needsDbUpgrade'  => false,
 			'version'         => $version,
 			'versionstring'   => $version,
+			// seems to be required by OpenCloud Android client
+			'productversion'  => $version,
 			'edition'         => '',
 			'productname'     => $name,
 			'extendedSupport' => false,
@@ -661,6 +665,11 @@ abstract class NextCloud
 	protected function nc_empty(): array
 	{
 		return $this->nc_ocs([]);
+	}
+
+	protected function nc_empty_json(): array
+	{
+		return [];
 	}
 
 	protected function nc_avatar(): void
