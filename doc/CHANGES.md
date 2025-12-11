@@ -8,6 +8,7 @@
 * Web file manager:
   * New, better design!
   * Now integrated inside KaraDAV UI
+  * New: create WOPI documents (text, spreadsheet, presentation, drawing)
   * Changed "download all" to "download selected"
   * Various small improvements and fixes
 
