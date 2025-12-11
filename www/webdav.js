@@ -67,10 +67,10 @@ const WebDAVNavigator = (url, options) => {
 		</div>`;
 
 	const create_wopi_buttons = `<h5>${_('Office document')}</h5>
-			<input class="icon odt" type="button" value="${_('Text')}" />
-			<input class="icon ods" type="button" value="${_('Spreadsheet')}" />
-			<input class="icon odp" type="button" value="${_('Presentation')}" />
-			<input class="icon odg" type="button" value="${_('Drawing')}" />`;
+			<input class="icon ODT" type="button" value="${_('Text')}" />
+			<input class="icon ODS" type="button" value="${_('Spreadsheet')}" />
+			<input class="icon ODP" type="button" value="${_('Presentation')}" />
+			<input class="icon ODG" type="button" value="${_('Drawing')}" />`;
 
 	const dir_row_tpl = `<tr data-permissions="%permissions%" class="%class%" data-name="%name%">
 		<td class="check"><input type="checkbox" name="delete" value="%uri%" /><label><span></span></label></td>
@@ -700,11 +700,11 @@ const WebDAVNavigator = (url, options) => {
 			if (wopi_extensions) {
 				menu.insertAdjacentHTML('beforeend', create_wopi_buttons);
 
-				menu.querySelectorAll('.ods, .odt, .odg, .odp').forEach(btn => btn.onclick = () => {
+				menu.querySelectorAll('.ODS, .ODT, .ODG, .ODP').forEach(btn => btn.onclick = () => {
 					toggle_menu();
 					openDialog(mkfile_dialog);
 					var t = $('input[name=mkfile]');
-					var ext = btn.className.substr(-3);
+					var ext = btn.className.substr(-3).toLowerCase();
 					t.focus();
 					document.forms[0].onsubmit = () => {
 						var name = t.value;

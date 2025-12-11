@@ -7,6 +7,8 @@ Patches are welcome!
 * Localization: allow to translate UI
 * Probably: Web files UI: Cut/Copy/Paste files and directories, like OpenCloud does (nicely)
 * Probably: Web files UI: gallery view
+* Probably: Web files UI: navigate between images when previewing a picture (+ keyboard shortcuts)
+* Probably: Web files UI: shift + click to select multiples files
 * Probably: [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html)
 * More integrated apps (eg. Fluxie, my own feed reader)
 * Maybe: NextCloud files versioning
