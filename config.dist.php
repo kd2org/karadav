@@ -122,9 +122,6 @@ namespace KaraDAV;
 
 /**
  * List of external apps that will be added to the menu
- * Each item will be an element in the menu, and will be opened in
- * an iframe, unless the 'target' key is supplied, in that case the
- * URL will be opened in the specified target.
  *
  * See doc/APPS.md for details.
  * Default: null
@@ -137,6 +134,15 @@ namespace KaraDAV;
 //		'url'   => 'https://opodsync.example.org/',
 //	],
 //];
+
+/**
+ * API key for passing session information to external apps
+ *
+ * See doc/APPS.md for details.
+ * Default: null
+ * @var string|null
+ */
+//const EXTERNAL_API_KEY = 'abcd';
 
 /**
  * External authentication callback

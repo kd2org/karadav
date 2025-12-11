@@ -96,7 +96,7 @@ KaraDAV is not a drop-in replacement for NextCloud. It is not intended to be. It
 | Web UI | Minimal | Advanced, but clunky | Basic |
 | Commercial support | ❌ |  ✅ | ✅ |
 
-1. Other apps are embedded in an iframe.
+1. See [documentation on external apps](doc/APPS.md)
 
 ## Screenshots
 

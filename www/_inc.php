@@ -11,8 +11,10 @@ require __DIR__ . '/../init.php';
 $users = new Users;
 $logged_user = $users->current();
 
+$file = basename($_SERVER['PHP_SELF']);
+
 if (!$logged_user
-	&& basename($_SERVER['PHP_SELF']) !== 'login.php') {
+	&& !in_array($file, ['login.php', 'session.php'])) {
 	header(sprintf('Location: %slogin.php', WWW_URL));
 	exit;
 }
@@ -22,6 +24,7 @@ $tpl->setTemplatesDir(ROOT . '/templates');
 $tpl->setCompiledDir(CACHE_PATH . '/compiled');
 
 $tpl->assign('www_url', WWW_URL);
+$tpl->assign('apps', EXTERNAL_APPS);
 $tpl->assign(compact('logged_user', 'users'));
 
 $tpl->register_function('form_csrf', function (): string {

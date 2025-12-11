@@ -596,74 +596,99 @@ input.upload {
 
 	body {
 		margin: 0;
-		font-size: 1em;
+	}
+
+	div.buttons {
+		flex-wrap: wrap;
+		justify-content: center;
+		flex-direction: row;
+		font-size: .9em;
+	}
+
+	div.buttons .selected {
+		margin: 0;
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		padding: 1em;
+		background: var(--bg-color);
+		box-shadow: 0px 0px 2px 5px var(--g3-color);
 	}
 
 	table {
-		margin: 2em 0;
 		width: 100%;
 		display: flex;
 		flex-direction: column;
 	}
 
-	table tr {
-		display: block;
-		border-top: 5px solid var(--bg-color);
+	table tbody tr {
+		display: grid;
+		grid-template-columns: 3rem 1fr .3fr;
+		grid-template-areas:
+			"name name check"
+			"size date buttons";
 		padding: 0;
-		padding-left: 2em;
-		position: relative;
-		text-align: left;
-		min-height: 2.5em;
 	}
 
-	table td, table th {
+	table tbody td, table tbody th {
 		border: none;
-		display: inline-block;
+		display: block;
 		padding: .2em .5em;
+		width: unset;
 	}
 
-	table td.buttons {
-		display: block;
-		width: auto;
-		text-align: left;
+	table tbody th {
+		grid-area: name;
 	}
 
-	 td.buttons div {
-	 	display: inline-block;
-	 }
-
-	table td.thumb {
-		padding: 0;
-		width: 2em;
-		position: absolute;
-		left: 0;
-		top: 0;
-		bottom: 0;
+	table tbody td.check {
+		grid-area: check;
+		text-align: right;
+		width: unset;
 	}
 
-	table th {
-		display: block;
+	table tbody td.buttons {
+		grid-area: buttons;
+		width: unset;
 	}
 
-	.icon {
-		font-size: 12px;
-		height: 100%;
-		border-radius: 0;
+	table tbody  td.date {
+		grid-area: date;
+		display: inline-block;
+		min-width: unset;
 	}
 
-	.icon:not(.dir) b {
-		line-height: 3em;
-		display: block;
-		transform: translateX(-50%) translateY(-50%) rotate(-90deg);
-		font-size: 2em;
-		height: 3em;
-		position: absolute;
-		top: 50%;
-		left: 50%;
+	table tbody td.size {
+		grid-area: size;
+		font-size: .8em;
+		width: 3rem;
+		overflow: hidden;
+		text-align: center;
 	}
 
 	table th a {
 		font-size: 1.2em;
+		gap: .5em;
+	}
+
+	table thead tr {
+		display: block;
+		text-align: left;
+	}
+
+	table thead tr td {
+		display: inline-block;
+		vertical-align: top;
+	}
+
+	table thead td.check {
+		float: right;
+		margin-right: .4em;
+	}
+
+	table thead button {
+		font-size: 1rem;
 	}
 
 	input[name=rename], input[name=paste_name] {
