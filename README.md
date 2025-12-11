@@ -10,7 +10,7 @@ It is written in PHP (8+). The only dependency is SQLite3 for the database.
 
 Its original purpose was to serve as a demo and test for the KD2 WebDAV library, which we developed for [Paheko](https://paheko.cloud/), our non-profit management solution, but it can also be used as a simple but powerful file sharing server.
 
-![](doc/scr_index.webp)
+![](doc/scr_files.webp)
 
 If you are looking for an even lighter WebDAV server, try also our other server, [PicoDAV](https://fossil.kd2.org/picodav/). It isn't compatible with NextCloud/ownCloud/OpenCloud clients, but it is a single file that you can drop anywhere in your document root, nothing to install!
 
@@ -19,18 +19,23 @@ If you are looking for an even lighter WebDAV server, try also our other server,
 
 ## Features
 
-* User-friendly directory listings for file browsing with a web browser, using our [WebDAV Manager.js](https://fossil.kd2.org/webdav-manager/) client
-	* Upload directly from browser, using paste or drag and drop
+* Good performance! More than 20 times faster than NextCloud!
+* Lightweight! Less than 1MB!
+* External apps (via iframe or links)
+* Web UI to login, access files and apps, manage users
+* Integrated web file manager (using [WebDAV Manager.js](https://fossil.kd2.org/webdav-manager/)):
+	* Upload multiple files directly from browser, using paste or drag and drop
 	* Rename
 	* Delete
 	* Create and edit text files
 	* Create directories
-	* MarkDown live preview
+	* MarkDown live preview while editing
 	* Preview of images, text, MarkDown and PDF
 	* Editing of Office files using Collabora or OnlyOffice
-	* Download all files from a directory
+	* Download/delete selected files from a directory
+  * Thumbnails
 * WebDAV class 1, 2, 3 support, support for Etags
-* No database server is required (SQLite3 is used)
+* No database server is required (SQLite is used)
 * Multiple user accounts
 * Support for per-user quota
 * Share files using WebDAV: delete, create, update, mkdir, get, list
@@ -44,7 +49,6 @@ If you are looking for an even lighter WebDAV server, try also our other server,
 * Supports WOPI, for editing and viewing of documents using OnlyOffice, Collabora Online or MS Office.
 * Support for LDAP
 * Trashbin: files are moved to a `.trash` folder before being deleted completely
-* Good performance!
 
 ### NextCloud/ownCloud/OpenCloud features
 
@@ -97,16 +101,6 @@ KaraDAV is not a drop-in replacement for NextCloud. It is not intended to be. It
 | Commercial support | ❌ |  ✅ | ✅ |
 
 1. See [documentation on external apps](doc/APPS.md)
-
-## Screenshots
-
-### Files management using the Web UI
-
-![](doc/scr_files.png)
-
-### Login from NextCloud client
-
-![](doc/scr_login.webp)
 
 # Clients compatibility
 

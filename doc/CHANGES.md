@@ -1,6 +1,18 @@
-## 0.6.4 - December 10, 2025
+## 0.7.0 - December 2025
 
-* Add logo, update CSS
+* New design! New logo!
+* Moved HTML code to templates
+* Prepare for internationalization of UI
+* Support for [external apps](doc/APPS.md) via iframe or links
+* Add small API to transmit authentication data to apps (works with oPodSync)
+* Web file manager:
+  * New, better design!
+  * Now integrated inside KaraDAV UI
+  * Changed "download all" to "download selected"
+  * Various small improvements and fixes
+
+## 0.6.4 - December 11, 2025
+
 * Update README for app support, report on more NextCloud clients working (or not): Iotas, Yaga, Memories, LesPas, Quillpad
 * Add support for LesPas Android app
 * Allow to unblock iOS clients in config file if anyone wants to test them
