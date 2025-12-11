@@ -126,6 +126,10 @@ th .icon b {
 	border: 1px solid #2e3c3a;
 }
 
+th .icon b:empty {
+	display: none;
+}
+
 td.check {
 	width: 1.5em;
 	text-align: center;
