@@ -2,11 +2,13 @@
 
 Patches are welcome!
 
-This might get supported in future (maybe):
+## What I'm interested in implementing
 
 * Localization: allow to translate UI
-* Likely: OpenIDConnect support for login
+* Probably: Web files UI: Cut/Copy/Paste files and directories, like OpenCloud does (nicely)
+* Probably: Web files UI: gallery view
 * Probably: [NextCloud sharing](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-share-api.html)
+* More integrated apps (eg. Fluxie, my own feed reader)
 * Maybe: NextCloud files versioning
 	* [NextCloud API](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/versions.html)
 	* [NextCloud versioning pattern](https://docs.nextcloud.com/server/latest/user_manual/en/files/version_control.html)
@@ -14,9 +16,13 @@ This might get supported in future (maybe):
 	* [Mercurial revlog](https://www.mercurial-scm.org/wiki/Revlog)
 	* [Eric Sink on SCM versioning](https://ericsink.com/scm/scm_repositories.html)
 * Maybe: document thumbnails (using Collabora API)
-* Maybe: Web files UI: move files/directories by drag and drop?
-* Probably: Web files UI: Cut/Copy/Paste files and directories, like OpenCloud does (nicely)
-* Probably: Web files UI: gallery view
+
+## What I'm not interested in currently
+
+This might get supported in future (maybe):
+
+* Easy, but I don't need it: OpenIDConnect client (but might be nice to ditch the code for LDAP)
+* Web files UI: move files/directories by drag and drop?
 
 This probably won't get supported anytime soon:
 
@@ -24,6 +30,7 @@ This probably won't get supported anytime soon:
   * this would require a [bunch of new stuff implemented](https://evertpot.com/227/)
   * the only CalDAV test suite ([CavDAVtester](https://github.com/apple/ccs-caldavtester)) does not work anymore as it's written for Python 2
   * for now the best option is to use [Baikal from Sabre/DAV](https://sabre.io/baikal/) for that
+  * integrating it as an external app would be nice and easy, but I already have my own solution
   * Nice web clients to add to Baikal are [AgenDAV](https://github.com/agendav/agendav) and [InfCloud](https://inf-it.com/open-source/clients/infcloud/)
 * [Extended MKCOL](https://www.rfc-editor.org/rfc/rfc5689) required only if CalDAV support is implemented
 * [Partial upload via PATCH](https://github.com/miquels/webdav-handler-rs/blob/master/doc/SABREDAV-partialupdate.md)
