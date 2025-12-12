@@ -19,6 +19,11 @@ Patches are welcome!
 	* [Eric Sink on SCM versioning](https://ericsink.com/scm/scm_repositories.html)
 * Maybe: document thumbnails (using Collabora API)
 
+Would be nice but haven't found a lightweight solution yet:
+
+* better markdown editor / preview
+* better text/code editor, eg. https://github.com/WebCoder49/code-input
+
 ## What I'm not interested in currently
 
 This might get supported in future (maybe):
