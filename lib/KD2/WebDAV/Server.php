@@ -537,7 +537,11 @@ class Server
 			throw new Exception('Cannot move file to itself', 403);
 		}
 
-		$overwrite = ($_SERVER['HTTP_OVERWRITE'] ?? null) == 'T';
+		// A value of "F" states that the server must not perform the COPY or MOVE
+		// operation if the destination URL does map to a resource. If the overwrite
+		// header is not included in a COPY or MOVE request, then the resource MUST
+		// treat the request as if it has an overwrite header of value "T".
+		$overwrite = !(($_SERVER['HTTP_OVERWRITE'] ?? null) === 'F');
 
 		// Dolphin is removing the file name when moving to root directory
 		if (empty($destination)) {
