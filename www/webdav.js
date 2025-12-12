@@ -1,6 +1,6 @@
-var css_url = document.currentScript.src.replace(/\/[^\/]+$/, '') + '/webdav.css';
+var css_url = document.currentScript.src.replace(/\/[^\/]+$/, '') + '/webdav.css?2025';
 
-const WebDAVNavigator = (url, options) => {
+const WebDAVNavigator = async function (url, options) {
 	// Microdown
 	// https://github.com/commit-intl/micro-down
 	const microdown=function(){function l(n,e,r){return"<"+n+(r?" "+Object.keys(r).map(function(n){return r[n]?n+'="'+(a(r[n])||"")+'"':""}).join(" "):"")+">"+e+"</"+n+">"}function c(n,e){return e=n.match(/^[+-]/m)?"ul":"ol",n?"<"+e+">"+n.replace(/(?:[+-]|\d+\.) +(.*)\n?(([ \t].*\n?)*)/g,function(n,e,r){return"<li>"+g(e+"\n"+(t=r||"").replace(new RegExp("^"+(t.match(/^\s+/)||"")[0],"gm"),"").replace(o,c))+"</li>";var t})+"</"+e+">":""}function e(r,t,u,c){return function(n,e){return n=n.replace(t,u),l(r,c?c(n):n)}}function t(n,u){return f(n,[/<!--((.|\n)*?)-->/g,"\x3c!--$1--\x3e",/^("""|```)(.*)\n((.*\n)*?)\1/gm,function(n,e,r,t){return'"""'===e?l("div",p(t,u),{class:r}):u&&u.preCode?l("pre",l("code",a(t),{class:r})):l("pre",a(t),{class:r})},/(^>.*\n?)+/gm,e("blockquote",/^> ?(.*)$/gm,"$1",r),/((^|\n)\|.+)+/g,e("table",/^.*(\n\|---.*?)?$/gm,function(n,t){return e("tr",/\|(-?)([^|]*)\1(\|$)?/gm,function(n,e,r){return l(e||t?"th":"td",g(r))})(n.slice(0,n.length-(t||"").length))}),o,c,/#\[([^\]]+?)]/g,'<a name="$1"></a>',/^(#+) +(.*)(?:$)/gm,function(n,e,r){return l("h"+e.length,g(r))},/^(===+|---+)(?=\s*$)/gm,"<hr>"],p,u)}var i=this,a=function(n){return n?n.replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):""},o=/(?:(^|\n)([+-]|\d+\.) +(.*(\n[ \t]+.*)*))+/g,g=function c(n,i){var o=[];return n=(n||"").trim().replace(/`([^`]*)`/g,function(n,e){return"\\"+o.push(l("code",a(e)))}).replace(/[!&]?\[([!&]?\[.*?\)|[^\]]*?)]\((.*?)( .*?)?\)|(\w+:\/\/[$\-.+!*'()/,\w]+)/g,function(n,e,r,t,u){return u?i?n:"\\"+o.push(l("a",u,{href:u})):"&"==n[0]?(e=e.match(/^(.+),(.+),([^ \]]+)( ?.+?)?$/),"\\"+o.push(l("iframe","",{width:e[1],height:e[2],frameborder:e[3],class:e[4],src:r,title:t}))):"\\"+o.push("!"==n[0]?l("img","",{src:r,alt:e,title:t}):l("a",c(e,1),{href:r,title:t}))}),n=function r(n){return n.replace(/\\(\d+)/g,function(n,e){return r(o[Number.parseInt(e)-1])})}(i?n:r(n))},r=function t(n){return f(n,[/([*_]{1,3})((.|\n)+?)\1/g,function(n,e,r){return e=e.length,r=t(r),1<e&&(r=l("strong",r)),e%2&&(r=l("em",r)),r},/(~{1,3})((.|\n)+?)\1/g,function(n,e,r){return l([,"u","s","del"][e.length],t(r))},/  \n|\n  /g,"<br>"],t)},f=function(n,e,r,t){for(var u,c=0;c<e.length;){if(u=e[c++].exec(n))return r(n.slice(0,u.index),t)+("string"==typeof e[c]?e[c].replace(/\$(\d)/g,function(n,e){return u[e]}):e[c].apply(i,u))+r(n.slice(u.index+u[0].length),t);c++}return n},p=function(n,e){n=n.replace(/[\r\v\b\f]/g,"").replace(/\\./g,function(n){return"&#"+n.charCodeAt(1)+";"});var r=t(n,e);return r!==n||r.match(/^[\s\n]*$/i)||(r=g(r).replace(/((.|\n)+?)(\n\n+|$)/g,function(n,e){return l("p",e)})),r.replace(/&#(\d+);/g,function(n,e){return String.fromCharCode(parseInt(e))})};return{parse:p,block:t,inline:r,inlineBlock:g}}();
@@ -43,6 +43,10 @@ const WebDAVNavigator = (url, options) => {
 			<div class="selected">
 				<input type="button" class="icon download" value="${_('Download')}" />
 				<input type="button" class="icon delete" value="${_('Delete')}" />
+				<input type="button" class="icon cut" value="${_('Cut')}" />
+				<input type="button" class="icon copy" value="${_('Copy')}" />
+			</div>
+			<div class="paste">
 			</div>
 		</div>
 		<table>
@@ -72,6 +76,10 @@ const WebDAVNavigator = (url, options) => {
 			<input class="icon ODP" type="button" value="${_('Presentation')}" />
 			<input class="icon ODG" type="button" value="${_('Drawing')}" />`;
 
+	const paste_widget = `<div><strong>${_('%count% files selected')}</strong>
+		<input type="button" value="%label%" class="icon %action%" />
+		<input type="button" value="${_('Cancel')}" class="icon cancel" /></div>`;
+
 	const dir_row_tpl = `<tr data-permissions="%permissions%" class="%class%" data-name="%name%">
 		<td class="check"><input type="checkbox" name="delete" value="%uri%" /><label><span></span></label></td>
 		<th colspan="2"><a href="%uri%">%thumb% %name%</a></th>
@@ -91,13 +99,6 @@ const WebDAVNavigator = (url, options) => {
 	const root_url = url.replace(/(?<!\/)\/.*$/, '/');
 	const image_thumb_tpl = `<img src="${root_url}index.php/apps/files/api/v1/thumbnail/150/150/%path%" alt="" />`;
 
-	const propfind_tpl = '<'+ `?xml version="1.0" encoding="UTF-8"?>
-		<D:propfind xmlns:D="DAV:" xmlns:oc="http://owncloud.org/ns">
-			<D:prop>
-				<D:getlastmodified/><D:getcontenttype/><D:getcontentlength/><D:resourcetype/><D:displayname/><oc:permissions/>
-			</D:prop>
-		</D:propfind>`;
-
 	const wopi_propfind_tpl = '<' + `?xml version="1.0" encoding="UTF-8"?>
 		<D:propfind xmlns:D="DAV:" xmlns:W="https://interoperability.blob.core.windows.net/files/MS-WOPI/">
 			<D:prop>
@@ -108,6 +109,184 @@ const WebDAVNavigator = (url, options) => {
 	const html = (unsafe) => {
 		return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 	};
+
+	const basename = path => path.split('/').pop();
+
+	var dav = {'headers': {}}, wopi = {}, browser = {'file': {}, 'paste_selection': [], 'paste_action': null};
+	dav.setAuth = function (username, password) {
+		dav.headers = {};
+
+		if (username && password) {
+			dav.headers['Authorization'] = 'Basic ' + btoa(user + ':' + password);
+		}
+	};
+
+	dav.send = function (method, url, body, headers) {
+		headers = Object.assign(headers || {}, dav.headers);
+		return fetch(url, {method, body, headers});
+	};
+
+	dav.propfind = async function (url, body, depth) {
+		var r = await dav.send('PROPFIND', url, body, {'Depth': depth, 'Content-Type': 'text/xml; charset=utf-8'});
+		r = await r.text();
+		return new window.DOMParser().parseFromString(r, "text/xml");
+	};
+
+	dav.list = async function (url) {
+		const body = '<'+ `?xml version="1.0" encoding="UTF-8"?>
+			<D:propfind xmlns:D="DAV:" xmlns:oc="http://owncloud.org/ns">
+				<D:prop>
+					<D:getlastmodified/><D:getcontenttype/><D:getcontentlength/><D:resourcetype/><D:displayname/><oc:permissions/>
+				</D:prop>
+			</D:propfind>`;
+
+		var xml = await dav.propfind(url, body, 1);
+		var files = {};
+
+		xml.querySelectorAll('response').forEach((node) => {
+			var path = node.querySelector('href').textContent;
+			var item_uri = normalizeURL(path);
+			var props = null;
+
+			node.querySelectorAll('propstat').forEach(propstat => {
+				if (propstat.querySelector('status').textContent.match(/200/)) {
+					props = propstat;
+				}
+			});
+
+			// This item didn't return any properties, everything is 404?
+			if (!props) {
+				console.error('Cannot find properties for: ' + item_uri);
+				return;
+			}
+
+			var name = item_uri.replace(/\/$/, '').split('/').pop();
+			name = decodeURIComponent(name);
+			var is_dir = node.querySelector('resourcetype collection') ? true : false;
+
+			files[name] = {
+				'uri': item_uri,
+				'path': item_uri.substring(base_url.length),
+				'name': name,
+				'size': !is_dir && (prop = node.querySelector('getcontentlength')) ? parseInt(prop.textContent, 10) : null,
+				'mime': !is_dir && (prop = node.querySelector('getcontenttype')) ? prop.textContent : null,
+				'modified': (prop = node.querySelector('getlastmodified')) ? new Date(prop.textContent) : null,
+				'is_dir': is_dir,
+				'permissions': (prop = node.querySelector('permissions')) ? prop.textContent : null,
+			};
+		});
+
+		return files;
+	};
+
+	dav.copymove = function(method, src, dst, overwrite) {
+		dst = normalizeURL(dst);
+		overwrite = overwrite === true ? 'T' : 'F';
+		return dav.send(method, src, '', {'Destination': dst, 'Overwrite': overwrite});
+	};
+
+	dav.exists = async function (url) {
+		var r = await dav.send('HEAD', url);
+		return r.status === 200;
+	};
+
+	browser.open = function (url, push_history) {
+		closeDialog();
+		browser.url = url;
+		dav.list(url).then(files => {
+			browser.files = files;
+			buildListing(browser.url, Object.values(browser.files));
+			changeURL(browser.url, push_history);
+		});
+	};
+
+	browser.reload = function () {
+		closeDialog();
+		buildListing(url, Object.values(browser.files));
+		changeURL(url, false);
+		stopLoading();
+	};
+
+	browser.getFreeFilename = function (filename) {
+		var increment_filename = (filename) => filename.replace(/(?:\s+\(\d+\))?((?:\.[^.]+)?)$/, (_, i, ext) => {
+			console.log([filename, _, i, ext]);
+			var i = parseInt(i || 0, 10) + 1;
+			console.log('+', i);
+			return ' (' + i + ')' + (ext || '');
+		});
+
+		j = 0;
+
+		while (browser.files.hasOwnProperty(filename)) {
+			filename = increment_filename(filename);
+			console.log(filename);
+
+			if (j++ > 20) {
+				break;
+			}
+		}
+
+		return filename;
+	};
+
+	browser.pasteTo = function (src, action) {
+		// Don't do anything is cutting and pasting in the same directory
+		if (action === 'move' && browser.url === src.split('/').slice(0, -1).join('/')) {
+			console.error('Cannot paste on itself');
+			return;
+		}
+
+		var filename = browser.getFreeFilename(basename(src));
+		console.log(filename, browser.files); return;
+		return dav.copymove(action === 'copy' ? 'COPY' : 'MOVE', src, browser.url + filename, false);
+	};
+
+	browser.cancelPasteSelection = function () {
+		$('.buttons .paste').style.display = 'none';
+		browser.paste_selection = [];
+		browser.paste_action = null;
+	};
+
+	browser.applyPasteSelection = async function () {
+		animateLoading();
+
+		for (var i = 0; i < browser.paste_selection.length; i++) {
+			await browser.pasteTo(browser.paste_selection[i], browser.paste_action);
+		}
+
+		browser.cancelPasteSelection();
+		browser.reload();
+	};
+
+	browser.createPasteSelection = (action) => {
+		var l = document.querySelectorAll('input[name=delete]:checked');
+
+		if (!l.length) {
+			alert(_('No file is selected'));
+			return;
+		}
+
+		browser.paste_selection = [];
+		browser.paste_action = action;
+
+		for (var i = 0; i < l.length; i++) {
+			browser.paste_selection.push(l[i].value);
+			l[i].checked = false;
+		}
+
+		var label = action == 'copy' ? _('Copy here') : _('Move here');
+		$('.buttons .paste').innerHTML = template(paste_widget, {
+			'count' : browser.paste_selection.length,
+			action,
+			label
+		});
+
+		$('.buttons .paste').style.display = 'flex';
+		$('.buttons .paste .cancel').onclick = browser.cancelPasteSelection;
+
+		$('.buttons .paste .move, .buttons .paste .copy').onclick = browser.applyPasteSelection;
+	};
+
 
 	const reqXML = (method, url, body, headers) => {
 		return req(method, url, body, headers).then((r) => {
@@ -137,7 +316,7 @@ const WebDAVNavigator = (url, options) => {
 		animateLoading();
 		req(method, url, body, headers).then(r => reqHandler(r, () => {
 			stopLoading();
-			reloadListing();
+			browser.reload();
 		})).catch(e => {
 			console.error(e);
 			alert(e);
@@ -146,15 +325,7 @@ const WebDAVNavigator = (url, options) => {
 	};
 
 	const req = (method, url, body, headers) => {
-		if (!headers) {
-			headers = {};
-		}
-
-		if (auth_header) {
-			headers.Authorization = auth_header;
-		}
-
-		return fetch(url, {method, body, headers});
+		return dav.send(method, url, body, headers);
 	};
 
 	const xhr = (method, url, progress_callback) => {
@@ -195,8 +366,7 @@ const WebDAVNavigator = (url, options) => {
 			}
 
 			window.setTimeout(() => {
-				stopLoading();
-				reloadListing();
+				browser.reload();
 			}, 500);
 		})();
 	};
@@ -205,8 +375,7 @@ const WebDAVNavigator = (url, options) => {
 		return req(method, url, body).then(reqHandler).catch(e => {
 			console.error(e);
 			alert(e);
-			stopLoading();
-			reloadListing();
+			browser.reload();
 			throw e;
 		});
 	}
@@ -229,12 +398,12 @@ const WebDAVNavigator = (url, options) => {
 		});
 	};
 
-	const wopi_init = async () => {
+	wopi.init = async function (discovery_url) {
 		try {
-			var d = await reqXML('GET', wopi_discovery_url);
+			var d = await reqXML('GET', discovery_url);
 		}
 		catch (e) {
-			reloadListing();
+			// FIXME: notify
 			return;
 		}
 
@@ -259,8 +428,6 @@ const WebDAVNavigator = (url, options) => {
 				}
 			});
 		});
-
-		reloadListing();
 	};
 
 	const wopi_getEditURL = (name, mime) => {
@@ -452,24 +619,6 @@ const WebDAVNavigator = (url, options) => {
 		return date.toLocaleString([], {year: 'numeric', month: 'numeric', day: 'numeric'});
 	};
 
-	const openListing = (uri, push) => {
-		closeDialog();
-
-		reqXML('PROPFIND', uri, propfind_tpl, {'Depth': 1}).then((xml) => {
-			buildListing(uri, xml)
-			current_url = uri;
-			changeURL(uri, push);
-		}).catch((e) => {
-			console.error(e);
-			alert(e);
-		});
-	};
-
-	const reloadListing = () => {
-		stopLoading();
-		openListing(current_url, false);
-	};
-
 	const normalizeURL = (url) => {
 		if (!url.match(/^https?:\/\//)) {
 			url = base_url.replace(/^(https?:\/\/[^\/]+\/).*$/, '$1') + url.replace(/^\/+/, '');
@@ -491,7 +640,7 @@ const WebDAVNavigator = (url, options) => {
 
 			popstate_evt = window.addEventListener('popstate', (e) => {
 				var url = location.pathname;
-				openListing(url, false);
+				browser.open(url, false);
 			});
 		}
 		catch (e) {
@@ -508,55 +657,22 @@ const WebDAVNavigator = (url, options) => {
 		document.body.classList.remove('loading');
 	};
 
-	const buildListing = (uri, xml) => {
+	const buildListing = (uri, items) => {
 		uri = normalizeURL(uri);
 
-		items = [];
 		var title = null;
 		var root_permissions = null;
 
-		xml.querySelectorAll('response').forEach((node) => {
-			var path = node.querySelector('href').textContent;
-			var item_uri = normalizeURL(path);
-			var props = null;
+		for (var i = 0; i < items.length; i++) {
+			var item = items[i];
 
-			node.querySelectorAll('propstat').forEach((propstat) => {
-				if (propstat.querySelector('status').textContent.match(/200/)) {
-					props = propstat;
-				}
-			});
-
-			// This item didn't return any properties, everything is 404?
-			if (!props) {
-				console.error('Cannot find properties for: ' + item_uri);
-				return;
+			if (item.url === current_url) {
+				title = item.name;
+				root_permissions = item.permissions;
+				items = items.splice(i, 1);
+				break;
 			}
-
-			var name = item_uri.replace(/\/$/, '').split('/').pop();
-			name = decodeURIComponent(name);
-
-			var permissions = (prop = node.querySelector('permissions')) ? prop.textContent : null;
-
-			if (item_uri == uri) {
-				title = name;
-				root_permissions = permissions;
-				return;
-			}
-
-			var is_dir = node.querySelector('resourcetype collection') ? true : false;
-			var index = is_dir ? 0 : 1;
-
-			items.push({
-				'uri': item_uri,
-				'path': item_uri.substring(base_url.length),
-				'name': name,
-				'size': !is_dir && (prop = node.querySelector('getcontentlength')) ? parseInt(prop.textContent, 10) : null,
-				'mime': !is_dir && (prop = node.querySelector('getcontenttype')) ? prop.textContent : null,
-				'modified': (prop = node.querySelector('getlastmodified')) ? new Date(prop.textContent) : null,
-				'is_dir': is_dir,
-				'permissions': permissions,
-			});
-		});
+		}
 
 		items.sort((a, b) => {
 			if (sort_order === 'date') {
@@ -644,19 +760,16 @@ const WebDAVNavigator = (url, options) => {
 
 			window.localStorage.setItem('sort_order', new_sort_order);
 			window.localStorage.setItem('sort_order_desc', sort_order_desc ? '1' : '0');
-			reloadListing();
+			browser.reload();
 		});
 
 		document.querySelector('thead td.check input').onchange = (e) => {
 			document.querySelectorAll('tbody td.check input').forEach(i => i.checked = e.target.checked);
 		};
 
-		if (!items.length) {
-			$('div.buttons .download').disabled = true;
-		}
-		else {
-			$('div.buttons .download').onclick = download_selected;
-		}
+		$('div.buttons .download').onclick = download_selected;
+		$('div.buttons .copy').onclick = () => browser.createPasteSelection('copy');
+		$('div.buttons .cut').onclick = () => browser.createPasteSelection('move');
 
 		$('div.buttons .delete').onclick = () => {
 			var l = document.querySelectorAll('input[name=delete]:checked');
@@ -677,7 +790,7 @@ const WebDAVNavigator = (url, options) => {
 				// Don't reload too fast
 				window.setTimeout(() => {
 					stopLoading();
-					reloadListing();
+					browser.reload();
 				}, 500);
 			};
 
@@ -736,7 +849,7 @@ const WebDAVNavigator = (url, options) => {
 
 					name = encodeURIComponent(name);
 
-					req('MKCOL', current_url + name).then(() => openListing(current_url + name + '/'));
+					req('MKCOL', current_url + name).then(() => browser.open(current_url + name + '/', true));
 					return false;
 				};
 			};
@@ -785,7 +898,7 @@ const WebDAVNavigator = (url, options) => {
 
 			if (dir) {
 				$$('a').onclick = () => {
-					openListing(file_url, true);
+					browser.open(file_url, true);
 					return false;
 				};
 			}
@@ -822,13 +935,7 @@ const WebDAVNavigator = (url, options) => {
 
 						if (!name) return false;
 
-						name = encodeURIComponent(name);
-						name = name.replace(/%2F/, '/');
-
-						var dest = current_url + name;
-						dest = normalizeURL(dest);
-
-						return reqAndReload('MOVE', file_url, '', {'Destination': dest});
+						return reqMove(file_url, current_url + encodeURIComponent(name));
 					};
 				};
 
@@ -1027,7 +1134,7 @@ const WebDAVNavigator = (url, options) => {
 	var base_url = url;
 	const user = options.user || null;
 	const password = options.password || null;
-	var auth_header = (user && password) ? 'Basic ' + btoa(user + ':' + password) : null;
+	dav.setAuth(user, password);
 
 	if (location.pathname.indexOf(base_url) === 0) {
 		current_url = location.pathname;
@@ -1049,10 +1156,10 @@ const WebDAVNavigator = (url, options) => {
 
 	// Wait for WOPI discovery before creating the list
 	if (wopi_discovery_url) {
-		wopi_init();
-	} else {
-		reloadListing();
+		await wopi.init(wopi_discovery_url);
 	}
+
+	browser.open(current_url);
 
 	window.addEventListener('paste', (e) => {
 		let items = e.clipboardData.items;
