@@ -140,6 +140,7 @@ const WebDAVNavigator = async function (url, options) {
 				</D:prop>
 			</D:propfind>`;
 
+		url = normalizeURL(url);
 		var xml = await dav.propfind(url, body, 1);
 		var files = {};
 
@@ -164,7 +165,7 @@ const WebDAVNavigator = async function (url, options) {
 			name = decodeURIComponent(name);
 			var is_dir = node.querySelector('resourcetype collection') ? true : false;
 
-			files[name] = {
+			files[item_uri === url ? '' : name] = {
 				'uri': item_uri,
 				'path': item_uri.substring(base_url.length),
 				'name': name,
@@ -201,27 +202,22 @@ const WebDAVNavigator = async function (url, options) {
 	};
 
 	browser.reload = function () {
-		closeDialog();
-		buildListing(url, Object.values(browser.files));
-		changeURL(url, false);
 		stopLoading();
+		browser.open(browser.url, false);
 	};
 
 	browser.getFreeFilename = function (filename) {
-		var increment_filename = (filename) => filename.replace(/(?:\s+\(\d+\))?((?:\.[^.]+)?)$/, (_, i, ext) => {
-			console.log([filename, _, i, ext]);
+		var increment_filename = (filename) => filename.replace(/(?:\s+\((\d+)\))?(\.[^.]+)?$/, (_, i, ext) => {
 			var i = parseInt(i || 0, 10) + 1;
-			console.log('+', i);
 			return ' (' + i + ')' + (ext || '');
 		});
 
-		j = 0;
+		var j = 0;
 
 		while (browser.files.hasOwnProperty(filename)) {
 			filename = increment_filename(filename);
-			console.log(filename);
 
-			if (j++ > 20) {
+			if (j++ > 100) {
 				break;
 			}
 		}
@@ -236,8 +232,7 @@ const WebDAVNavigator = async function (url, options) {
 			return;
 		}
 
-		var filename = browser.getFreeFilename(basename(src));
-		console.log(filename, browser.files); return;
+		var filename = browser.getFreeFilename(basename(decodeURIComponent(src)));
 		return dav.copymove(action === 'copy' ? 'COPY' : 'MOVE', src, browser.url + filename, false);
 	};
 
@@ -660,19 +655,9 @@ const WebDAVNavigator = async function (url, options) {
 	const buildListing = (uri, items) => {
 		uri = normalizeURL(uri);
 
-		var title = null;
-		var root_permissions = null;
-
-		for (var i = 0; i < items.length; i++) {
-			var item = items[i];
-
-			if (item.url === current_url) {
-				title = item.name;
-				root_permissions = item.permissions;
-				items = items.splice(i, 1);
-				break;
-			}
-		}
+		var title = items[''].name ?? null;
+		var root_permissions = items[''].permissions ?? null;
+		delete items[''];
 
 		items.sort((a, b) => {
 			if (sort_order === 'date') {
