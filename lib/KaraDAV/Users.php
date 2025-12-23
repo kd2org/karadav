@@ -12,7 +12,11 @@ class Users
 	{
 		if (!session_id()) {
 			// Protect the cookie : CSRF/JS stealing the cookie
-			session_set_cookie_params(['samesite' => 'Lax', 'httponly' => true]);
+			session_set_cookie_params([
+				'samesite' => 'Strict',
+				'httponly' => true,
+				'secure'   => parse_url(WWW_URL, PHP_URL_SCHEME) === 'https',
+			]);
 		}
 	}
 
@@ -154,8 +158,19 @@ class Users
 			return $this->current;
 		}
 
+		$db = DB::getInstance();
+
 		if (isset($_COOKIE[session_name()]) && !isset($_SESSION)) {
 			session_start();
+		}
+		elseif (!empty($_COOKIE['permanent'])
+			&& ($user = $db->first('SELECT * FROM users WHERE session_id = ?;', $_COOKIE['permanent']))) {
+			session_start();
+
+			$_SESSION['user'] = $user;
+
+			// Make sure this session_id cannot be reused
+			$this->setPermanentSession($user->id);
 		}
 
 		$this->current = $this->makeUserObjectGreatAgain($_SESSION['user'] ?? null);
@@ -175,7 +190,7 @@ class Users
 		return true;
 	}
 
-	public function login(?string $login, ?string $password): ?stdClass
+	public function login(?string $login, ?string $password, bool $permanent = false): ?stdClass
 	{
 		$login = null !== $login ? strtolower(trim($login)) : null;
 
@@ -227,7 +242,24 @@ class Users
 		@session_start();
 		$_SESSION['user'] = $user;
 
+		if ($permanent) {
+			$this->setPermanentSession($user->id);
+		}
+
 		return $user;
+	}
+
+	protected function setPermanentSession(int $id_user)
+	{
+		DB::getInstance()->run('UPDATE users SET session_id = ? WHERE id = ?;', session_id(), $id_user);
+
+		setcookie('permanent', session_id(), [
+			'expires'  => time() + 3600*24*365,
+			'path'     => '/',
+			'httponly' => true,
+			'samesite' => 'Strict',
+			'secure'   => parse_url(WWW_URL, PHP_URL_SCHEME) === 'https',
+		]);
 	}
 
 	public function logout(): void

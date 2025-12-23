@@ -14,7 +14,7 @@ if (empty($_GET['nc']) && $users->current()) {
 $error = 0;
 
 if (!empty($_POST['login']) && !empty($_POST['password']) && csrf_check()) {
-	if ($users->login($_POST['login'], $_POST['password'])) {
+	if ($users->login($_POST['login'], $_POST['password'], !empty($_POST['permanent']))) {
 		$url = null;
 
 		if (!empty($_POST['nc']) && $_POST['nc'] == 'redirect') {

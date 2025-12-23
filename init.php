@@ -149,6 +149,8 @@ if (!file_exists(DB_FILE)) {
 		$_SESSION['install_password'] = $p;
 	}
 
+	$db->exec('PRAGMA user_version = ' . DB::VERSION . ';');
+
 	$db->exec('END;');
 }
 else {
