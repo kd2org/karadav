@@ -340,7 +340,7 @@ dialog form div {
 	text-align: center;
 }
 
-div.buttons {
+.toolbar {
 	display: flex;
 	justify-content: flex-end;
 	margin: .5em;
@@ -348,12 +348,12 @@ div.buttons {
 	position: relative;
 }
 
-div.buttons .selected, div.buttons .paste {
+.toolbar .selected, .toolbar .paste {
 	margin-right: auto;
 	display: none;
 }
 
-div.buttons .paste div {
+.toolbar .paste div {
 	box-shadow: 0px 0px 10px darkorange;
 	border-radius: .5em;
 	display: flex;
@@ -361,17 +361,17 @@ div.buttons .paste div {
 	justify-content: center;
 }
 
-div.buttons .paste div strong {
+.toolbar .paste div strong {
 	display: block;
 	padding: .5em;
 	color: #666;
 }
 
-body:has(tbody .check input:checked) div.buttons .selected {
+body:has(tbody .check input:checked) .toolbar .selected {
 	display: block;
 }
 
-div.buttons input {
+.toolbar input {
 	overflow: visible;
 	text-indent: 0;
 	width: auto;
@@ -673,14 +673,14 @@ input.icon, .buttons a[download] {
 		margin: 0;
 	}
 
-	div.buttons {
+	.toolbar {
 		flex-wrap: wrap;
 		justify-content: center;
 		flex-direction: row;
 		font-size: .9em;
 	}
 
-	div.buttons .selected {
+	.toolbar .selected {
 		margin: 0;
 		position: fixed;
 		top: 0;
