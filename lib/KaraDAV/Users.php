@@ -264,6 +264,7 @@ class Users
 
 	public function logout(): void
 	{
+		DB::getInstance()->run('UPDATE users SET session_id = NULL WHERE id = ?;', $this->current()->id);
 		session_destroy();
 	}
 
