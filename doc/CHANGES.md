@@ -5,6 +5,7 @@
 * Prepare for internationalization of UI
 * Support for [external apps](doc/APPS.md) via iframe or links
 * Add small API to transmit authentication data to apps (works with oPodSync)
+* Add checkbox on login page to stay logged-in
 * Web file manager:
   * New, better design!
   * Now integrated inside KaraDAV UI

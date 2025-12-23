@@ -24,11 +24,15 @@
 		<legend>{{Sign in}}</legend>
 		<dl>
 			<dt><label for="f_login">{{Login}}</label></dt>
-			<dd><input type="text" name="login" id="f_login" required autocapitalize="none" /></dd>
+			<dd><input type="text" name="login" id="f_login" required="required" autocapitalize="none" /></dd>
 			<dt><label for="f_password">{{Password}}</label></dt>
-			<dd><input type="password" name="password" id="f_password" required /></dd>
-			<dd><input type="submit" value="{{Connect me}}" /></dd>
+			<dd><input type="password" name="password" id="f_password" required="required" /></dd>
+			<dt><label><input type="checkbox" name="permanent" value="1" /> {{Stay logged in}}</label></dt>
+			<dd class="help">{{Only check on private devices, avoid on public computers}}</dd>
 		</dl>
+		<p class="submit">
+			<input type="submit" value="{{Connect me}}" />
+		</p>
 	</fieldset>
 	{form_csrf}
 	</form>

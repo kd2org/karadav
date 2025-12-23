@@ -214,6 +214,10 @@ dl dd {
 	margin: .8em 0;
 }
 
+dd.help {
+	color: #666;
+	font-size: .9em;
+}
 
 progress[value] {
 	appearance: none;

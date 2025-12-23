@@ -3,10 +3,12 @@ CREATE TABLE users (
 	login TEXT NOT NULL,
 	password TEXT NOT NULL,
 	quota INTEGER NULL,
-	is_admin INTEGER NOT NULL DEFAULT 0
+	is_admin INTEGER NOT NULL DEFAULT 0,
+	session_id TEXT NULL
 );
 
 CREATE UNIQUE INDEX users_login ON users(login);
+CREATE UNIQUE INDEX users_session_id ON users (session_id);
 
 CREATE TABLE locks (
 	user INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -52,5 +54,3 @@ CREATE TABLE files (
 );
 
 CREATE UNIQUE INDEX files_path ON files (user, path);
-
-PRAGMA user_version = 1;
