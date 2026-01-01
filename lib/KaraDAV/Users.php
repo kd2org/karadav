@@ -165,7 +165,7 @@ class Users
 		}
 		elseif (!empty($_COOKIE['permanent'])
 			&& ($user = $db->first('SELECT * FROM users WHERE session_id = ?;', $_COOKIE['permanent']))) {
-			session_start();
+			@session_start();
 
 			$_SESSION['user'] = $user;
 
