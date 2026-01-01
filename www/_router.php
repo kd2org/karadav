@@ -19,8 +19,10 @@ if (PHP_SAPI == 'cli-server') {
 	if (is_file(__DIR__ . $relative_uri)) {
 		return false;
 	}
-	// Serve root index.php file
-	elseif ($relative_uri === '/' && $method != 'OPTIONS') {
+	// Serve index.php files
+	elseif (substr($relative_uri, -1) === '/'
+		&& $method !== 'OPTIONS'
+		&& is_dir(__DIR__ . rtrim($relative_uri, '/'))) {
 		return false;
 	}
 }

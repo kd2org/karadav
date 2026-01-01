@@ -1,6 +1,6 @@
 # Installing KaraDAV
 
-0. Setup your server with PHP 8.0+, and don't forget `php-sqlite3` and `php-simplexml` :)
+0. Setup your server with PHP 8.0+, and don't forget `php-sqlite3` and `php-simplexml` extensions :)
 1. Just download or clone this repo
 2. Optional:
   * Copy `config.dist.php` to `config.local.php`
@@ -10,6 +10,8 @@
 6. Go to your new virtual host, a default admin user is created the first time you access the UX, with the login `demo` and the password `karadavdemo`, please change it.
 
 If you want to enable image thumbnails, installing `php-imagick` or `php-gd` will do the trick. Note that this will add a significant workload on your server, and will create a lot of files as well.
+
+If you are on a 32-bits system, the `curl` extension is required (`apt install php-curl`) for reading files that have a size larger than 2 GB.
 
 ## Example Apache vhost
 
