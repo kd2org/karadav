@@ -51,6 +51,7 @@ If you are looking for an even lighter WebDAV server, try also our other server,
 * Supports WOPI, for editing and viewing of documents using OnlyOffice, Collabora Online or MS Office.
 * Support for LDAP
 * Trashbin: files are moved to a `.trash` folder before being deleted completely
+* Support for 32-bits platforms (eg. Raspberry Pi)
 
 ### NextCloud/ownCloud/OpenCloud features
 
