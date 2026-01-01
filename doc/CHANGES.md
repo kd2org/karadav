@@ -11,6 +11,7 @@
   * Now integrated inside KaraDAV UI
   * New: create WOPI documents (text, spreadsheet, presentation, drawing)
   * Changed "download all" to "download selected"
+  * New: cut, copy, and paste files between directories
   * Various small improvements and fixes
 
 ## 0.6.4 - December 11, 2025
