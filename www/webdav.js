@@ -1,10 +1,6 @@
 var css_url = document.currentScript.src.replace(/\/[^\/]+$/, '') + '/webdav.css?2025';
 
 const WebDAVNavigator = async function (url, options) {
-	// Microdown
-	// https://github.com/commit-intl/micro-down
-	const microdown=function(){function l(n,e,r){return"<"+n+(r?" "+Object.keys(r).map(function(n){return r[n]?n+'="'+(a(r[n])||"")+'"':""}).join(" "):"")+">"+e+"</"+n+">"}function c(n,e){return e=n.match(/^[+-]/m)?"ul":"ol",n?"<"+e+">"+n.replace(/(?:[+-]|\d+\.) +(.*)\n?(([ \t].*\n?)*)/g,function(n,e,r){return"<li>"+g(e+"\n"+(t=r||"").replace(new RegExp("^"+(t.match(/^\s+/)||"")[0],"gm"),"").replace(o,c))+"</li>";var t})+"</"+e+">":""}function e(r,t,u,c){return function(n,e){return n=n.replace(t,u),l(r,c?c(n):n)}}function t(n,u){return f(n,[/<!--((.|\n)*?)-->/g,"\x3c!--$1--\x3e",/^("""|```)(.*)\n((.*\n)*?)\1/gm,function(n,e,r,t){return'"""'===e?l("div",p(t,u),{class:r}):u&&u.preCode?l("pre",l("code",a(t),{class:r})):l("pre",a(t),{class:r})},/(^>.*\n?)+/gm,e("blockquote",/^> ?(.*)$/gm,"$1",r),/((^|\n)\|.+)+/g,e("table",/^.*(\n\|---.*?)?$/gm,function(n,t){return e("tr",/\|(-?)([^|]*)\1(\|$)?/gm,function(n,e,r){return l(e||t?"th":"td",g(r))})(n.slice(0,n.length-(t||"").length))}),o,c,/#\[([^\]]+?)]/g,'<a name="$1"></a>',/^(#+) +(.*)(?:$)/gm,function(n,e,r){return l("h"+e.length,g(r))},/^(===+|---+)(?=\s*$)/gm,"<hr>"],p,u)}var i=this,a=function(n){return n?n.replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):""},o=/(?:(^|\n)([+-]|\d+\.) +(.*(\n[ \t]+.*)*))+/g,g=function c(n,i){var o=[];return n=(n||"").trim().replace(/`([^`]*)`/g,function(n,e){return"\\"+o.push(l("code",a(e)))}).replace(/[!&]?\[([!&]?\[.*?\)|[^\]]*?)]\((.*?)( .*?)?\)|(\w+:\/\/[$\-.+!*'()/,\w]+)/g,function(n,e,r,t,u){return u?i?n:"\\"+o.push(l("a",u,{href:u})):"&"==n[0]?(e=e.match(/^(.+),(.+),([^ \]]+)( ?.+?)?$/),"\\"+o.push(l("iframe","",{width:e[1],height:e[2],frameborder:e[3],class:e[4],src:r,title:t}))):"\\"+o.push("!"==n[0]?l("img","",{src:r,alt:e,title:t}):l("a",c(e,1),{href:r,title:t}))}),n=function r(n){return n.replace(/\\(\d+)/g,function(n,e){return r(o[Number.parseInt(e)-1])})}(i?n:r(n))},r=function t(n){return f(n,[/([*_]{1,3})((.|\n)+?)\1/g,function(n,e,r){return e=e.length,r=t(r),1<e&&(r=l("strong",r)),e%2&&(r=l("em",r)),r},/(~{1,3})((.|\n)+?)\1/g,function(n,e,r){return l([,"u","s","del"][e.length],t(r))},/  \n|\n  /g,"<br>"],t)},f=function(n,e,r,t){for(var u,c=0;c<e.length;){if(u=e[c++].exec(n))return r(n.slice(0,u.index),t)+("string"==typeof e[c]?e[c].replace(/\$(\d)/g,function(n,e){return u[e]}):e[c].apply(i,u))+r(n.slice(u.index+u[0].length),t);c++}return n},p=function(n,e){n=n.replace(/[\r\v\b\f]/g,"").replace(/\\./g,function(n){return"&#"+n.charCodeAt(1)+";"});var r=t(n,e);return r!==n||r.match(/^[\s\n]*$/i)||(r=g(r).replace(/((.|\n)+?)(\n\n+|$)/g,function(n,e){return l("p",e)})),r.replace(/&#(\d+);/g,function(n,e){return String.fromCharCode(parseInt(e))})};return{parse:p,block:t,inline:r,inlineBlock:g}}();
-
 	const PREVIEW_TYPES = /^image\/(png|webp|svg|jpeg|jpg|gif|png)|^application\/pdf|^text\/|^audio\/|^video\/|application\/x-empty/;
 	const PREVIEW_EXTENSIONS = /\.(?:png|webp|svg|jpeg|jpg|gif|png|pdf|txt|css|js|html?|md|mp4|mkv|webm|ogg|flac|mp3|aac|m4a|avi)$/i;
 
@@ -117,6 +113,7 @@ const WebDAVNavigator = async function (url, options) {
 	var dav = {'headers': {}},
 		wopi = {'discovery_url': null, 'mimes': {}, 'extensions': {}},
 		browser = {'file': {}, 'paste_selection': [], 'paste_action': null};
+
 	dav.setAuth = function (username, password) {
 		dav.headers = {};
 
@@ -323,6 +320,39 @@ const WebDAVNavigator = async function (url, options) {
 				browser.reload();
 			}, 500);
 		};
+	};
+
+	var editor = {};
+	editor.create = (input_name, file_name, text) => {
+		if ('prismEditor' in window) {
+			var e = document.createElement('div');
+			const ed = prismEditor(e, {
+				language: file_name.match(/\.md$/i) ? 'markdown' : 'text',
+				value: text,
+				wordwrap: true
+			});
+			ed.textarea.name = input_name;
+
+			return ed.textarea;
+		}
+
+		var t = document.createElement('textarea');
+		t.name = input_name;
+		t.value = text;
+		return t;
+	};
+
+	editor.markdownToHTML = (text) => {
+		if ('marked' in window) {
+			return marked.parse(text);
+		}
+
+		text = text.replace(/\r\n|\r/g, "\n");
+		text = text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+		text = text.replace(/^(#+)\s*(.+)$/mg, (_, h, t) => '<h' + h.length + '>' + t + '</h' + h.length + '>');
+		text = text.replace(/\n{2,}/g, '<p>');
+		text = text.replace(/\[(.*)\]\((.*)\)/g, (_, l, h) => '<a href="' + h + '">' + (l || h) + '</a>');
+		return text;
 	};
 
 	var css = {};
@@ -975,7 +1005,7 @@ const WebDAVNavigator = async function (url, options) {
 						openDialog('<div class="md_preview"></div>', false);
 						$('dialog').className = 'preview';
 						req('GET', file_url).then(r => r.text()).then(t => {
-							$('.md_preview').innerHTML = microdown.parse(t);
+							$('.md_preview').innerHTML = editor.markdownToHTML(t);
 						});
 						return false;
 					}
@@ -1098,7 +1128,7 @@ const WebDAVNavigator = async function (url, options) {
 								let pre = $('.md_preview');
 
 								txt.oninput = () => {
-									pre.innerHTML = microdown.parse(txt.value);
+									pre.innerHTML = editor.markdownToHTML(txt.value);
 								};
 
 								txt.oninput();
