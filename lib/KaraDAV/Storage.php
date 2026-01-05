@@ -176,7 +176,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		switch ($name) {
 			case 'DAV::getcontentlength':
-				return is_dir($target) ? null : filesize($target);
+				return is_dir($target) ? null : self::getFilesize($target);
 			case 'DAV::getcontenttype':
 				// ownCloud app crashes if mimetype is provided for a directory
 				// https://github.com/owncloud/android/issues/3768
@@ -296,7 +296,7 @@ class Storage extends AbstractStorage implements TrashInterface
 					return $this->getRecursiveFileProperty($uri, 'size');
 				}
 				else {
-					return filesize($target);
+					return self::getFilesize($target);
 				}
 			case WOPI::PROP_FILE_URI:
 				$id = gzcompress($uri);
@@ -491,7 +491,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		if (false === $move) {
 			$quota = $this->users->quota($this->users->current());
 
-			if (filesize($source) > $quota->free) {
+			if (self::getFilesize($source) > $quota->free) {
 				throw new WebDAV_Exception('Your quota is exhausted', 507);
 			}
 		}
@@ -594,7 +594,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 			$st->bindValue(1, $user->id);
 			$st->bindValue(2, $path);
-			$st->bindValue(3, $f->isDir() ? 0 : $f->getSize());
+			$st->bindValue(3, $f->isDir() ? 0 : self::getFileSize($f->getRealPath()));
 			$st->bindValue(4, $f->isDir() ? 0 : $f->getMTime());
 			$st->execute();
 			$st->clear();
@@ -738,7 +738,43 @@ class Storage extends AbstractStorage implements TrashInterface
 		return glob($path . $pattern, $flags) ?: [];
 	}
 
-	static public function getDirectorySize(string $path): int
+	/**
+	 * Return file size, bypassing any 32 bits limitation
+	 * @return false|int|float
+	 */
+	static public function getFileSize(string $path)
+	{
+		if (!file_exists($path)) {
+			return false;
+		}
+
+		$size = filesize($path);
+
+		// Very simple for 64 bits systems, or for files smaller than 2GB on 32 bits
+		if (PHP_INT_SIZE === 8 || $size >= 0) {
+			return $size;
+		}
+
+		// Use curl to find file size
+		$ch = curl_init('file:///' . rawurlencode($path));
+		curl_setopt($ch, CURLOPT_NOBODY, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		$data = curl_exec($ch);
+		@curl_close($ch);
+
+		if ($data !== false
+			&& preg_match('/Content-Length: (\d+)/', $data, $matches)) {
+			return 0 + $matches[1];
+		}
+
+		return false;
+	}
+
+	/**
+	 * @return int|float
+	 */
+	static public function getDirectorySize(string $path)
 	{
 		$total = 0;
 		$path = rtrim($path, '/');
@@ -749,7 +785,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)) as $f) {
-			$total += $f->getSize();
+			$total += self::getFileSize($f->getRealPath());
 		}
 
 		return $total;
@@ -972,7 +1008,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			$info = $this->getTrashInfo($name);
 
 			$is_dir = is_dir($target);
-			$size = $is_dir ? self::getDirectorySize($target) : filesize($target);
+			$size = $is_dir ? self::getDirectorySize($target) : self::getFilesize($target);
 
 			yield $name => [
 				NextCloud::PROP_NC_TRASHBIN_FILENAME => $name,

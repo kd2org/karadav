@@ -735,7 +735,7 @@ class Translate
 			'%h' => 'MMM',	// Abbreviated month name, based on the locale (an alias of %b)	Jan through Dec
 		];
 
-		static $intl_formatter = function (\DateTimeInterface $timestamp, string $format) use ($intl_formats, $locale) {
+		$intl_formatter = function (\DateTimeInterface $timestamp, string $format) use ($intl_formats, $locale) {
 			$tz = $timestamp->getTimezone();
 			$date_type = \IntlDateFormatter::FULL;
 			$time_type = \IntlDateFormatter::FULL;

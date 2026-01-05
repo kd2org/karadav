@@ -6,7 +6,7 @@ use KD2\ErrorManager;
 use KD2\Translate;
 use KD2\Smartyer;
 
-require __DIR__ . '/../init.php';
+require_once __DIR__ . '/../init.php';
 
 $users = new Users;
 $logged_user = $users->current();
@@ -36,7 +36,7 @@ $tpl->register_function('form_csrf', function (): string {
 	return sprintf('<input type="hidden" name="_c_" value="%s:%s:%s" />', $token, base64_encode($random), $expire);
 });
 
-$tpl->register_modifier('format_bytes', function (int $bytes, string $unit = 'B'): string {
+$tpl->register_modifier('format_bytes', function ($bytes, string $unit = 'B'): string {
 	if ($bytes >= 1024*1024*1024) {
 		return round($bytes / (1024*1024*1024), 1) . ' G' . $unit;
 	}

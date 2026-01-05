@@ -9,6 +9,10 @@ require __DIR__ . '/lib/KD2/ErrorManager.php';
 
 ErrorManager::enable(ErrorManager::DEVELOPMENT);
 
+if (PHP_INT_SIZE === 4 && !function_exists('curl_init')) {
+	throw new \LogicException('Extension "curl" is required for 32-bits systems.');
+}
+
 const ROOT = __DIR__;
 
 spl_autoload_register(function ($class) {
@@ -87,7 +91,7 @@ if (ERRORS_REPORT_URL) {
 }
 
 // Detect thumbnails support
-$th = ENABLE_THUMBNAILS && (class_exists('imagick') || function_exists('imagecreatefromwebp'));
+$th = ENABLE_THUMBNAILS && (class_exists('imagick', false) || function_exists('imagecreatefromwebp'));
 define('KaraDAV\ENABLE_THUMBNAILS_OK', $th);
 
 // Create random secret key
@@ -119,6 +123,11 @@ if (!defined('KaraDAV\SECRET_KEY')) {
 if (!defined('KaraDAV\WWW_URL')) {
 	$https = (!empty($_SERVER['HTTPS']) || $_SERVER['SERVER_PORT'] == 443) ? 's' : '';
 	$name = $_SERVER['SERVER_NAME'];
+
+	if ($name === '0.0.0.0') {
+		$name = 'localhost';
+	}
+
 	$port = !in_array($_SERVER['SERVER_PORT'], [80, 443]) ? ':' . $_SERVER['SERVER_PORT'] : '';
 	$root = '/';
 

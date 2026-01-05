@@ -1,3 +1,7 @@
+## 1.0.0 - Upcoming
+
+* Support for 32-bits platforms
+
 ## 0.7.0 - December 2025
 
 * New design! New logo!

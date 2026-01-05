@@ -108,6 +108,7 @@ class Smartyer
 		'nl2br' => 'nl2br',
 		'strip_tags' => 'strip_tags',
 		'rawurlencode' => 'rawurlencode',
+		'json_encode' => 'json_encode',
 		'count' => 'count',
 		'args' 	=> 'sprintf',
 		'const' => 'constant',
@@ -1300,19 +1301,33 @@ class Smartyer
 	 */
 	static public function truncate(string $str, int $length = 80, string $placeholder = '…', bool $strict_cut = false): string
 	{
-		// Don't try to use unicode if the string is not valid UTF-8
-		$u = preg_match('//u', $str) ? 'u' : '';
-
-		// Shorter than $length + 1
-		if (!preg_match('/^.{' . ((int)$length + 1) . '}/s' . $u, $str)) {
-			return $str;
+		if (trim($str) === '') {
+			return '';
 		}
 
-		// Cut at 80 characters
-		$str = preg_replace('/^(.{0,' . (int)$length . '}).*$/s' . $u, '$1', $str);
+		if (function_exists('mb_strlen')) {
+			if (mb_strlen($str) <= $length) {
+				return $str;
+			}
+
+			$str = mb_substr($str, 0, $length);
+		}
+		// Fallback to using regexp
+		else {
+			// Don't try to use unicode if the string is not valid UTF-8
+			$u = preg_match('//u', $str) ? 'u' : '';
+
+			// Shorter than $length + 1
+			if (!preg_match('/^.{' . ((int)$length + 1) . '}/s' . $u, $str)) {
+				return $str;
+			}
+
+			// Cut at 80 characters
+			$str = preg_replace('/^(.{0,' . (int)$length . '}).*$/s' . $u, '$1', $str);
+		}
 
 		if (!$strict_cut) {
-			$cut = preg_replace('/[^\s.,:;!?]*?$/s' . $u, '', $str);
+			$cut = preg_replace('/[^\s.,:;!?]*?$/s', '', $str);
 
 			if (trim($cut) === '') {
 				$cut = $str;
