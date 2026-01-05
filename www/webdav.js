@@ -13,9 +13,9 @@ const WebDAVNavigator = async function (url, options) {
 
 	const _ = key => typeof lang_strings != 'undefined' && key in lang_strings ? lang_strings[key] : key;
 
+	const download_button = `<a download title="${_('Download')}" class="btn">${_('Download')}</a>`;
 	const rename_button = `<input class="icon rename" type="button" value="${_('Rename')}" title="${_('Rename')}" />`;
 	const delete_button = `<input class="icon delete" type="button" value="${_('Delete')}" title="${_('Delete')}" />`;
-
 	const edit_button = `<input class="icon edit" type="button" value="${_('Edit')}" title="${_('Edit')}" />`;
 
 	const mkdir_dialog = `<input type="text" name="mkdir" placeholder="${_('Directory name')}" />`;
@@ -32,9 +32,7 @@ const WebDAVNavigator = async function (url, options) {
 
 	const html_tpl = `<!DOCTYPE html><html>
 		<head><title></title><link rel="stylesheet" type="text/css" href="${css_url}" /></head>
-		<body><main></main><div class="bg"></div></body></html>`;
-
-	const body_tpl = `
+		<body><main>
 		<div class="toolbar">
 			<div class="selected">
 				<input type="button" class="icon download" value="${_('Download')}" />
@@ -64,25 +62,33 @@ const WebDAVNavigator = async function (url, options) {
 		<table>
 			<thead>
 				<tr>
-					<td scope="col" class="check"><input type="checkbox" name="delete" value="%uri%" /><label><span></span></label></td>
+					<td scope="col" class="check"><input type="checkbox" /><label><span></span></label></td>
 					<td scope="col" class="name" data-sort="name"><button>${_('Name')}</button></td>
 					<td scope="col" class="size" data-sort="size"><button>${_('Size')}</button></td>
 					<td scope="col" class="date" data-sort="date"><button>${_('Date')}</button></td>
 					<td></td>
 				</tr>
 			</thead>
-			<tbody>%table%</tbody>
-		</table>`;
+			<tbody></tbody>
+		</table>
+		</main><div class="bg"></div></body></html>`;
 
 	const paste_widget = `<div><strong>${_('%count% files selected')}</strong>
 		<input type="button" value="%label%" class="icon %action%" />
 		<input type="button" value="${_('Cancel')}" class="icon cancel" /></div>`;
 
+	const parent_row_tpl = `<tr class="parent">
+		<td class="check"></td>
+		<th colspan="2"><a href="../"><span class="icon parent"><b></b></span> ${_('Back')}</a></th>
+		<td class="date"></td>
+		<td class="buttons"></td>
+	</tr>`;
+
 	const dir_row_tpl = `<tr data-permissions="%permissions%" class="%class%" data-name="%name%">
 		<td class="check"><input type="checkbox" name="delete" value="%uri%" /><label><span></span></label></td>
 		<th colspan="2"><a href="%uri%">%thumb% %name%</a></th>
 		<td class="date">%modified%</td>
-		<td class="buttons"><div></div></td>
+		<td class="buttons"><div>${rename_button} ${delete_button}</div></td>
 	</tr>`;
 
 	const file_row_tpl = `<tr data-permissions="%permissions%" data-mime="%mime%" data-size="%size%" data-name="%name%">
@@ -90,7 +96,7 @@ const WebDAVNavigator = async function (url, options) {
 		<th><a href="%uri%">%thumb% %name%</a></th>
 		<td class="size">%size_bytes%</td>
 		<td class="date">%modified%</td>
-		<td class="buttons"><div><a href="%uri%" download title="${_('Download')}" class="btn">${_('Download')}</a></div></td>
+		<td class="buttons"><div>${edit_button} ${download_button} ${rename_button} ${delete_button}</div></td>
 	</tr>`;
 
 	const icon_tpl = `<span class="icon %icon%"><b>%icon%</b></span>`;
@@ -104,15 +110,108 @@ const WebDAVNavigator = async function (url, options) {
 			</D:prop>
 		</D:propfind>`;
 
+	// Util functions ///////
+
+	const template = (tpl, params) => {
+		return tpl.replace(/%(\w+)%/g, (a, b) => {
+			return params[b];
+		});
+	};
+
 	const html = (unsafe) => {
 		return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 	};
 
 	const basename = path => path.split('/').pop();
+	const dirname = path => {
+		var parts = path.split('/');
+		parts.pop();
+		return parts.join('/');
+	};
+
+	const $ = (a) => document.querySelector(a);
+
+	const formatBytes = (bytes) => {
+		const unit = _('B');
+
+		if (bytes >= 1024*1024*1024) {
+			return Math.round(bytes / (1024*1024*1024)) + ' G' + unit;
+		}
+		else if (bytes >= 1024*1024) {
+			return Math.round(bytes / (1024*1024)) + ' M' + unit;
+		}
+		else if (bytes >= 1024) {
+			return Math.round(bytes / 1024) + ' K' + unit;
+		}
+		else {
+			return bytes + '  ' + unit;
+		}
+	};
+
+	const formatDate = (date) => {
+		if (isNaN(date)) {
+			return '';
+		}
+
+		var now = new Date;
+		var nb_hours = (+(now) - +(date)) / 3600 / 1000;
+
+		if (date.getFullYear() == now.getFullYear() && date.getMonth() == now.getMonth() && date.getDate() == now.getDate()) {
+			if (nb_hours <= 1) {
+				return _('%d minutes ago').replace(/%d/, Math.round(nb_hours * 60));
+			}
+			else {
+				return _('%d hours ago').replace(/%d/, Math.round(nb_hours));
+			}
+		}
+		else if (nb_hours <= 24) {
+			return _('Yesterday, %s').replace(/%s/, date.toLocaleTimeString());
+		}
+
+		return date.toLocaleString([], {year: 'numeric', month: 'numeric', day: 'numeric'});
+	};
+
+	const normalizeURL = (url) => {
+		if (!url.match(/^https?:\/\//)) {
+			url = base_url.replace(/^(https?:\/\/[^\/]+\/).*$/, '$1') + url.replace(/^\/+/, '');
+		}
+
+		return url;
+	};
+
+	const changeURL = (uri, push) => {
+		try {
+			if (push) {
+				history.pushState(1, null, uri);
+			}
+			else {
+				history.replaceState(1, null, uri);
+			}
+
+			if (popstate_evt) return;
+
+			popstate_evt = window.addEventListener('popstate', (e) => {
+				var url = location.pathname;
+				browser.open(url, false);
+			});
+		}
+		catch (e) {
+			// If using a HTML page on another origin
+			location.hash = uri;
+		}
+	};
+
+	// Classes ///////
 
 	var dav = {'headers': {}},
 		wopi = {'discovery_url': null, 'mimes': {}, 'extensions': {}},
-		browser = {'file': {}, 'paste_selection': [], 'paste_action': null};
+		browser = {
+			file: {},
+			paste_selection: [],
+			paste_action: null,
+			sort_order: 'name',
+			sort_order_desc: false
+		};
 
 	dav.setAuth = function (username, password) {
 		dav.headers = {};
@@ -192,14 +291,383 @@ const WebDAVNavigator = async function (url, options) {
 		return r.status === 200;
 	};
 
+	browser.init = () => {
+		document.title = _('My files');
+		document.querySelector('html').innerHTML = html_tpl;
+		browser.createToolbar();
+
+		//var column = document.querySelector('thead td[data-sort="' + browser.sort_order + '"]').className += ' selected ' + (browser.sort_order_desc ? 'desc' : 'asc');
+		// Create actions for sorting buttons
+		document.querySelectorAll('thead td[data-sort] button').forEach(elm => elm.onclick = (e) => {
+			var new_sort_order = e.target.parentNode.dataset.sort;
+
+			if (browser.sort_order == new_sort_order) {
+				browser.sort_order_desc = !browser.sort_order_desc;
+			}
+
+			browser.sort_order = new_sort_order;
+
+			window.localStorage.setItem('sort_order', new_sort_order);
+			window.localStorage.setItem('sort_order_desc', browser.sort_order_desc ? '1' : '0');
+			browser.reload();
+		});
+
+		// Check all by checking box in table header
+		document.querySelector('thead td.check input').onchange = (e) => {
+			document.querySelectorAll('tbody td.check input').forEach(i => i.checked = e.target.checked);
+		};
+	};
+
 	browser.open = function (url, push_history) {
 		closeDialog();
-		browser.url = url;
+		browser.url = normalizeURL(url);
 		dav.list(url).then(files => {
+			browser.current = files['.'];
+			delete files['.'];
 			browser.files = files;
-			buildListing(browser.url, browser.files);
+
+			var title = browser.current.name;
+
+			if (browser.current.url === base_url) {
+				title = _('My files');
+			}
+
+			document.title = title;
+
+			browser.setRootPermissions(browser.root.permissions);
+			browser.createFilesList();
+
 			changeURL(browser.url, push_history);
 		});
+	};
+
+	browser.createFilesList = () => {
+		var items = Object.values(browser.files);
+
+		// Sort files using specified order
+		items.sort((a, b) => {
+			if (browser.sort_order === 'date') {
+				return a.modified - b.modified;
+			}
+			else if (browser.sort_order === 'size') {
+				return a.size - b.size;
+			}
+			else {
+				return a.name.localeCompare(b.name);
+			}
+		});
+
+		// Sort with directories first
+		if (browser.sort_order !== 'date') {
+			items.sort((a, b) => b.is_dir - a.is_dir);
+		}
+
+		if (browser.sort_order_desc) {
+			items = items.reverse();
+		}
+
+		var rows = '';
+
+		// Add link to parent directory
+		if (browser.current.url !== base_url) {
+			rows += parent_row_tpl;
+		}
+
+		items.forEach(item => {
+			// Don't include files we cannot read
+			if (item.permissions !== null && item.permissions.indexOf('G') == -1) {
+				console.error('OC permissions deny read access to this file: ' + item.name, 'Permissions: ', item.permissions);
+				return;
+			}
+
+			var row = item.is_dir ? dir_row_tpl : file_row_tpl;
+			item.size_bytes = item.size !== null ? formatBytes(item.size).replace(/ /g, '&nbsp;') : null;
+
+			if (!item.is_dir && (pos = item.uri.lastIndexOf('.'))) {
+				var ext = item.uri.substr(pos+1).toUpperCase();
+
+				if (ext.length > 4) {
+					ext = '';
+				}
+			}
+
+			item.icon = ext || '';
+			item.class = item.is_dir ? 'dir' : 'file';
+			item.modified = item.modified !== null ? formatDate(item.modified) : null;
+			item.name = html(item.name);
+
+			if (item.mime && item.mime.match(/^image\//) && options.nc_thumbnails) {
+				item.thumb = template(image_thumb_tpl, item);
+			}
+			else {
+				item.thumb = template(icon_tpl, item);
+			}
+
+			rows += template(row, item);
+		});
+
+		document.querySelector('main > table > tbody').innerHTML = rows;
+
+		document.querySelectorAll('table tbody tr').forEach(browser.createRowActions);
+	};
+
+	browser.setRowPermissions = (tr, file) => {
+		// Assume we can do anything if no permissions are supplied
+		// https://web.archive.org/web/20250829204116/https://doc.owncloud.com/desktop/next/appendices/architecture.html#server-side-permissions
+		var p = (file.permissions || 'WCKDNV').split('');
+		var hideButton = a => document.querySelector('.buttons .' + a).style.display = 'none';
+
+		if (!p.contains('V')) {
+			hideButton('rename');
+		}
+
+		if (!permissions.contains('D')) {
+			hideButton('delete');
+		}
+
+		if (file.is_dir || !permissions.contains('W')) {
+			hideButton('edit');
+		}
+
+		// if (mime.match(/^text\/|application\/x-empty/))
+	};
+
+	browser.createRowActions = (tr) => {
+		// Ignore parent row
+		if (p = tr.classList.contains('parent')) {
+			p.querySelector('a').onclick = () => {
+				browser.open(dirname(file_url));
+				return false;
+			};
+			return;
+		}
+
+		var $$ = (a) => tr.querySelector(a);
+		var url = $$('a').href;
+		var file = browser.files[url];
+
+		browser.setRowPermissions(tr, file);
+
+		var dir = $$('[colspan]');
+		var mime = !dir ? tr.getAttribute('data-mime') : 'dir';
+		var buttons = $$('td.buttons div');
+		var permissions = tr.getAttribute('data-permissions');
+		var size = tr.getAttribute('data-size');
+
+		if (file.is_dir) {
+			$$('a').onclick = () => {
+				browser.open(file_url, true);
+				return false;
+			};
+
+			return;
+		}
+
+		$$('.buttons .rename').onclick = () => {
+			openDialog(rename_dialog);
+			let t = $('input[name=rename]');
+			t.value = file.name;
+			t.focus();
+			t.selectionStart = 0;
+			t.selectionEnd = file.name.lastIndexOf('.');
+			document.forms[0].onsubmit = () => {
+				var name = t.value;
+
+				if (!name) return false;
+
+				return reqMove(file_url, current_url + encodeURIComponent(name));
+			};
+		};
+
+		$$('.buttons .delete').onclick = (e) => {
+			openDialog(delete_dialog);
+			document.forms[0].onsubmit = () => {
+				return reqAndReload('DELETE', file_url);
+			};
+		};
+
+		if (!file.is_dir) {
+			$$('.buttons .download').href = file.url;
+			$$('.buttons .download').download = file.name;
+		}
+
+		var allow_preview = false;
+
+		// Don't preview PDF in mobile, it doesn't work
+		if ((mime == 'application/pdf' || file.name.match(/\.pdf$/i))
+			&& window.navigator.userAgent.match(/Mobi|Tablet|Android|iPad|iPhone/)) {
+			allow_preview = false;
+		}
+		else if (mime.match(PREVIEW_TYPES)
+			|| file.name.match(PREVIEW_EXTENSIONS)) {
+			allow_preview = true;
+		}
+
+		var edit_url, view_url;
+
+		if (allow_preview) {
+			$$('th a').onclick = () => { browser.openPreview(file); return false; };
+		}
+		else if (permissions.contains('W')
+			&& (file.mime.match(/^text\/|application\/x-empty/)
+				|| file.name.match(/\.(md|txt)$/i)
+				|| edit_url = wopi.getEditURL(file.url, file.mime))) {
+			if (edit_url)  {
+				var action = () => { wopi.open(file.url, edit_url); return false; };
+				$$('.icon').classList.add('document');
+			}
+			else {
+				var action = () => { browser.editFile(file); return false; };
+			}
+
+			$$('.buttons .edit').onclick = action;
+			$$('th a').onclick = action;
+		}
+		// Open WOPI viewser
+		else if (view_url = wopi.getViewURL(file.url, mime)) {
+			$$('.icon').classList.add('document');
+			$$('th a').onclick = () => { wopi.open(file.url, view_url); return false; };
+		}
+		else if (!file.is_dir) {
+			$$('th a').download = file.name;
+			$$('th a').href = file.url;
+		}
+	};
+
+	browser.openPreview = (file) => {
+		if (file.name.match(/\.md$/i)) {
+			openDialog('<div class="md_preview"></div>', false);
+			$('dialog').className = 'preview';
+			req('GET', file.url).then(r => r.text()).then(t => {
+				$('.md_preview').innerHTML = editor.markdownToHTML(t);
+			});
+			return false;
+		}
+
+		if (user && password) {
+			(async () => { preview(file.mime, await get_url(file.url)); })();
+		}
+		else {
+			preview(file.mime, file.url);
+		}
+
+		return false;
+	};
+
+	browser.editTextFile = (file) => {
+		req('GET', file.url).then((r) => r.text().then((t) => {
+			let md = file.url.match(/\.md$/i);
+			var tpl = dialog_tpl.replace(/%b/, '');
+			$('body').classList.add('dialog');
+			$('body').insertAdjacentHTML('beforeend', tpl.replace(/%s/, md ? markdown_dialog : edit_dialog));
+
+			var tb = $('.close');
+			tb.className = 'toolbar';
+			tb.innerHTML = `<input type="button" value="&#x2716; ${_('Cancel')}" class="close" />
+				<label><input type="checkbox" class="autosave" /> ${_('Autosave')}</label>
+				<span class="status"></span>
+				<input class="save" type="button" value="${_('Save and close')}" />`;
+
+			var txt = $('textarea[name=edit]');
+			txt.value = t;
+
+			var saved_status = $('.toolbar .status');
+			var close_btn = $('.toolbar .close');
+			var save_btn = $('.toolbar .save');
+			var autosave = $('.toolbar .autosave');
+
+			var c = localStorage.getItem('autosave') ?? options.autosave;
+			autosave.checked = c == 1 || c ===  true;
+			autosave.onchange = () => {
+				localStorage.setItem('autosave', autosave.checked ? 1 : 0);
+			};
+
+			var preventClose = (e) => {
+				if (txt.value == t) {
+					return;
+				}
+
+				e.preventDefault();
+				e.returnValue = '';
+				return true;
+			};
+
+			var close = () => {
+				if (txt.value !== t) {
+					if (!confirm(_('Your changes have not been saved. Do you want to cancel WITHOUT saving?'))) {
+						return;
+					}
+				}
+
+				window.removeEventListener('beforeunload', preventClose, {capture: true});
+				closeDialog();
+			};
+
+			var save = () => {
+				reqOrError('PUT', file.url, txt.value);
+				t = txt.value;
+				updateSaveStatus();
+			};
+
+			var updateSaveStatus = () => {
+				saved_status.innerHTML = txt.value !== t ? '⚠️ ' + _('Modified') : '✔️ ' + _('Saved');
+			};
+
+			save_btn.onclick = () => { save(); close(); };
+			close_btn.onclick = close;
+
+			// Prevent close of tab if content has changed and is not saved
+			window.addEventListener('beforeunload', preventClose, { capture: true });
+
+			txt.onkeydown = (e) => {
+				if (e.ctrlKey && e.key == 's') {
+					save();
+					e.preventDefault();
+					return false;
+				}
+				else if (e.key === 'Escape') {
+					close();
+					e.preventDefault();
+					return false;
+				}
+			};
+
+			txt.onkeyup = (e) => {
+				updateSaveStatus();
+			};
+
+			window.setInterval(() => {
+				if (autosave.checked && t != txt.value) {
+					save();
+				}
+			}, 10000);
+
+			// Markdown editor
+			if (md) {
+				let pre = $('.md_preview');
+
+				txt.oninput = () => {
+					pre.innerHTML = editor.markdownToHTML(txt.value);
+				};
+
+				txt.oninput();
+
+				// Sync scroll, not perfect but better than nothing
+				txt.onscroll = (e) => {
+					var p = e.target.scrollTop / (e.target.scrollHeight - e.target.offsetHeight);
+					var target = e.target == pre ? txt : pre;
+					target.scrollTop = p * (target.scrollHeight - target.offsetHeight);
+					e.preventDefault();
+					return false;
+				};
+			}
+
+			document.forms[0].onsubmit = () => {
+				var content = txt.value;
+
+				return reqAndReload('PUT', file.url, content);
+			};
+		}));
 	};
 
 	browser.reload = function () {
@@ -348,7 +816,7 @@ const WebDAVNavigator = async function (url, options) {
 		}
 
 		text = text.replace(/\r\n|\r/g, "\n");
-		text = text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+		text = html(text);
 		text = text.replace(/^(#+)\s*(.+)$/mg, (_, h, t) => '<h' + h.length + '>' + t + '</h' + h.length + '>');
 		text = text.replace(/\n{2,}/g, '<p>');
 		text = text.replace(/\[(.*)\]\((.*)\)/g, (_, l, h) => '<a href="' + h + '">' + (l || h) + '</a>');
@@ -647,12 +1115,6 @@ const WebDAVNavigator = async function (url, options) {
 		f.submit();
 	};
 
-	const template = (tpl, params) => {
-		return tpl.replace(/%(\w+)%/g, (a, b) => {
-			return params[b];
-		});
-	};
-
 	const openDialog = (html, ok_btn = true) => {
 		var tpl = dialog_tpl.replace(/%b/, ok_btn ? `<p><input type="submit" value="${_('OK')}" /></p>` : '');
 		$('body').classList.add('dialog');
@@ -730,435 +1192,12 @@ const WebDAVNavigator = async function (url, options) {
 		$('dialog').className = 'preview';
 	};
 
-	const $ = (a) => document.querySelector(a);
-
-	const formatBytes = (bytes) => {
-		const unit = _('B');
-
-		if (bytes >= 1024*1024*1024) {
-			return Math.round(bytes / (1024*1024*1024)) + ' G' + unit;
-		}
-		else if (bytes >= 1024*1024) {
-			return Math.round(bytes / (1024*1024)) + ' M' + unit;
-		}
-		else if (bytes >= 1024) {
-			return Math.round(bytes / 1024) + ' K' + unit;
-		}
-		else {
-			return bytes + '  ' + unit;
-		}
-	};
-
-	const formatDate = (date) => {
-		if (isNaN(date)) {
-			return '';
-		}
-
-		var now = new Date;
-		var nb_hours = (+(now) - +(date)) / 3600 / 1000;
-
-		if (date.getFullYear() == now.getFullYear() && date.getMonth() == now.getMonth() && date.getDate() == now.getDate()) {
-			if (nb_hours <= 1) {
-				return _('%d minutes ago').replace(/%d/, Math.round(nb_hours * 60));
-			}
-			else {
-				return _('%d hours ago').replace(/%d/, Math.round(nb_hours));
-			}
-		}
-		else if (nb_hours <= 24) {
-			return _('Yesterday, %s').replace(/%s/, date.toLocaleTimeString());
-		}
-
-		return date.toLocaleString([], {year: 'numeric', month: 'numeric', day: 'numeric'});
-	};
-
-	const normalizeURL = (url) => {
-		if (!url.match(/^https?:\/\//)) {
-			url = base_url.replace(/^(https?:\/\/[^\/]+\/).*$/, '$1') + url.replace(/^\/+/, '');
-		}
-
-		return url;
-	};
-
-	const changeURL = (uri, push) => {
-		try {
-			if (push) {
-				history.pushState(1, null, uri);
-			}
-			else {
-				history.replaceState(1, null, uri);
-			}
-
-			if (popstate_evt) return;
-
-			popstate_evt = window.addEventListener('popstate', (e) => {
-				var url = location.pathname;
-				browser.open(url, false);
-			});
-		}
-		catch (e) {
-			// If using a HTML page on another origin
-			location.hash = uri;
-		}
-	};
-
 	const animateLoading = () => {
 		document.body.classList.add('loading');
 	};
 
 	const stopLoading = () => {
 		document.body.classList.remove('loading');
-	};
-
-	const buildListing = (uri, items) => {
-		uri = normalizeURL(uri);
-
-		var title = items['.'].name ?? null;
-		var root_permissions = items['.'].permissions ?? null;
-		delete items['.'];
-
-		items = Object.values(items);
-
-		items.sort((a, b) => {
-			if (sort_order === 'date') {
-				return a.modified - b.modified;
-			}
-			else if (sort_order === 'size') {
-				return a.size - b.size;
-			}
-			else {
-				return a.name.localeCompare(b.name);
-			}
-		});
-
-		if (sort_order !== 'date') {
-			// Sort with directories first
-			items.sort((a, b) => b.is_dir - a.is_dir);
-		}
-
-		if (sort_order_desc) {
-			items = items.reverse();
-		}
-
-		var table = '';
-		var parent = uri.replace(/\/+$/, '').split('/').slice(0, -1).join('/') + '/';
-
-		if (parent.length >= base_url.length) {
-			table += template(dir_row_tpl, {'name': _('Back'), 'uri': parent, 'class': 'parent', 'thumb': template(icon_tpl, {})});
-		}
-		else {
-			title = _('My files');
-		}
-
-		items.forEach(item => {
-			// Don't include files we cannot read
-			if (item.permissions !== null && item.permissions.indexOf('G') == -1) {
-				console.error('OC permissions deny read access to this file: ' + item.name, 'Permissions: ', item.permissions);
-				return;
-			}
-
-			var row = item.is_dir ? dir_row_tpl : file_row_tpl;
-			item.size_bytes = item.size !== null ? formatBytes(item.size).replace(/ /g, '&nbsp;') : null;
-
-			if (!item.is_dir && (pos = item.uri.lastIndexOf('.'))) {
-				var ext = item.uri.substr(pos+1).toUpperCase();
-
-				if (ext.length > 4) {
-					ext = '';
-				}
-			}
-
-			item.icon = ext || '';
-			item.class = item.is_dir ? 'dir' : 'file';
-			item.modified = item.modified !== null ? formatDate(item.modified) : null;
-			item.name = html(item.name);
-
-			if (item.mime && item.mime.match(/^image\//) && options.nc_thumbnails) {
-				item.thumb = template(image_thumb_tpl, item);
-			}
-			else {
-				item.thumb = template(icon_tpl, item);
-			}
-
-			table += template(row, item);
-		});
-
-		document.title = title;
-		document.querySelector('main').innerHTML = template(body_tpl, {'title': html(document.title), 'base_url': base_url, 'table': table});
-
-		var parent_check = document.querySelector('tbody tr.parent .check');
-
-		if (parent_check) {
-			parent_check.innerHTML = '';
-		}
-
-		var column = document.querySelector('thead td[data-sort="' + sort_order + '"]').className += ' selected ' + (sort_order_desc ? 'desc' : 'asc');
-
-		document.querySelectorAll('thead td[data-sort] button').forEach(elm => elm.onclick = (e) => {
-			var new_sort_order = e.target.parentNode.dataset.sort;
-
-			if (sort_order == new_sort_order) {
-				sort_order_desc = !sort_order_desc;
-			}
-
-			sort_order = new_sort_order;
-
-			window.localStorage.setItem('sort_order', new_sort_order);
-			window.localStorage.setItem('sort_order_desc', sort_order_desc ? '1' : '0');
-			browser.reload();
-		});
-
-		document.querySelector('thead td.check input').onchange = (e) => {
-			document.querySelectorAll('tbody td.check input').forEach(i => i.checked = e.target.checked);
-		};
-
-		browser.createToolbar();
-		browser.setRootPermissions(root_permissions);
-
-		document.querySelectorAll('table tbody tr').forEach(tr => {
-			var $$ = (a) => tr.querySelector(a);
-			var file_url = $$('a').href;
-			var file_name = tr.dataset.name;
-			var dir = $$('[colspan]');
-			var mime = !dir ? tr.getAttribute('data-mime') : 'dir';
-			var buttons = $$('td.buttons div');
-			var permissions = tr.getAttribute('data-permissions');
-			var size = tr.getAttribute('data-size');
-
-			if (permissions == 'null') {
-				permissions = null;
-			}
-
-			if (dir) {
-				$$('a').onclick = () => {
-					browser.open(file_url, true);
-					return false;
-				};
-			}
-
-			// For back link
-			if (dir && $$('a').getAttribute('href').length < uri.length) {
-				dir.setAttribute('colspan', 4);
-				tr.querySelector('td:last-child').remove();
-				tr.querySelector('td:last-child').remove();
-				return;
-			}
-
-			// This is to get around CORS when not on the same domain
-			if (user && password && (a = tr.querySelector('a[download]'))) {
-				a.onclick = () => {
-					download(file_name, size, url);
-					return false;
-				};
-			}
-
-			// Add rename/delete buttons
-			if (!permissions || permissions.indexOf('NV') != -1) {
-				buttons.insertAdjacentHTML('afterbegin', rename_button);
-
-				$$('.rename').onclick = () => {
-					openDialog(rename_dialog);
-					let t = $('input[name=rename]');
-					t.value = file_name;
-					t.focus();
-					t.selectionStart = 0;
-					t.selectionEnd = file_name.lastIndexOf('.');
-					document.forms[0].onsubmit = () => {
-						var name = t.value;
-
-						if (!name) return false;
-
-						return reqMove(file_url, current_url + encodeURIComponent(name));
-					};
-				};
-
-			}
-
-			if (!permissions || permissions.indexOf('D') != -1) {
-				buttons.insertAdjacentHTML('afterbegin', delete_button);
-
-				$$('.delete').onclick = (e) => {
-					openDialog(delete_dialog);
-					document.forms[0].onsubmit = () => {
-						return reqAndReload('DELETE', file_url);
-					};
-				};
-			}
-
-			var view_url, edit_url;
-			var allow_preview = false;
-
-			if (mime.match(PREVIEW_TYPES)
-				|| file_name.match(PREVIEW_EXTENSIONS)) {
-				allow_preview = true;
-			}
-
-			// Don't preview PDF in mobile
-			if ((mime == 'application/pdf' || file_name.match(/\.pdf/i))
-				&& window.navigator.userAgent.match(/Mobi|Tablet|Android|iPad|iPhone/)) {
-				allow_preview = false;
-			}
-
-			if (allow_preview) {
-				$$('a').onclick = () => {
-					if (file_url.match(/\.md$/)) {
-						openDialog('<div class="md_preview"></div>', false);
-						$('dialog').className = 'preview';
-						req('GET', file_url).then(r => r.text()).then(t => {
-							$('.md_preview').innerHTML = editor.markdownToHTML(t);
-						});
-						return false;
-					}
-
-					if (user && password) {
-						(async () => { preview(mime, await get_url(file_url)); })();
-					}
-					else {
-						preview(mime, file_url);
-					}
-
-					return false;
-				};
-			}
-			else if (view_url = wopi.getViewURL(file_url, mime)) {
-				$$('.icon').classList.add('document');
-				$$('a').onclick = () => { wopi.open(file_url, view_url); return false; };
-			}
-			else if (user && password && !dir) {
-				$$('a').onclick = () => { download(file_name, size, file_url); return false; };
-			}
-			else if (!dir) {
-				$$('a').download = file_name;
-			}
-
-			if (!permissions || permissions.indexOf('W') != -1) {
-				if (mime.match(/^text\/|application\/x-empty/)) {
-					buttons.insertAdjacentHTML('beforeend', edit_button);
-
-					$$('.edit').onclick = (e) => {
-						req('GET', file_url).then((r) => r.text().then((t) => {
-							let md = file_url.match(/\.md$/);
-							var tpl = dialog_tpl.replace(/%b/, '');
-							$('body').classList.add('dialog');
-							$('body').insertAdjacentHTML('beforeend', tpl.replace(/%s/, md ? markdown_dialog : edit_dialog));
-
-							var tb = $('.close');
-							tb.className = 'toolbar';
-							tb.innerHTML = `<input type="button" value="&#x2716; ${_('Cancel')}" class="close" />
-								<label><input type="checkbox" class="autosave" /> ${_('Autosave')}</label>
-								<span class="status"></span>
-								<input class="save" type="button" value="${_('Save and close')}" />`;
-
-							var txt = $('textarea[name=edit]');
-							txt.value = t;
-
-							var saved_status = $('.toolbar .status');
-							var close_btn = $('.toolbar .close');
-							var save_btn = $('.toolbar .save');
-							var autosave = $('.toolbar .autosave');
-
-							var c = localStorage.getItem('autosave') ?? options.autosave;
-							autosave.checked = c == 1 || c ===  true;
-							autosave.onchange = () => {
-								localStorage.setItem('autosave', autosave.checked ? 1 : 0);
-							};
-
-							var preventClose = (e) => {
-								if (txt.value == t) {
-									return;
-								}
-
-								e.preventDefault();
-								e.returnValue = '';
-								return true;
-							};
-
-							var close = () => {
-								if (txt.value !== t) {
-									if (!confirm(_('Your changes have not been saved. Do you want to cancel WITHOUT saving?'))) {
-										return;
-									}
-								}
-
-								window.removeEventListener('beforeunload', preventClose, {capture: true});
-								closeDialog();
-							};
-
-							var save = () => {
-								reqOrError('PUT', file_url, txt.value);
-								t = txt.value;
-								updateSaveStatus();
-							};
-
-							var updateSaveStatus = () => {
-								saved_status.innerHTML = txt.value !== t ? '⚠️ ' + _('Modified') : '✔️ ' + _('Saved');
-							};
-
-							save_btn.onclick = () => { save(); close(); };
-							close_btn.onclick = close;
-
-							// Prevent close of tab if content has changed and is not saved
-							window.addEventListener('beforeunload', preventClose, { capture: true });
-
-							txt.onkeydown = (e) => {
-								if (e.ctrlKey && e.key == 's') {
-									save();
-									e.preventDefault();
-									return false;
-								}
-								else if (e.key === 'Escape') {
-									close();
-									e.preventDefault();
-									return false;
-								}
-							};
-
-							txt.onkeyup = (e) => {
-								updateSaveStatus();
-							};
-
-							window.setInterval(() => {
-								if (autosave.checked && t != txt.value) {
-									save();
-								}
-							}, 10000);
-
-							// Markdown editor
-							if (md) {
-								let pre = $('.md_preview');
-
-								txt.oninput = () => {
-									pre.innerHTML = editor.markdownToHTML(txt.value);
-								};
-
-								txt.oninput();
-
-								// Sync scroll, not perfect but better than nothing
-								txt.onscroll = (e) => {
-									var p = e.target.scrollTop / (e.target.scrollHeight - e.target.offsetHeight);
-									var target = e.target == pre ? txt : pre;
-									target.scrollTop = p * (target.scrollHeight - target.offsetHeight);
-									e.preventDefault();
-									return false;
-								};
-							}
-
-							document.forms[0].onsubmit = () => {
-								var content = txt.value;
-
-								return reqAndReload('PUT', file_url, content);
-							};
-						}));
-					};
-				}
-				else if (edit_url = wopi.getEditURL(file_url, mime)) {
-					buttons.insertAdjacentHTML('beforeend', edit_button);
-
-					$$('.icon').classList.add('document');
-					$$('.edit').onclick = () => { wopi.open(file_url, edit_url); return false; };
-				}
-			}
-		});
 	};
 
 	var items = [[], []];
@@ -1183,8 +1222,6 @@ const WebDAVNavigator = async function (url, options) {
 
 	wopi.discovery_url = options.wopi_discovery_url || null;
 	options.autosave = options.autosave || false;
-
-	document.querySelector('html').innerHTML = html_tpl;
 
 	// Wait for WOPI discovery before creating the list
 	if (wopi.discovery_url) {
