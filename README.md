@@ -242,7 +242,7 @@ Then I timed KaraDAV, mod_dav and NextCloud (24) (all installed on my laptop, wi
 KaraDAV performance was very close to mod_dav, and NextCloud performance was incredibly poor.
 
 | Client | KaraDAV | NextCloud | mod_dav |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- |
 | Dolphin (KDE) | 5 seconds | 1 minute 15 seconds | 3 seconds |
 | Thunar (GTK) | 5 seconds | 1 minute 50 seconds | 5 seconds |
 | WebDAV Manager.js | 4 seconds (no delete) | -- | -- |
