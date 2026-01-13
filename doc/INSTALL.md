@@ -134,4 +134,5 @@ Please don't file issues related to Docker on this repository, it is dedicated t
 
 # Using LDAP
 
+Install the `php-ldap` extension on your server.
 See configuration constants in `config.local.php`.
