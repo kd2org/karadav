@@ -134,4 +134,4 @@ Please don't file issues related to Docker on this repository, it is dedicated t
 
 # Using LDAP
 
-See configuration constants in `config.local.php`.
+Make sure you have the PHP LDAP extension (`apt install php-ldap`), then see the appropriate configuration constants in `config.local.php`.
