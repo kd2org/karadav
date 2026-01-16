@@ -37,7 +37,7 @@ class LDAP
 	{
 		self::connect();
 
-		$filter = sprintf($filter, ldap_escape($login, null, \LDAP_ESCAPE_FILTER));
+		$filter = sprintf($filter, ldap_escape($login, '', \LDAP_ESCAPE_FILTER));
 		$results = ldap_search(self::$ldap, LDAP_BASE, $filter, [LDAP_DISPLAY_NAME]);
 		$info = ldap_get_entries(self::$ldap, $results);
 
