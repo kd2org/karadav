@@ -10,7 +10,8 @@ abstract class NextCloud
 
 	/**
 	 * File permissions for NextCloud clients
-	 * https://doc.owncloud.com/desktop/next/appendices/architecture.html#server-side-permissions
+	 * @see https://doc.owncloud.com/desktop/next/appendices/architecture.html#server-side-permissions
+	 * @see https://docs.nextcloud.com/server/latest/developer_manual//client_apis/WebDAV/basic.html
 	 *
 	 * R = Shareable
 	 * S = Shared
