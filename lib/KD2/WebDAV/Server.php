@@ -800,7 +800,7 @@ class Server
 				// see https://github.com/opencloud-eu/android/issues/74
 				if ($name == 'DAV::creationdate'
 					&& ($value instanceof \DateTimeInterface)
-					&& false !== preg_match('/owncloud|opencloud/', $_SERVER['HTTP_USER_AGENT'] ?? '')) {
+					&& preg_match('/(owncloud|opencloud).*android/i', $_SERVER['HTTP_USER_AGENT'] ?? '')) {
 					$value = $value->getTimestamp();
 				}
 				// ownCloud app crashes if mimetype is provided for a directory
@@ -820,7 +820,11 @@ class Server
 					// Change value to GMT
 					$value = clone $value;
 					$value->setTimezone(new \DateTimeZone('GMT'));
-					$value = $value->format(self::DATE_RFC7231);
+					if ($name === 'DAV::creationdate') {
+						$value = $value->format('Y-m-d\TH:i:s\Z');
+					} else {
+						$value = $value->format(self::DATE_RFC7231);
+					}
 				}
 				elseif (is_array($value)) {
 					$attributes = $value['attributes'] ?? '';
