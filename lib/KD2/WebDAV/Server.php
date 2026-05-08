@@ -702,6 +702,7 @@ class Server
 		}
 
 		$items = [$uri => $properties];
+		$items[$uri]['_is_collection'] = ($properties['DAV::resourcetype'] ?? $this->storage->propfind($uri, ['DAV::resourcetype'], 0)['DAV::resourcetype'] ?? null) === 'collection';
 
 		if ($depth) {
 			foreach ($this->storage->list($uri, $requested) as $file => $properties) {
@@ -713,6 +714,7 @@ class Server
 					continue;
 				}
 
+				$properties['_is_collection'] = ($properties['DAV::resourcetype'] ?? $this->storage->propfind($path, ['DAV::resourcetype'], 0)['DAV::resourcetype'] ?? null) === 'collection';
 				$items[$path] = $properties;
 			}
 		}
@@ -776,7 +778,7 @@ class Server
 			$uri = trim(rtrim($this->base_uri, '/') . '/' . ltrim($uri, '/'), '/');
 			$path = '/' . str_replace('%2F', '/', rawurlencode($uri));
 
-			if (($item['DAV::resourcetype'] ?? null) == 'collection' && $path != '/') {
+			if ((($item['DAV::resourcetype'] ?? null) === 'collection' || !empty($item['_is_collection'])) && $path != '/') {
 				$path .= '/';
 			}
 
@@ -784,7 +786,7 @@ class Server
 			$e .= '<d:propstat><d:prop>';
 
 			foreach ($item as $name => $value) {
-				if (null === $value) {
+				if (null === $value || $name === '_is_collection') {
 					continue;
 				}
 
