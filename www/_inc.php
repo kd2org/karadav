@@ -25,6 +25,10 @@ $tpl->setCompiledDir(CACHE_PATH . '/compiled');
 
 $tpl->assign('www_url', WWW_URL);
 $tpl->assign('apps', EXTERNAL_APPS);
+
+$current = ($file === 'app.php') ? ($_GET['app'] ?? null) : basename($file, '.php');
+$tpl->assign('current', $current);
+
 $tpl->assign(compact('logged_user', 'users'));
 
 $tpl->register_function('form_csrf', function (): string {
