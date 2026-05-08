@@ -185,7 +185,7 @@ class Storage extends AbstractStorage implements TrashInterface
 				return is_dir($target) ? 'collection' : '';
 			case 'DAV::getlastmodified':
 				if (!$uri && $depth == 0 && is_dir($target)) {
-					$mtime = $this->getRecursiveFileProperty($uri, 'modified');
+					$mtime = $this->getRecursiveFileProperty($uri, 'modified') ?: filemtime($target);
 				}
 				else {
 					$mtime = filemtime($target);
@@ -288,12 +288,12 @@ class Storage extends AbstractStorage implements TrashInterface
 
 				return $this->getTrashInfo(basename($uri))['Path'] ?? null;
 			case 'DAV::quota-available-bytes':
-				return null;
+				return $this->users->quota($this->users->current())->free;
 			case 'DAV::quota-used-bytes':
-				return null;
+				return $this->users->quota($this->users->current())->used;
 			case Nextcloud::PROP_OC_SIZE:
 				if (is_dir($target)) {
-					return $this->getRecursiveFileProperty($uri, 'size');
+					return (int) $this->getRecursiveFileProperty($uri, 'size');
 				}
 				else {
 					return self::getFilesize($target);

@@ -433,6 +433,10 @@ abstract class NextCloud
 		$out = '';
 
 		foreach ($array as $key => $v) {
+			if (is_int($key)) {
+				$key = 'element';
+			}
+
 			$out .= '<' . $key .'>';
 
 			if (is_array($v)) {
