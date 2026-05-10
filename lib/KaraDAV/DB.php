@@ -87,30 +87,26 @@ class DB extends \SQLite3
 			return;
 		}
 
+		$this->exec('BEGIN;');
+
 		if ($db_version < 1) {
-			$this->exec('BEGIN;');
 			$this->exec(file_get_contents(ROOT . '/sql/migrate_0001.sql'));
 
 			$users = new Users;
 			$users->indexAllFiles();
-			$this->exec('END;');
 		}
 
 		// Re-index to create directories in cache
 		if ($db_version < 2) {
-			$this->exec('BEGIN;');
 			$users = new Users;
 			$users->indexAllFiles();
-			$this->exec('PRAGMA user_version = 2;');
-			$this->exec('END;');
 		}
 
 		if ($db_version < 3) {
-			$this->exec('BEGIN;');
 			$this->exec(file_get_contents(ROOT . '/sql/migrate_0003.sql'));
-			$this->exec('END;');
 		}
 
-		$db->exec('PRAGMA user_version = ' . self::VERSION . ';');
+		$this->exec('PRAGMA user_version = ' . self::VERSION . ';');
+		$this->exec('END;');
 	}
 }
