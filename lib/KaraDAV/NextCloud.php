@@ -212,6 +212,9 @@ class NextCloud extends WebDAV_NextCloud
 		$out = fopen($target, 'wb');
 		$list = glob($path . '/*') ?: [];
 
+		// Make sure chunks are ordered "naturally": 1, 2, 3, 10, 11, and no 1, 10, 11, 2, 3…
+		natcasesort($list);
+
 		foreach ($list as $file) {
 			$in = fopen($file, 'rb');
 
