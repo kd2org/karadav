@@ -40,4 +40,5 @@ if (!empty($_POST['login']) && !empty($_POST['password']) && csrf_check()) {
 
 $app_login = $_GET['nc'] ?? null;
 $tpl->assign(compact('error', 'app_login'));
+$tpl->assign('logged_user', null);
 $tpl->display('login.tpl');

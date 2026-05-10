@@ -75,7 +75,7 @@ KaraDAV is not a drop-in replacement for NextCloud. It is not intended to be. It
 
 | Feature | KaraDAV | NextCloud | OCIS/OpenCloud |
 | -: | :- | :- |  :- | 
-| License | AGPL (commercial license on request) | AGPL | AGPL |
+| License | AGPL | AGPL | AGPL |
 | Language | PHP (no framework) | PHP | Go |
 | Ease of setup | Easy | Easy | Very complex |
 | Speed | Fast | Sloooow | Average? |
@@ -242,7 +242,7 @@ Then I timed KaraDAV, mod_dav and NextCloud (24) (all installed on my laptop, wi
 KaraDAV performance was very close to mod_dav, and NextCloud performance was incredibly poor.
 
 | Client | KaraDAV | NextCloud | mod_dav |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- |
 | Dolphin (KDE) | 5 seconds | 1 minute 15 seconds | 3 seconds |
 | Thunar (GTK) | 5 seconds | 1 minute 50 seconds | 5 seconds |
 | WebDAV Manager.js | 4 seconds (no delete) | -- | -- |
@@ -393,6 +393,16 @@ But they mostly pass with litmus 0.13-3 supplied by Debian:
 <- summary for `locks': of 41 tests run: 38 passed, 3 failed. 92.7%
 -> 2 warnings were issued.
 ```
+
+## Contributions
+
+* Contributions (bug reports, patches) are welcome as long as they are well-intended.
+* Keep in mind that this project is maintained on my own free time, I have no obligation to maintain it, and I have no obligation to reply quickly. I may be off hiking in the woods, are doing other interesting things that don't involve a screen.
+* New features and large patches must be discussed with the developer beforehand, or they might not get integrated (as they require a lot of work to read, understand, and merge).
+* Use of AI is highly discouraged (as it destroys the planet!), but:
+  * Use of AI to identify bugs and sources of bugs is fine.
+  * AI-generated code may be provided as a suggestion, but will never be integrated in the codebase.
+  * Use of AI to generate PRs or issues is forbidden. I want to talk with humans, not machines, thanks.
 
 ## Author
 

@@ -432,6 +432,11 @@ abstract class NextCloud
 		$out = '';
 
 		foreach ($array as $key => $v) {
+			if (is_int($key)) {
+				// For list arrays, as <0> is not valid XML
+				$key = 'element';
+			}
+
 			$out .= '<' . $key .'>';
 
 			if (is_array($v)) {
@@ -897,6 +902,10 @@ abstract class NextCloud
 			}
 
 			$this->server->log('Assembling chunks to: %s', $dest);
+
+			if (!isset($_SERVER['HTTP_X_OC_MTIME'])) {
+				throw new Exception('Invalid client');
+			}
 
 			$mtime = (int) $_SERVER['HTTP_X_OC_MTIME'] ?: null;
 

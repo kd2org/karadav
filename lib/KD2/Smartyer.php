@@ -121,6 +121,7 @@ class Smartyer
 		'replace' => [__CLASS__, 'replace'],
 		'regex_replace' => [__CLASS__, 'replaceRegExp'],
 		'date_format' => [__CLASS__, 'dateFormat'],
+		'strftime' => [__CLASS__, 'dateFormat'],
 	];
 
 	/**

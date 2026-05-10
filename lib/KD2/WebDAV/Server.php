@@ -695,6 +695,7 @@ class Server
 			throw new Exception('This does not exist', 404);
 		}
 
+		// Fill all the various time properties (for compatibility)
 		if (isset($properties['DAV::getlastmodified'])) {
 			foreach (self::MODIFICATION_TIME_PROPERTIES as $name) {
 				$properties[$name] = $properties['DAV::getlastmodified'];
@@ -732,7 +733,7 @@ class Server
 		$requested ??= [];
 
 		foreach ($requested as $prop) {
-			if ($prop['ns_url'] == 'DAV:' || !$prop['ns_url']) {
+			if ($prop['ns_url'] === 'DAV:' || !$prop['ns_url']) {
 				continue;
 			}
 
@@ -800,7 +801,7 @@ class Server
 				// see https://github.com/opencloud-eu/android/issues/74
 				if ($name == 'DAV::creationdate'
 					&& ($value instanceof \DateTimeInterface)
-					&& false !== preg_match('/owncloud|opencloud/', $_SERVER['HTTP_USER_AGENT'] ?? '')) {
+					&& false !== preg_match('/(?:owncloud|opencloud).*android/i', $_SERVER['HTTP_USER_AGENT'] ?? '')) {
 					$value = $value->getTimestamp();
 				}
 				// ownCloud app crashes if mimetype is provided for a directory
@@ -817,10 +818,19 @@ class Server
 					$value = '"' . $value . '"';
 				}
 				elseif ($value instanceof \DateTimeInterface) {
-					// Change value to GMT
-					$value = clone $value;
-					$value->setTimezone(new \DateTimeZone('GMT'));
-					$value = $value->format(self::DATE_RFC7231);
+					// Format is different between properties
+					if ($name === 'DAV::creationdate') {
+						$format = \DATE_RFC3339;
+					}
+					// Mostly for DAV::getlastmodified
+					else {
+						// Change value to GMT, see https://discourse.thephp.foundation/t/php-dev-was-deprecation-of-date-rfc7231-and-datetimeinterface-rfc7231-a-mistake/5063/4
+						$value = clone $value;
+						$value->setTimezone(new \DateTimeZone('GMT'));
+						$format = self::DATE_RFC7231;
+					}
+
+					$value = $value->format($format);
 				}
 				elseif (is_array($value)) {
 					$attributes = $value['attributes'] ?? '';
