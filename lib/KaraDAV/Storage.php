@@ -757,8 +757,9 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		// root path doesn't exist in database, just assign a very large value
 		// if you have more than 1 trillion files well… you might miss one
+		// Fix from @adamshand: keep the number in 32 bit range for iOS clients
 		if (!$id && $path === '') {
-			$id = 999999999999;
+			$id = 1000000000;
 		}
 
 		return $id;
