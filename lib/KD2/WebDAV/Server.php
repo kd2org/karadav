@@ -858,8 +858,17 @@ class Server
 
 			$e .= '</d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>' . "\n";
 
-			// Append missing properties
-			if (!empty($requested)) {
+			$ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+			$ignore_missing_properties = false;
+
+			// Nextcloud iOS is fragile and may ignore a listing when optional
+			// extension properties are returned as 404 propstats
+			if (false === stripos($ua, 'Nextcloud-iOS')) {
+				$ignore_missing_properties = true;
+			}
+
+			// Append 404 responses for requested properties that could not be found
+			if (!$ignore_missing_properties && !empty($requested)) {
 				$missing_properties = array_diff($requested_keys, array_keys($item));
 
 				if (count($missing_properties)) {

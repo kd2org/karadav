@@ -103,8 +103,8 @@ abstract class NextCloud
 		'logo'                 => 'https://upload.wikimedia.org/wikipedia/commons/6/60/Nextcloud_Logo.svg',
 		'background'           => '#333333',
 		'background-text'      => '#ffffff',
-		'background-plain'     => '',
-		'background-default'   => '',
+		'background-plain'     => false,
+		'background-default'   => false,
 		'logoheader'           => 'https://upload.wikimedia.org/wikipedia/commons/6/60/Nextcloud_Logo.svg',
 		'favicon'              => 'https://upload.wikimedia.org/wikipedia/commons/6/60/Nextcloud_Logo.svg'
 	];
@@ -312,9 +312,15 @@ abstract class NextCloud
 		'ocs/v1.php/cloud/user' => 'user',
 		'v1.php/cloud/user' => 'user',
 		'ocs/v1.php/config' => 'config',
+		// direct_editing route is required for iOS apps
+		'ocs/v2.php/apps/files/api/v1/directEditing' => 'direct_editing',
 		'ocs/v2.php/apps/files_sharing/api/v1/shares' => 'shares',
 		'ocs/v2.php/apps/user_status' => 'empty',
 		'ocs/v2.php/core/navigation/apps' => 'empty',
+		// the following 3 routes are required for iOS apps apparently
+		'ocs/v2.php/apps/notifications/api/v2/push' => 'empty',
+		'ocs/v2.php/apps/dashboard/api/v1/widgets' => 'empty',
+		'ocs/v2.php/apps/activity/api/v2/activity/all' => 'empty',
 		// OpenCloud spaces, see https://github.com/opencloud-eu/android/blob/80764e22f50ab38411b7230c71709430514079e9/opencloudComLibrary/src/main/java/eu/opencloud/android/lib/resources/spaces/GetRemoteSpacesOperation.kt#L96
 		'graph/v1.0/me/drives' => 'opencloud_graph',
 		'index.php/avatar' => 'avatar',
@@ -353,6 +359,8 @@ abstract class NextCloud
 	 */
 	public function route(?string $uri = null): bool
 	{
+		$method = $_SERVER['REQUEST_METHOD'] ?? null;
+
 		if (null === $uri) {
 			$uri = $_SERVER['REQUEST_URI'] ?? '/';
 		}
@@ -362,15 +370,20 @@ abstract class NextCloud
 		$uri = ltrim($uri, '/');
 		$uri = rawurldecode($uri);
 
-		$route = array_filter(self::ROUTES, fn($k) => 0 === strpos($uri, $k), ARRAY_FILTER_USE_KEY);
+		// Required by iOS clients
+		if ($method === 'REPORT') {
+			$route = 'report';
+		}
+		else {
+			$route = array_filter(self::ROUTES, fn($k) => 0 === strpos($uri, $k), ARRAY_FILTER_USE_KEY);
 
-		if (count($route) < 1) {
-			return false;
+			if (count($route) < 1) {
+				return false;
+			}
+
+			$route = current($route);
 		}
 
-		$route = current($route);
-
-		$method = $_SERVER['REQUEST_METHOD'] ?? null;
 		$this->server->log('NC <= %s %s => routed to: %s', $method, $uri, $route);
 
 		try {
@@ -378,7 +391,7 @@ abstract class NextCloud
 
 			// Currently, iOS apps are broken
 			if ($this->block_ios_clients && (stristr($ua, 'nextcloud-ios') || stristr($ua, 'owncloudapp'))) {
-				throw new WebDAV_Exception('Your client is not compatible with this server. Consider using a different WebDAV client.', 403);
+				throw new Exception('Your client is not compatible with this server. Consider using a different WebDAV client.', 403);
 			}
 
 			$v = $this->{'nc_' . $route}($uri);
@@ -552,11 +565,14 @@ abstract class NextCloud
 			throw new Exception('Invalid request method', 405);
 		}
 
-		if (empty($_POST['token']) || !ctype_alnum($_POST['token'])) {
+		// Token may be passed in query string on iOS?
+		$token = $_POST['token'] ?? ($_GET['token'] ?? null);
+
+		if (empty($token) || !ctype_alnum($token)) {
 			throw new Exception('Invalid token', 400);
 		}
 
-		$session = $this->validateToken($_POST['token']);
+		$session = $this->validateToken($token);
 
 		if (!$session) {
 			throw new Exception('No token yet', 404);
@@ -683,6 +699,14 @@ abstract class NextCloud
 		return '{"value":[]}';
 	}
 
+	protected function nc_direct_editing(): array
+	{
+		return $this->nc_ocs([
+			'editors' => new \stdClass,
+			'creators' => new \stdClass,
+		]);
+	}
+
 	protected function nc_avatar(): void
 	{
 		throw new Exception('Not implemented', 404);
@@ -803,6 +827,30 @@ abstract class NextCloud
 			'meta' => ['status' => 'ok', 'statuscode' => 200, 'message' => 'OK'],
 			'data' => $data,
 		]];
+	}
+
+	/**
+	 * Nextcloud clients use REPORT with oc:filter-files to list favorites
+	 * recursively. KaraDAV does not currently track favorites, so return an
+	 * empty multistatus instead of a 405, otherwise mobile clients may keep
+	 * retrying the request.
+	 */
+	public function nc_report(string $uri): ?string
+	{
+		$body = file_get_contents('php://input');
+
+		if (false !== strpos($body, '<!DOCTYPE ')) {
+			throw new Exception('Invalid XML', 400);
+		}
+
+		if (false !== strpos($body, 'filter-files')) {
+			header('HTTP/1.1 207 Multi-Status', true);
+			header('DAV: 1, 2, 3');
+			header('Content-Type: application/xml; charset=utf-8');
+			return '<?xml version="1.0" encoding="utf-8"?><d:multistatus xmlns:d="DAV:" />';
+		}
+
+		throw new Exception('Invalid request method', 405);
 	}
 
 	/**
