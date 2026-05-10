@@ -77,6 +77,7 @@ class WOPI
 	const PROP_USER_NAME = self::NS . ':UserFriendlyName';
 	const PROP_USER_ID = self::NS . ':UserId';
 	const PROP_USER_AVATAR = self::NS . ':UserExtraInfo-Avatar';
+	const PROP_OWNER_ID = self::NS . ':OwnerId';
 	const PROP_LAST_MODIFIED = 'DAV::getlastmodified';
 
 	protected AbstractStorage $storage;
@@ -257,11 +258,13 @@ class WOPI
 			$modified = $props[self::PROP_LAST_MODIFIED]->format(DATE_ISO8601);
 		}
 
+		$user_id = $props[self::PROP_USER_ID] ?? 0;
+
 		$data = [
 			'BaseFileName'            => basename($uri),
 			'UserFriendlyName'        => $props[self::PROP_USER_NAME] ?? 'User',
-			'OwnerId'                 => 0,
-			'UserId'                  => $props[self::PROP_USER_ID] ?? 0,
+			'OwnerId'                 => $props[self::PROP_OWNER_ID] ?? $user_id,
+			'UserId'                  => $user_id,
 			'Version'                 => $props['DAV::getetag'] ?? md5($uri . $size . $modified),
 			'ReadOnly'                => $readonly,
 			'UserCanWrite'            => !$readonly,

@@ -50,7 +50,7 @@ class Image
 		'close_pointer_quickly'    => false,
 
 		// WebP quality, from 0 to 100
-		'webp_quality'             => 80,
+		'webp_quality'             => 90,
 
 		// JPEG quality, from 1 to 100
 		'jpeg_quality'             => 90,

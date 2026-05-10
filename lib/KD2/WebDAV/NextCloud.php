@@ -10,8 +10,7 @@ abstract class NextCloud
 
 	/**
 	 * File permissions for NextCloud clients
-	 * @see https://doc.owncloud.com/desktop/next/appendices/architecture.html#server-side-permissions
-	 * @see https://docs.nextcloud.com/server/latest/developer_manual//client_apis/WebDAV/basic.html
+	 * https://web.archive.org/web/20250829204116/https://doc.owncloud.com/desktop/next/appendices/architecture.html#server-side-permissions
 	 *
 	 * R = Shareable
 	 * S = Shared
@@ -433,6 +432,11 @@ abstract class NextCloud
 		$out = '';
 
 		foreach ($array as $key => $v) {
+			if (is_int($key)) {
+				// For list arrays, as <0> is not valid XML
+				$key = 'element';
+			}
+
 			$out .= '<' . $key .'>';
 
 			if (is_array($v)) {
@@ -898,6 +902,10 @@ abstract class NextCloud
 			}
 
 			$this->server->log('Assembling chunks to: %s', $dest);
+
+			if (!isset($_SERVER['HTTP_X_OC_MTIME'])) {
+				throw new Exception('Invalid client');
+			}
 
 			$mtime = (int) $_SERVER['HTTP_X_OC_MTIME'] ?: null;
 
