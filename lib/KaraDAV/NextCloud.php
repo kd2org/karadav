@@ -122,10 +122,13 @@ class NextCloud extends WebDAV_NextCloud
 	{
 		$expire = time() - 36*3600;
 
-		foreach (glob($this->temporary_chunks_path . '/*/*') as $dir) {
-			$first_file = current(glob($dir . '/*'));
+		foreach (glob($this->temporary_chunks_path . '/*/*') ?: [] as $dir) {
+			$first_file = current(glob($dir . '/*') ?: []);
 
-			if (filemtime($first_file) < $expire) {
+			if ($first_file && filemtime($first_file) < $expire) {
+				Storage::deleteDirectory($dir);
+			}
+			elseif (!$first_file && filemtime($dir) < $expire) {
 				Storage::deleteDirectory($dir);
 			}
 		}
@@ -145,9 +148,9 @@ class NextCloud extends WebDAV_NextCloud
 
 		while (!feof($pointer)) {
 			$data = fread($pointer, 8192);
-			$used += strlen($used);
+			$used += strlen($data);
 
-			if ($used > $quota['free']) {
+			if ($used > $quota['total']) {
 				$this->deleteChunks($login, $name);
 				throw new WebDAV_Exception('Your quota does not allow for the upload of this file', 403);
 			}
@@ -161,8 +164,8 @@ class NextCloud extends WebDAV_NextCloud
 
 	public function listChunks(string $login, string $name): array
 	{
-		$path = $this->temporary_chunks_path . '/' . $name;
-		$list = glob($path . '/*');
+		$path = $this->temporary_chunks_path . '/' . $login . '/' . $name;
+		$list = glob($path . '/*') ?: [];
 		$list = array_map(fn($a) => str_replace($path . '/', '', $a), $list);
 		return $list;
 	}
@@ -191,7 +194,10 @@ class NextCloud extends WebDAV_NextCloud
 
 		$out = fopen($target, 'wb');
 
-		foreach (glob($path . '/*') as $file) {
+		$chunks = glob($path . '/*') ?: [];
+		natsort($chunks);
+
+		foreach ($chunks as $file) {
 			$in = fopen($file, 'rb');
 
 			while (!feof($in)) {
