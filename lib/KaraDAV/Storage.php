@@ -625,7 +625,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			$st->bindValue(1, $user->id);
 			$st->bindValue(2, $path);
 			$st->bindValue(3, $f->isDir() ? 0 : self::getFileSize($f->getRealPath()));
-			$st->bindValue(4, $f->isDir() ? 0 : $f->getMTime());
+			$st->bindValue(4, $f->getMTime());
 			$st->execute();
 			$st->clear();
 			$st->reset();
@@ -676,12 +676,13 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		$db = DB::getInstance();
+		$now = time();
 
 		$db->exec('BEGIN;');
 
 		foreach ($paths as $path) {
-			$db->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, 0, 0);',
-				$this->users->current()->id, $path);
+			$db->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, 0, ?);',
+				$this->users->current()->id, $path, $now);
 		}
 
 		$db->exec('COMMIT;');
