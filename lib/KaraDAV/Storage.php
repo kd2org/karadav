@@ -258,7 +258,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			case NextCloud::PROP_OC_SHARETYPES:
 				return WebDAV::EMPTY_PROP_VALUE;
 			case NextCloud::PROP_OC_DOWNLOADURL:
-				return $this->nextcloud->getDirectDownloadURL($uri, $this->users->current()->login);
+				return is_dir($target) ? null : $this->nextcloud->getDirectDownloadURL($uri, $this->users->current()->login);
 			case Nextcloud::PROP_NC_RICH_WORKSPACE:
 				if (!is_dir($target)) {
 					return '';
