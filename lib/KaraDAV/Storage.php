@@ -6,12 +6,14 @@ use KD2\WebDAV\AbstractStorage;
 use KD2\WebDAV\TrashInterface;
 use KD2\WebDAV\WOPI;
 use KD2\WebDAV\Exception as WebDAV_Exception;
+use stdClass;
 
 class Storage extends AbstractStorage implements TrashInterface
 {
 	protected Users $users;
 	protected NextCloud $nextcloud;
 	protected array $properties = [];
+	protected ?stdClass $quota = null;
 
 	const THUMBNAIL_SIZES = [150, 500, 1200];
 
@@ -33,6 +35,12 @@ class Storage extends AbstractStorage implements TrashInterface
 	{
 		$this->users = $users;
 		$this->nextcloud = $nextcloud;
+	}
+
+	protected function getQuota(): stdClass
+	{
+		$this->quota ??= $this->users->quota($this->users->current());
+		return $this->quota;
 	}
 
 	protected function validateFileName(string $name)
@@ -288,9 +296,9 @@ class Storage extends AbstractStorage implements TrashInterface
 
 				return $this->getTrashInfo(basename($uri))['Path'] ?? null;
 			case 'DAV::quota-available-bytes':
-				return null;
+				return $this->getQuota()->free;
 			case 'DAV::quota-used-bytes':
-				return null;
+				return $this->getQuota()->used;
 			case Nextcloud::PROP_OC_SIZE:
 				if (is_dir($target)) {
 					return $this->getRecursiveFileProperty($uri, 'size');
@@ -376,7 +384,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$delete = false;
 		$size = 0;
-		$quota = $this->users->quota($this->users->current());
+		$quota = $this->getQuota();
 
 		if ($quota->free <= 0) {
 			throw new WebDAV_Exception('Your quota is exhausted', 507);
@@ -496,7 +504,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		if (false === $move) {
-			$quota = $this->users->quota($this->users->current());
+			$quota = $this->getQuota();
 
 			if (self::getFilesize($source) > $quota->free) {
 				throw new WebDAV_Exception('Your quota is exhausted', 507);
@@ -631,7 +639,9 @@ class Storage extends AbstractStorage implements TrashInterface
 			$path .= $part . '/';
 		}
 
-		if (!$this->users->current()->quota) {
+		$quota = $this->getQuota();
+
+		if (!$quota->free) {
 			throw new WebDAV_Exception('Your quota is exhausted', 507);
 		}
 
