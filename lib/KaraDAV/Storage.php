@@ -316,7 +316,7 @@ class Storage extends AbstractStorage implements TrashInterface
 				return $this->getQuota()->used;
 			case Nextcloud::PROP_OC_SIZE:
 				if (is_dir($target)) {
-					return $this->getRecursiveFileProperty($uri, 'size');
+					return $this->getRecursiveFileProperty($uri, 'size') ?? 0;
 				}
 				else {
 					return self::getFilesize($target);
