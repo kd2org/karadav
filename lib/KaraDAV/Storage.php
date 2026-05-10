@@ -171,11 +171,22 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		$db = DB::getInstance();
+		$params = [];
 
-		$sql = sprintf('SELECT %s FROM files WHERE user = ? AND path LIKE ? ESCAPE \'\\\';', $col);
-		$search = $db->getPathLikeExpression($uri);
+		if ($uri === '') {
+			// Shortcut
+			if ($prop === 'size') {
+				return $this->getQuota()->used;
+			}
 
-		return $db->firstColumn($sql, $this->users->current()->id, $search);
+			$sql = sprintf('SELECT %s FROM files WHERE user = ?;', $col);
+		}
+		else {
+			$sql = sprintf('SELECT %s FROM files WHERE user = ? AND path LIKE ? ESCAPE \'\\\';', $col);
+			$params[] = $db->getPathLikeExpression($uri);
+		}
+
+		return $db->firstColumn($sql, $this->users->current()->id, ...$params);
 	}
 
 	public function get_file_property(string $uri, string $name, int $depth)
