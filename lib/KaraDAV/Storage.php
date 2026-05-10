@@ -158,7 +158,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		return file_exists($this->users->current()->path . $uri);
 	}
 
-	protected function getRecursiveFileProperty(string $uri, string $prop)
+	protected function getRecursiveFileProperty(string $uri, string $prop): ?int
 	{
 		if ($prop === 'size') {
 			$col = 'SUM(size)';
@@ -196,7 +196,11 @@ class Storage extends AbstractStorage implements TrashInterface
 					$mtime = $this->getRecursiveFileProperty($uri, 'modified');
 				}
 				else {
-					$mtime = filemtime($target);
+					$mtime = null;
+				}
+
+				if (!$mtime && file_exists($target)) {
+					$mtime = @filemtime($target);
 				}
 
 				if (!$mtime) {
