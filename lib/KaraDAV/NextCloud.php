@@ -138,7 +138,7 @@ class NextCloud extends WebDAV_NextCloud
 				continue;
 			}
 
-			$first_file = current();
+			$first_file = current($dir_list);
 
 			if (filemtime($first_file) < $expire) {
 				Storage::deleteDirectory($dir);
@@ -195,6 +195,7 @@ class NextCloud extends WebDAV_NextCloud
 
 	public function assembleChunks(string $login, string $name, string $target, ?int $mtime): array
 	{
+		$uri = $target;
 		$target = $this->users->current()->path . $target;
 		$parent = dirname($target);
 
@@ -232,7 +233,10 @@ class NextCloud extends WebDAV_NextCloud
 			touch($target, $mtime);
 		}
 
-		return ['created' => !$exists, 'etag' => md5(filemtime($target) . filesize($target))];
+		DB::getInstance()->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, ?, ?);',
+			$this->users->current()->id, $uri, Storage::getFilesize($target), filemtime($target));
+
+		return ['created' => !$exists, 'etag' => md5(filemtime($target) . filesize($target) . $target)];
 	}
 
 	protected function nc_avatar(): void
