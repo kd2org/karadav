@@ -101,12 +101,22 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function list(string $uri, ?array $properties): iterable
 	{
-		$dirs = self::glob($this->users->current()->path . $uri, '/*', \GLOB_ONLYDIR);
+		$path = $this->users->current()->path . $uri;
+
+		$dirs = array_merge(
+			self::glob($path, '/*', \GLOB_ONLYDIR),
+			self::glob($path, '/.*', \GLOB_ONLYDIR)
+		);
 		$dirs = array_map('basename', $dirs);
+		$dirs = array_diff($dirs, ['.', '..', '.trash']);
 		natcasesort($dirs);
 
-		$files = self::glob($this->users->current()->path . $uri, '/*');
+		$files = array_merge(
+			self::glob($path, '/*'),
+			self::glob($path, '/.*')
+		);
 		$files = array_map('basename', $files);
+		$files = array_diff($files, ['.', '..', '.trash']);
 		$files = array_diff($files, $dirs);
 		natcasesort($files);
 
