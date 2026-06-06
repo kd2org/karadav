@@ -783,12 +783,6 @@ class Storage extends AbstractStorage implements TrashInterface
 		return $id;
 	}
 
-	static protected function glob(string $path, string $pattern = '', int $flags = 0): array
-	{
-		$path = preg_replace('/[\*\?\[\]]/', '\\\\$0', $path);
-		return glob($path . $pattern, $flags) ?: [];
-	}
-
 	/**
 	 * Return file size, bypassing any 32 bits limitation
 	 * @return false|int|float
