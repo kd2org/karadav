@@ -138,7 +138,7 @@ class NextCloud extends WebDAV_NextCloud
 				continue;
 			}
 
-			$first_file = current();
+			$first_file = current($dir_list);
 
 			if (filemtime($first_file) < $expire) {
 				Storage::deleteDirectory($dir);
