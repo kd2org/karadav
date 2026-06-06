@@ -195,6 +195,7 @@ class NextCloud extends WebDAV_NextCloud
 
 	public function assembleChunks(string $login, string $name, string $target, ?int $mtime): array
 	{
+		$uri = $target;
 		$target = $this->users->current()->path . $target;
 		$parent = dirname($target);
 
@@ -232,7 +233,12 @@ class NextCloud extends WebDAV_NextCloud
 			touch($target, $mtime);
 		}
 
-		return ['created' => !$exists, 'etag' => md5(filemtime($target) . filesize($target) . $target)];
+		$this->storage->createFileCache($uri);
+
+		return [
+			'created' => !$exists,
+			'etag'    => $this->storage->get_file_property($uri, 'DAV::getetag'),
+		];
 	}
 
 	protected function nc_avatar(): void

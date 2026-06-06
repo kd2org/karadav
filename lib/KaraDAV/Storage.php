@@ -466,10 +466,25 @@ class Storage extends AbstractStorage implements TrashInterface
 			rename($tmp_file, $target);
 		}
 
-		DB::getInstance()->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, ?, ?);',
-			$this->users->current()->id, $uri, $size, time());
+		$this->createFileCache($uri);
 
 		return $new;
+	}
+
+	public function createFileCache(string $uri): void
+	{
+		$target = $this->users->current()->path . $uri;
+
+		if (!file_exists($target)) {
+			return;
+		}
+
+		DB::getInstance()->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, ?, ?);',
+			$this->users->current()->id,
+			$uri,
+			filesize($target),
+			filemtime($target)
+		);
 	}
 
 	public function delete(string $uri): void
