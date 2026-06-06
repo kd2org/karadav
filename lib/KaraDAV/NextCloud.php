@@ -232,7 +232,7 @@ class NextCloud extends WebDAV_NextCloud
 			touch($target, $mtime);
 		}
 
-		return ['created' => !$exists, 'etag' => md5(filemtime($target) . filesize($target))];
+		return ['created' => !$exists, 'etag' => md5(filemtime($target) . filesize($target) . $target)];
 	}
 
 	protected function nc_avatar(): void
