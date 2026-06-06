@@ -101,13 +101,30 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function list(string $uri, ?array $properties): iterable
 	{
-		$dirs = self::glob($this->users->current()->path . $uri, '/*', \GLOB_ONLYDIR);
-		$dirs = array_map('basename', $dirs);
-		natcasesort($dirs);
+		$path = $this->users->current()->path . $uri;
+		$dir = dir($path);
+		$files = [];
+		$dirs = [];
 
-		$files = self::glob($this->users->current()->path . $uri, '/*');
-		$files = array_map('basename', $files);
-		$files = array_diff($files, $dirs);
+		while ($file = $dir->read()) {
+			if ($file === '.' || $file === '..') {
+				continue;
+			}
+
+			// Don't expose trash folder, as it is managed by KaraDAV
+			if ($file === '.trash' && $uri === '') {
+				continue;
+			}
+
+			if (is_dir($path . DIRECTORY_SEPARATOR . $file)) {
+				$dirs[] = $file;
+			}
+			else {
+				$files[] = $file;
+			}
+		}
+
+		natcasesort($dirs);
 		natcasesort($files);
 
 		$files = array_flip(array_merge($dirs, $files));
