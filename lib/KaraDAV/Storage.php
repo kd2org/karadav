@@ -241,7 +241,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			case 'DAV::ishidden':
 				return basename($target)[0] == '.';
 			case 'DAV::getetag':
-				if ($depth) {
+				if ($depth || is_dir($target)) {
 					$hash = $this->getRecursiveFileProperty($uri, 'modified')
 						. $this->getRecursiveFileProperty($uri, 'size');
 				}
