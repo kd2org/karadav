@@ -237,7 +237,7 @@ class NextCloud extends WebDAV_NextCloud
 
 		return [
 			'created' => !$exists,
-			'etag'    => $this->storage->get_file_property($uri, 'DAV::getetag'),
+			'etag'    => $this->storage->get_file_property($uri, 'DAV::getetag', 0),
 		];
 	}
 
