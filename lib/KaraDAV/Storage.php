@@ -249,7 +249,8 @@ class Storage extends AbstractStorage implements TrashInterface
 					$hash = filemtime($target) . filesize($target);
 				}
 
-				return md5($hash . $target);
+				// Use inode instead of path: inode stays stable across rename/move
+				return md5($hash . fileinode($target));
 			case 'DAV::lastaccessed':
 				return new \DateTime('@' . fileatime($target));
 			case 'DAV::creationdate':
