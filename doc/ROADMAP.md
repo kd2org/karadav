@@ -4,6 +4,7 @@ Patches are welcome!
 
 ## What I'm interested in implementing
 
+* Support 32-bits platforms (eg. Raspberry Pi and similar): currently they are supported but only if you allow a quota of max. 4 GB
 * Localization: allow to translate UI
 * Probably: Web files UI: Cut/Copy/Paste files and directories, like OpenCloud does (nicely)
 * Probably: Web files UI: gallery view

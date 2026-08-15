@@ -1,8 +1,9 @@
-## 1.0.0 - Upcoming
+## 0.7.0 beta 3 - August 15, 2026
 
-* Support for 32-bits platforms
+* various fixes for iOS clients (they are still blocked by default, please test by setting `BLOCK_IOS_APPS = false` in `config.local.php` and report)
+* various fixes for move/rename
 
-## 0.7.0 - December 2025
+## 0.7.0 beta 1 and 2 - December 2025
 
 * New design! New logo!
 * Moved HTML code to templates
