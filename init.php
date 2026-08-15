@@ -151,7 +151,7 @@ if (!file_exists(DB_FILE)) {
 	}
 
 	$db = DB::getInstance();
-	$db->exec('BEGIN;');
+	$db->begin();
 	$db->exec(file_get_contents(ROOT . '/sql/schema.sql'));
 
 	if (!LDAP::enabled()) {
@@ -163,8 +163,7 @@ if (!file_exists(DB_FILE)) {
 	}
 
 	$db->exec('PRAGMA user_version = ' . DB::VERSION . ';');
-
-	$db->exec('END;');
+	$db->commit();
 }
 else {
 	$db = DB::getInstance();

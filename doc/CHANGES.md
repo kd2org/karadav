@@ -1,7 +1,8 @@
-## 0.7.0 beta 3 - August 15, 2026
+## 0.7.0 beta 3 and 4 - August 15, 2026
 
 * various fixes for iOS clients (they are still blocked by default, please test by setting `BLOCK_IOS_APPS = false` in `config.local.php` and report)
 * various fixes for move/rename
+* fix thumbnail and other issues with relative or absolute paths in index
 
 ## 0.7.0 beta 1 and 2 - December 2025
 

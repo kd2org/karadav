@@ -293,6 +293,9 @@ class Storage extends AbstractStorage implements TrashInterface
 				return '';
 			case NextCloud::PROP_OC_ID:
 				$id = $this->getFileId($uri);
+				if (!$id) {
+					var_dump($id, $uri); exit;
+				}
 				// ID = fileid (padded with zeros to be at least 8 characters long) + instanceid
 				$id = str_pad((string)$id, 8, '0', STR_PAD_LEFT) . 'oc' . substr(sha1(WWW_URL), 0, 10);
 				return $id;
@@ -380,6 +383,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			$out = $this->createWopiToken($uri);
 			unset($properties[WOPI::PROP_TOKEN], $properties[WOPI::PROP_TOKEN_TTL]);
 		}
+
 
 		foreach ($properties as $name) {
 			$v = $this->get_file_property($uri, $name, $depth);
@@ -523,11 +527,11 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		// Delete all files from DB
-		$db->exec('BEGIN;');
+		$db->begin();
 		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ? ESCAPE \'\\\');',
 			...$params);
 		$this->getResourceProperties($uri)->clear();
-		$db->exec('END;');
+		$db->commit();
 	}
 
 	public function copymove(bool $move, string $uri, string $destination): bool
@@ -595,7 +599,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$db = DB::getInstance();
 
-		$db->exec('BEGIN;');
+		$db->begin();
 		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ? OR path = ? OR path LIKE ?);',
 			$this->users->current()->id,
 			$destination,
@@ -606,7 +610,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		self::indexFiles($this->users->current(), $destination);
 
-		$db->exec('END;');
+		$db->commit();
 
 		return $overwritten;
 	}
@@ -654,6 +658,9 @@ class Storage extends AbstractStorage implements TrashInterface
 			elseif ($f->getFileName() === '.') {
 				$path = substr($path, 0, -2);
 			}
+
+			// Path does not have the leading slash
+			$path = ltrim($path, '/');
 
 			$st->bindValue(1, $user->id);
 			$st->bindValue(2, $path);
@@ -711,14 +718,14 @@ class Storage extends AbstractStorage implements TrashInterface
 		$db = DB::getInstance();
 		$now = time();
 
-		$db->exec('BEGIN;');
+		$db->begin();
 
 		foreach ($paths as $path) {
 			$db->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, 0, ?);',
 				$this->users->current()->id, $path, $now);
 		}
 
-		$db->exec('COMMIT;');
+		$db->commit();
 
 		$this->ensureDirectoryExists($target);
 	}
@@ -738,7 +745,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		$ts = $datetime->getTimestamp();
 
 		DB::getInstance()->run('UPDATE files SET modified = ? WHERE user = ? AND path = ?;',
-			$this->users->current()->id, $ts);
+			$ts, $this->users->current()->id, $uri);
 
 		return touch($target, $ts);
 	}
@@ -756,7 +763,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	{
 		$db = DB::getInstance();
 
-		$db->exec('BEGIN;');
+		$db->begin();
 
 		$out = [];
 
@@ -771,7 +778,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			$out[$name] = 200;
 		}
 
-		$db->exec('END');
+		$db->commit();
 
 		return $out;
 	}
@@ -786,7 +793,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	{
 		$id = DB::getInstance()->firstColumn('SELECT id FROM files WHERE user = ? AND path = ?;',
 			$this->users->current()->id,
-			$path
+			ltrim($path, '/')
 		);
 
 		// root path doesn't exist in database, just assign a very large value

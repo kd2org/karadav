@@ -8,6 +8,8 @@ class DB extends \SQLite3
 
 	static protected $instance;
 
+	protected int $transaction = 0;
+
 	static public function getInstance(): self
 	{
 		if (!isset(self::$instance)) {
@@ -42,6 +44,26 @@ class DB extends \SQLite3
 				32 * 1024 * 1024
 			));
 		}
+	}
+
+	public function begin(): void
+	{
+		if (++$this->transaction === 1) {
+			$this->exec('BEGIN;');
+		}
+	}
+
+	public function commit(): void
+	{
+		if ($this->transaction-- === 1) {
+			$this->exec('END;');
+		}
+	}
+
+	public function rollback(): void
+	{
+		$this->exec('ROLLBACK;');
+		$this->transaction = 0;
 	}
 
 	public function run(string $sql, ...$params)
@@ -87,7 +109,7 @@ class DB extends \SQLite3
 			return;
 		}
 
-		$this->exec('BEGIN;');
+		$this->begin();
 
 		if ($db_version < 1) {
 			$this->exec(file_get_contents(ROOT . '/sql/migrate_0001.sql'));
@@ -107,6 +129,6 @@ class DB extends \SQLite3
 		}
 
 		$this->exec('PRAGMA user_version = ' . self::VERSION . ';');
-		$this->exec('END;');
+		$this->commit();
 	}
 }

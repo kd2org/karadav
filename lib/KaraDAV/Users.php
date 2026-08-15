@@ -66,26 +66,28 @@ class Users
 
 	protected function makeUserObjectGreatAgain(?stdClass $user): ?stdClass
 	{
-		if ($user) {
-			$user->path = sprintf(STORAGE_PATH, $user->login);
-			$user->path = rtrim($user->path, '/') . '/';
+		if (null === $user) {
+			return $user;
+		}
 
-			if (!file_exists($user->path)) {
-				$parent = dirname($user->path);
+		$user->path = sprintf(STORAGE_PATH, $user->login);
+		$user->path = rtrim($user->path, '/') . '/';
 
-				// Create parent directory with default permissions, if required
-				if (!file_exists($parent)) {
-					mkdir($parent, 0770, true);
-				}
+		if (!file_exists($user->path)) {
+			$parent = dirname($user->path);
 
-				mkdir($user->path, fileperms($parent), true);
+			// Create parent directory with default permissions, if required
+			if (!file_exists($parent)) {
+				mkdir($parent, 0770, true);
 			}
 
-			$user->path = rtrim(realpath($user->path), '/') . '/';
-
-			$user->dav_url = WWW_URL . 'files/' . $user->login . '/';
-			$user->avatar_url = WWW_URL . 'avatars/' . substr(md5($user->login), 0, 16);
+			mkdir($user->path, fileperms($parent), true);
 		}
+
+		$user->path = rtrim(realpath($user->path), '/') . '/';
+
+		$user->dav_url = WWW_URL . 'files/' . $user->login . '/';
+		$user->avatar_url = WWW_URL . 'avatars/' . substr(md5($user->login), 0, 16);
 
 		return $user;
 	}
@@ -94,8 +96,22 @@ class Users
 	{
 		$login = strtolower(trim($login));
 		$hash = password_hash(trim($password), \PASSWORD_DEFAULT);
-		DB::getInstance()->run('INSERT OR IGNORE INTO users (login, password, quota, is_admin) VALUES (?, ?, ?, ?);',
+
+		$db = DB::getInstance();
+		$db->begin();
+
+		$db->run('INSERT OR IGNORE INTO users (login, password, quota, is_admin) VALUES (?, ?, ?, ?);',
 			$login, $hash, $quota * 1024 * 1024, $is_admin ? 1 : 0);
+
+		$user = $this->fetch($login);
+		$user = $this->makeUserObjectGreatAgain($user);
+
+		if (file_exists($user->path)) {
+			// Just in case the user data directory already exists, index its files
+			Storage::indexFiles($user, null);
+		}
+
+		$db->commit();
 	}
 
 	public function edit(int $id, array $data)
@@ -421,8 +437,13 @@ class Users
 
 	public function indexAllFiles()
 	{
+		$db = DB::getInstance();
+		$db->begin();
+
 		foreach ($this->list() as $user) {
 			Storage::indexFiles($user, null);
 		}
+
+		$db->commit();
 	}
 }
