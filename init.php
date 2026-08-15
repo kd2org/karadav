@@ -134,6 +134,10 @@ if (!defined('KaraDAV\WWW_URL')) {
 	define('KaraDAV\WWW_URL', sprintf('http%s://%s%s%s', $https, $name, $port, $root));
 }
 
+if (!defined('KaraDAV\LOGO_URL')) {
+	define('KaraDAV\LOGO_URL', WWW_URL . 'logo.svg');
+}
+
 // Init database
 if (!file_exists(DB_FILE)) {
 	$parent = dirname(DB_FILE);

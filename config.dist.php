@@ -92,6 +92,14 @@ namespace KaraDAV;
 //const WWW_URL = 'http://karadav.localhost/';
 
 /**
+ * LOGO_URL: full URL of the logo displayed in the menu
+ *
+ * If you don't define it, KaraDAV will use its own logo (logo.svg).
+ * @var string
+ */
+//const LOGO_URL = 'https://my.website.example.org/mylogo.svg';
+
+/**
  * WOPI client discovery URL
  * eg. http://onlyoffice.domain.tld/hosting/discovery for OnlyOffice
  * If set to NULL, WOPI support is disabled

@@ -14,7 +14,7 @@
 </nav>
 <div id="all">
 <header id="nav">
-	<h1><img src="{$www_url}logo.svg" alt="KaraDAV" /></h1>
+	<h1><img src="{$logo_url}" alt="Logo" /></h1>
 	<nav>
 		<ul>
 		{if $logged_user}

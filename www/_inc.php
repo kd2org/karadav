@@ -24,6 +24,7 @@ $tpl->setTemplatesDir(ROOT . '/templates');
 $tpl->setCompiledDir(CACHE_PATH . '/compiled');
 
 $tpl->assign('www_url', WWW_URL);
+$tpl->assign('logo_url', LOGO_URL);
 $tpl->assign('apps', EXTERNAL_APPS);
 $tpl->assign(compact('logged_user', 'users'));
 
