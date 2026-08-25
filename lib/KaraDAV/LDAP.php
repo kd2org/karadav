@@ -10,7 +10,7 @@ class LDAP
 	{
 		$config = [LDAP_HOST, LDAP_PORT, LDAP_SECURE, LDAP_LOGIN, LDAP_FIND_USER, LDAP_FIND_IS_ADMIN, LDAP_BASE, LDAP_DISPLAY_NAME];
 		$target = count($config);
-		$config = array_filter($config);
+		$config = array_filter($config, static fn ($value) => $value !== null);
 		return count($config) == $target;
 	}
 
