@@ -66,10 +66,15 @@ class LDAP
 	static public function checkPassword(string $login, string $password): bool
 	{
 		self::connect();
-		$ok = ldap_bind(self::$ldap, sprintf(LDAP_LOGIN, $login, $password));
 
-		ldap_close(self::$ldap);
-		self::$ldap = null;
+		// Keep a successful user bind for follow-up directory searches
+		// This is required for LDAP servers that disallow anonymous searches
+		$ok = @ldap_bind(self::$ldap, sprintf(LDAP_LOGIN, $login), $password);
+
+		if (!$ok) {
+			ldap_close(self::$ldap);
+			self::$ldap = null;
+		}
 
 		return (bool) $ok;
 	}
