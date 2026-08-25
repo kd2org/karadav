@@ -2,6 +2,8 @@
 
 namespace KaraDAV;
 
+use function KD2\_;
+
 require_once __DIR__ . '/_inc.php';
 
 $user = $users->getById((int) $_GET['id']);

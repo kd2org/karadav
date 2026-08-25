@@ -2,6 +2,7 @@
 
 namespace KaraDAV;
 
+use function KD2\_;
 use KD2\ErrorManager;
 use KD2\Translate;
 use KD2\Smartyer;
