@@ -14,6 +14,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	protected NextCloud $nextcloud;
 	protected array $properties = [];
 	protected ?stdClass $quota = null;
+	protected string $root;
 
 	const THUMBNAIL_SIZES = [150, 500, 1200];
 
@@ -35,12 +36,49 @@ class Storage extends AbstractStorage implements TrashInterface
 	{
 		$this->users = $users;
 		$this->nextcloud = $nextcloud;
+		$this->root = realpath($this->users->current()->path);
 	}
 
 	protected function getQuota(): stdClass
 	{
 		$this->quota ??= $this->users->quota($this->users->current());
 		return $this->quota;
+	}
+
+	protected function isPathValid(string $path): bool
+	{
+		// Normalize separators
+		$path = preg_replace('!/{2,}!', '/', $path);
+		$path = str_replace('\\', '/', $path);
+
+		// Protect against path traversal
+		// we want to allow /path/to/file..ext but not /path/../../../etc/passwd
+		if (preg_match('!(?:^|/)\.\.(?:$|/)!', $path)) {
+			return false;
+		}
+
+		// make sure we stay in users root
+		if (0 !== strpos($path, $this->root . '/')) {
+			return false;
+		}
+
+		$path = realpath($path);
+
+		// make sure the path doesn't exist, or is not some sort of path traversal using a symlink
+		if ($path
+			&& $path !== $this->root
+			&& 0 !== strpos($path, $this->root . '/')) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public function validatePath(string $path): void
+	{
+		if (!$this->isPathValid($path)) {
+			throw new WebDAV_Exception('Invalid path', 403);
+		}
 	}
 
 	protected function validateFileName(string $name)
@@ -102,6 +140,8 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function list(string $uri, ?array $properties): iterable
 	{
 		$path = $this->users->current()->path . $uri;
+		$this->validatePath($path);
+
 		$dir = dir($path);
 		$files = [];
 		$dirs = [];
@@ -135,6 +175,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function get(string $uri): ?array
 	{
 		$path = $this->users->current()->path . $uri;
+		$this->validatePath($path);
 
 		if (!file_exists($path)) {
 			return null;
@@ -158,6 +199,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function fetch(string $uri): ?string
 	{
 		$path = $this->users->current()->path . $uri;
+		$this->validatePath($path);
 
 		if (!file_exists($path)) {
 			return null;
@@ -172,7 +214,9 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function exists(string $uri): bool
 	{
-		return file_exists($this->users->current()->path . $uri);
+		$path = $this->users->current()->path . $uri;
+		$this->validatePath($path);
+		return file_exists($path);
 	}
 
 	protected function getRecursiveFileProperty(string $uri, string $prop): ?int
@@ -360,6 +404,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function propfind(string $uri, ?array $properties, int $depth): ?array
 	{
 		$target = $this->users->current()->path . $uri;
+		$this->validatePath($target);
 
 		if (!file_exists($target)) {
 			return null;
@@ -405,6 +450,8 @@ class Storage extends AbstractStorage implements TrashInterface
 		$this->validateFileName(basename($uri));
 
 		$target = $this->users->current()->path . $uri;
+		$this->validatePath($target);
+
 		$parent = dirname($target);
 
 		if (is_dir($target)) {
@@ -479,6 +526,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function createFileCache(string $uri): void
 	{
 		$target = $this->users->current()->path . $uri;
+		$this->validatePath($target);
 
 		if (!file_exists($target)) {
 			return;
@@ -497,6 +545,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		$this->validateFileName(basename($uri));
 
 		$target = $this->users->current()->path . $uri;
+		$this->validatePath($target);
 
 		if (!file_exists($target)) {
 			throw new WebDAV_Exception('Target does not exist', 404);
@@ -541,6 +590,10 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$source = $this->users->current()->path . $uri;
 		$target = $this->users->current()->path . $destination;
+
+		$this->validatePath($source);
+		$this->validatePath($target);
+
 		$parent = dirname($target);
 
 		if (!file_exists($source)) {
@@ -701,6 +754,8 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		$target = $this->users->current()->path . $uri;
+		$this->validatePath($target);
+
 		$parent = dirname($target);
 
 		if (file_exists($target)) {
@@ -733,6 +788,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function touch(string $uri, \DateTimeInterface $datetime): bool
 	{
 		$target = $this->users->current()->path . $uri;
+		$this->validatePath($target);
 
 		if (!file_exists($target)) {
 			return false;
@@ -946,7 +1002,9 @@ class Storage extends AbstractStorage implements TrashInterface
 			return null;
 		}
 
+		$this->root = $user->path;
 		$path = $user->path . $uri;
+		$this->validatePath($path);
 
 		if (!file_exists($path)) {
 			return null;
@@ -974,6 +1032,8 @@ class Storage extends AbstractStorage implements TrashInterface
 		$name = basename($uri);
 
 		$target = $this->users->current()->path . '.trash/info/' . $name . '.trashinfo';
+		$this->validatePath($target);
+
 		$info = sprintf("[Trash Info]\nPath=%s\nDeletionDate=%s\n",
 			str_replace('%2F', '/', rawurlencode($uri)),
 			date(DATE_RFC3339)
@@ -987,6 +1047,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function restoreFromTrash(string $uri): void
 	{
 		$src = $this->users->current()->path . '.trash/files/' . $uri;
+		$this->validatePath($src);
 
 		if (!file_exists($src)) {
 			return;
@@ -994,6 +1055,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$info = $this->getTrashInfo($uri);
 		$dest = $info['Path'] ?? $uri;
+		$this->validatePath($dest);
 
 		if ($info) {
 			$this->delete('.trash/info/' . $uri . '.trashinfo');
@@ -1026,6 +1088,11 @@ class Storage extends AbstractStorage implements TrashInterface
 		$info['Path'] = rawurldecode($info['Path']);
 		$info['DeletionDate'] = strtotime($info['DeletionDate']);
 		$info['InfoFilePath'] = $info_file;
+
+		if (!$this->isValidPath($info['Path'])) {
+			return null;
+		}
+
 		return $info;
 	}
 

@@ -945,9 +945,7 @@ abstract class NextCloud
 			$dest = preg_replace(self::WEBDAV_BASE_REGEXP, '', $dest);
 			$dest = trim(rawurldecode($dest), '/');
 
-			if (false !== strpos($dest, '..') || false !== strpos($dest, '//')) {
-				throw new Exception('Invalid destination');
-			}
+			$dest = $this->server->validateURI($dest);
 
 			$this->server->log('Assembling chunks to: %s', $dest);
 
