@@ -197,6 +197,9 @@ class NextCloud extends WebDAV_NextCloud
 	{
 		$uri = $target;
 		$target = $this->users->current()->path . $target;
+
+		$this->storage->validatePath($target);
+
 		$parent = dirname($target);
 
 		if (!is_dir($parent)) {
