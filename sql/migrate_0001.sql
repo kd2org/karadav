@@ -7,5 +7,3 @@ CREATE TABLE files (
 );
 
 CREATE UNIQUE INDEX files_path ON files (user, path);
-
-PRAGMA user_version = 1;
