@@ -41,7 +41,13 @@ class Users
 	{
 		$user = $this->fetch($login);
 
-		if (!$user && LDAP::enabled() && LDAP::checkUser($login)) {
+		if (!$user && LDAP::enabled()) {
+			$ldap = LDAP::getInstance();
+
+			if (!$ldap->checkUser($login)) {
+				return null;
+			}
+
 			$this->create($login, self::generatePassword(), DEFAULT_QUOTA);
 			$user = $this->fetch($login);
 
@@ -49,7 +55,7 @@ class Users
 				throw new \LogicException('User does not exist after getting created?');
 			}
 
-			$user->is_admin = LDAP::checkIsAdmin($login);
+			$user->is_admin = $ldap->checkIsAdmin($login);
 		}
 		elseif (!$user) {
 			return null;
@@ -225,7 +231,9 @@ class Users
 		$ok = false;
 
 		if (LDAP::enabled()) {
-			if (!LDAP::checkPassword($login, $password)) {
+			$ldap = LDAP::getInstance();
+
+			if (!$ldap->checkPassword($login, $password)) {
 				return null;
 			}
 

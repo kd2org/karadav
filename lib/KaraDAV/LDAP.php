@@ -4,19 +4,33 @@ namespace KaraDAV;
 
 class LDAP
 {
-	static protected $ldap;
+	protected $ldap = null;
+	static protected $instance;
+
+	static public function getInstance()
+	{
+		self::$instance ??= new self;
+		return self::$instance;
+	}
 
 	static public function enabled(): bool
 	{
 		$config = [LDAP_HOST, LDAP_PORT, LDAP_SECURE, LDAP_LOGIN, LDAP_FIND_USER, LDAP_FIND_IS_ADMIN, LDAP_BASE, LDAP_DISPLAY_NAME];
 		$target = count($config);
-		$config = array_filter($config);
+		$config = array_filter($config, static fn($v) => $v !== null);
 		return count($config) == $target;
 	}
 
-	static public function connect(): void
+	public function __destruct()
 	{
-		if (isset(self::$ldap)) {
+		if (isset($this->ldap)) {
+			ldap_close($this->ldap);
+		}
+	}
+
+	public function connect(): void
+	{
+		if (isset($this->ldap)) {
 			return;
 		}
 
@@ -30,16 +44,16 @@ class LDAP
 		ldap_set_option($l, \LDAP_OPT_PROTOCOL_VERSION, 3);
 		ldap_set_option($l, \LDAP_OPT_REFERRALS, 0);
 		ldap_set_option($l, \LDAP_OPT_NETWORK_TIMEOUT, 10);
-		self::$ldap = $l;
+		$this->ldap = $l;
 	}
 
 	static protected function find(string $filter, string $login): bool
 	{
-		self::connect();
+		$this->connect();
 
 		$filter = sprintf($filter, ldap_escape($login, '', \LDAP_ESCAPE_FILTER));
-		$results = ldap_search(self::$ldap, LDAP_BASE, $filter, [LDAP_DISPLAY_NAME]);
-		$info = ldap_get_entries(self::$ldap, $results);
+		$results = ldap_search($this->ldap, LDAP_BASE, $filter, [LDAP_DISPLAY_NAME]);
+		$info = ldap_get_entries($this->ldap, $results);
 
 		return empty($info[0][LDAP_DISPLAY_NAME][0]) ? false : true;
 	}
@@ -49,7 +63,7 @@ class LDAP
 	 */
 	static public function checkUser(string $login): bool
 	{
-		return self::find(LDAP_FIND_USER, $login);
+		return $this->find(LDAP_FIND_USER, $login);
 	}
 
 	/**
@@ -57,7 +71,7 @@ class LDAP
 	 */
 	static public function checkIsAdmin(string $login): bool
 	{
-		return self::find(LDAP_FIND_IS_ADMIN, $login);
+		return $this->find(LDAP_FIND_IS_ADMIN, $login);
 	}
 
 	/**
@@ -65,12 +79,8 @@ class LDAP
 	 */
 	static public function checkPassword(string $login, string $password): bool
 	{
-		self::connect();
-		$ok = ldap_bind(self::$ldap, sprintf(LDAP_LOGIN, $login, $password));
-
-		ldap_close(self::$ldap);
-		self::$ldap = null;
-
+		$this->connect();
+		$ok = ldap_bind($this->ldap, sprintf(LDAP_LOGIN, $login, $password));
 		return (bool) $ok;
 	}
 }
