@@ -1,3 +1,8 @@
+## 0.7.0 beta 5 - August 28, 2026
+
+* fix LDAP issues (thanks @rookiejet)
+* fix error when gettext is not installed (thanks @rookiejet)
+
 ## 0.7.0 beta 3 and 4 - August 15, 2026
 
 * various fixes for iOS clients (they are still blocked by default, please test by setting `BLOCK_IOS_APPS = false` in `config.local.php` and report)
