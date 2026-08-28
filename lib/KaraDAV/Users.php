@@ -409,20 +409,26 @@ class Users
 		$trash = null;
 
 		if ($user) {
-			if ($user->quota == -1) {
-				$total = (int) @disk_total_space($user->path);
-				$free = (int) @disk_free_space($user->path);
-				$used = $total - $free;
-			}
-			elseif ($user->quota == 0) {
-				$total = 0;
-				$free = 0;
-				$used = 0;
-			}
-			else {
-				$used = Storage::getDirectorySize($user->path);
+			$used = $user->quota == 0 ? 0 : Storage::getDirectorySize($user->path);
+
+			if ($user->quota > 0) {
 				$total = $user->quota;
 				$free = max(0, $total - $used);
+			}
+			elseif ($user->quota == -1) {
+				// Guard against filesystems where these calls fail (false) or
+				// return meaningless values, otherwise they cast to 0
+				$total = @disk_total_space($user->path);
+				$free = @disk_free_space($user->path);
+
+				if ($total === false || $free === false || $total <= 0) {
+					$total = 0;
+					$free = 0;
+				}
+				else {
+					$total = (int) $total;
+					$free = (int) $free;
+				}
 			}
 
 			$trash = $with_trash ? Storage::getDirectorySize($user->path . '/.trash') : null;
