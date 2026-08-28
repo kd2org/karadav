@@ -14,7 +14,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	protected NextCloud $nextcloud;
 	protected array $properties = [];
 	protected ?stdClass $quota = null;
-	protected string $root;
+	protected ?string $root = null;
 
 	const THUMBNAIL_SIZES = [150, 500, 1200];
 
@@ -36,7 +36,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	{
 		$this->users = $users;
 		$this->nextcloud = $nextcloud;
-		$this->root = realpath($this->users->current()->path);
+		$this->root = $users->current()?->path;
 	}
 
 	protected function getQuota(): stdClass
@@ -56,6 +56,17 @@ class Storage extends AbstractStorage implements TrashInterface
 		if (preg_match('!(?:^|/)\.\.(?:$|/)!', $path)) {
 			return false;
 		}
+
+		// Resolve the current user root lazily: the Storage object is built
+		// before authentication, and clients using HTTP Basic auth do not
+		// have a current user yet at construction time
+		$this->root ??= $this->users->current()?->path;
+
+		if (!$this->root) {
+			return false;
+		}
+
+		$this->root = rtrim($this->root, '/');
 
 		// make sure we stay in users root
 		if (0 !== strpos($path, $this->root . '/')) {
