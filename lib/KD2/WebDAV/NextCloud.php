@@ -429,7 +429,12 @@ abstract class NextCloud
 			$this->server->log("NC => Body:\n%s", $json);
 		}
 		elseif (is_string($v)) {
-			http_response_code(200);
+			// Do not reset the status if a route already set a raw HTTP status
+			// (e.g. nc_report() sets 207 for filter-files); calling
+			// http_response_code() after header('HTTP/...') raises a warning
+			if (http_response_code() === 200) {
+				http_response_code(200);
+			}
 			header('Content-Type: application/json', true);
 			echo $v;
 			$this->server->log("NC => Body:\n%s", $v);
