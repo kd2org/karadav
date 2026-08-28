@@ -603,7 +603,7 @@ abstract class NextCloud
 			'version' => [
 				'major' => (int)$v[0],
 				'minor' => (int)$v[1],
-				'micro' => (int)$v[1],
+				'micro' => (int)$v[2],
 				'string' => self::NC_VERSION,
 				'edition' => '',
 				'extendedSupport' => false,
