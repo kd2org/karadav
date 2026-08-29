@@ -412,7 +412,15 @@ class Users
 			if ($user->quota == -1) {
 				$total = (int) @disk_total_space($user->path);
 				$free = (int) @disk_free_space($user->path);
-				$used = $total - $free;
+
+				// Guard against filesystems where system calls fail (false) or
+				// return meaningless values
+				if ($total === false || $free === false || $total <= 0) {
+					$used = Storage::getDirectorySize($user->path);
+				}
+				else {
+					$used = $total - $free;
+				}
 			}
 			elseif ($user->quota == 0) {
 				$total = 0;
