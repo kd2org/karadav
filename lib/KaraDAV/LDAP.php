@@ -47,7 +47,7 @@ class LDAP
 		$this->ldap = $l;
 	}
 
-	static protected function find(string $filter, string $login): bool
+	protected function find(string $filter, string $login): bool
 	{
 		$this->connect();
 
@@ -61,7 +61,7 @@ class LDAP
 	/**
 	 * Return TRUE if a user exists in LDAP and can login
 	 */
-	static public function checkUser(string $login): bool
+	public function checkUser(string $login): bool
 	{
 		return $this->find(LDAP_FIND_USER, $login);
 	}
@@ -69,7 +69,7 @@ class LDAP
 	/**
 	 * Return TRUE if a user is an admin
 	 */
-	static public function checkIsAdmin(string $login): bool
+	public function checkIsAdmin(string $login): bool
 	{
 		return $this->find(LDAP_FIND_IS_ADMIN, $login);
 	}
@@ -77,10 +77,10 @@ class LDAP
 	/**
 	 * Return TRUE if the supplied login and password are valid
 	 */
-	static public function checkPassword(string $login, string $password): bool
+	public function checkPassword(string $login, string $password): bool
 	{
 		$this->connect();
-		$ok = ldap_bind($this->ldap, sprintf(LDAP_LOGIN, $login, $password));
+		$ok = ldap_bind($this->ldap, sprintf(LDAP_LOGIN, $login), $password);
 		return (bool) $ok;
 	}
 }
