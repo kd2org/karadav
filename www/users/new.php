@@ -10,7 +10,7 @@ if ($ldap) {
 	throw new UserException('Cannot create users in LDAP');
 }
 
-form_exec_if('create', function () use ($users) {
+form_exec_if('create', function () {
 	if (empty($_POST['login'])) {
 		throw new UserException(_('Login is empty'));
 	}
