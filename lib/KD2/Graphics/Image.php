@@ -87,7 +87,7 @@ class Image
 			}
 
 			if (!$this->libraries[$this->library]) {
-				throw new \RuntimeException(sprintf('Library \'%s\' is not installed and can not be used.', $lthis->ibrary));
+				throw new \RuntimeException(sprintf('Library \'%s\' is not installed and can not be used.', $this->library));
 			}
 		}
 

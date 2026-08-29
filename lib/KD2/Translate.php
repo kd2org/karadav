@@ -718,7 +718,7 @@ class Translate
 
 			try {
 				$timestamp = new \DateTime($timestamp);
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 				throw new \InvalidArgumentException('$timestamp argument is neither a valid UNIX timestamp, a valid date-time string or a DateTime object.', 0, $e);
 			}
 
@@ -803,13 +803,13 @@ class Translate
 			// Week
 			'%U' => function ($timestamp) {
 				// Number of weeks between date and first Sunday of year
-				$day = new DateTime(sprintf('%d-01 Sunday', $timestamp->format('Y')));
+				$day = new \DateTime(sprintf('%d-01 Sunday', $timestamp->format('Y')));
 				return sprintf('%02u', 1 + ($timestamp->format('z') - $day->format('z')) / 7);
 			},
 			'%V' => 'W',
 			'%W' => function ($timestamp) {
 				// Number of weeks between date and first Monday of year
-				$day = new DateTime(sprintf('%d-01 Monday', $timestamp->format('Y')));
+				$day = new \DateTime(sprintf('%d-01 Monday', $timestamp->format('Y')));
 				return sprintf('%02u', 1 + ($timestamp->format('z') - $day->format('z')) / 7);
 			},
 
@@ -1093,14 +1093,16 @@ function bind_textdomain_codeset($domain, $codeset)
 	// Not used
 }
 
-function bindtextdomain($domain_name, $dir)
+function bindtextdomain($domain, $dir): string
 {
-	return Translate::registerDomain($domain_name, $dir);
+	Translate::registerDomain($domain, $dir);
+	return $domain;
 }
 
-function textdomain($domain)
+function textdomain($domain): string
 {
-	return Translate::setDefaultDomain($domain);
+	Translate::setDefaultDomain($domain);
+	return $domain;
 }
 
 function setlocale($category, $locale)

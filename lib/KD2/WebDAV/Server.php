@@ -944,7 +944,7 @@ class Server
 
 					foreach ($ns as $xmlns => $alias) {
 						foreach (iterator_to_array($prop->attributes($alias)) as $key => $v) {
-							$attributes[$xmlns . ':' . $key] = $value;
+							$attributes[$xmlns . ':' . $key] = $v;
 						}
 					}
 
