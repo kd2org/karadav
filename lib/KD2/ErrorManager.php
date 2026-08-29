@@ -907,6 +907,14 @@ class ErrorManager
 	}
 
 	/**
+	 * Set report context property
+	 */
+	static public function setContextProperty(string $name, $value)
+	{
+		self::$context[$name] = $value;
+	}
+
+	/**
 	 * Enable or disable reporting of errors to a remote URL
 	 * @param null|string $url Reporting URL
 	 * @param boolean $auto Automatic reporting? If not users will be able to report the error by clicking a button on the error page

@@ -429,7 +429,12 @@ abstract class NextCloud
 			$this->server->log("NC => Body:\n%s", $json);
 		}
 		elseif (is_string($v)) {
-			http_response_code(200);
+			// If response code hasn't already been set by the route function,
+			// http_response_code will return 200 if no code has been set
+			if (http_response_code() === 200) {
+				http_response_code(200);
+			}
+
 			header('Content-Type: application/json', true);
 			echo $v;
 			$this->server->log("NC => Body:\n%s", $v);
@@ -598,7 +603,7 @@ abstract class NextCloud
 			'version' => [
 				'major' => (int)$v[0],
 				'minor' => (int)$v[1],
-				'micro' => (int)$v[1],
+				'micro' => (int)$v[2],
 				'string' => self::NC_VERSION,
 				'edition' => '',
 				'extendedSupport' => false,
@@ -945,7 +950,9 @@ abstract class NextCloud
 			$dest = preg_replace(self::WEBDAV_BASE_REGEXP, '', $dest);
 			$dest = trim(rawurldecode($dest), '/');
 
-			$dest = $this->server->validateURI($dest);
+			if (false !== strpos($dest, '..') || false !== strpos($dest, '//')) {
+				throw new Exception('Invalid destination');
+			}
 
 			$this->server->log('Assembling chunks to: %s', $dest);
 

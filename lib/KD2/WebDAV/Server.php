@@ -725,8 +725,15 @@ class Server
 
 		$root_namespaces = [
 			'DAV:' => 'd',
+			// Canonical aliases expected by clients that match by prefix
+			// rather than namespace URI (e.g. NextcloudKit uses oc:/nc:)
+			'http://owncloud.org/ns' => 'oc',
+			'http://nextcloud.org/ns' => 'nc',
+			'http://open-collaboration-services.org/ns' => 'ocs',
+			'http://open-cloud-mesh.org/ns' => 'ocs2',
 			// Microsoft Clients need this special namespace for date and time values (from PEAR/WebDAV)
 			'urn:uuid:c2f41010-65b3-11d1-a29f-00aa00c14882/' => 'ns0',
+
 		];
 
 		$i = 0;

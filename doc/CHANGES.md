@@ -2,6 +2,8 @@
 
 * Quotas should now work on 32-bits platforms (testing needed, please report)
 * Fix used quota calculation when disk_*_space functions return invalid values (@rookiejet)
+* Fix LDAP class declarations (@rookiejet)
+* Various iOS clients fixes (@rookiejet)
 
 ## 0.7.0 beta 5 - August 28, 2026
 
