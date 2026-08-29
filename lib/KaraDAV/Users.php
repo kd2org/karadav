@@ -48,12 +48,11 @@ class Users
 				return null;
 			}
 
-			$this->create($login, self::generatePassword(), DEFAULT_QUOTA);
-			$user = $this->fetch($login);
-
-			if (!$user) {
-				throw new \LogicException('User does not exist after getting created?');
-			}
+			$user = new User;
+			$user->create([
+				'login' => $login,
+				'password' => self::generatePassword(),
+			]);
 
 			$user->is_admin = $ldap->checkIsAdmin($login);
 		}
@@ -81,7 +80,7 @@ class Users
 			&& ($user = $db->first('SELECT * FROM users WHERE session_id = ?;', $_COOKIE['permanent']))) {
 			@session_start();
 
-			$_SESSION['user'] = $user;
+			$_SESSION['user'] = User::from($user);
 
 			// Make sure this session_id cannot be reused
 			$this->setPermanentSession($user->id);
@@ -147,7 +146,8 @@ class Users
 			return null;
 		}
 		elseif (!$user && $ok) {
-			$this->create($login, random_bytes(10));
+			$user = new User;
+			$user->create(['login' => $login, 'password' => random_bytes(10)]);
 			$user = $this->get($login);
 		}
 
@@ -250,7 +250,7 @@ class Users
 		return $session;
 	}
 
-	public function appSessionLogin(?string $login, ?string $app_password): ?stdClass
+	public function appSessionLogin(?string $login, ?string $app_password): ?User
 	{
 		// From time to time, clean up old sessions
 		if (time() % 100 == 0) {
@@ -283,7 +283,7 @@ class Users
 		}
 
 		@session_start();
-		$user = Users::from($user);
+		$user = User::from($user);
 		$_SESSION['user'] = $user;
 
 		return $user;

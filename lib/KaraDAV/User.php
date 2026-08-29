@@ -143,8 +143,6 @@ class User
 		// and you might slightly overflow your quota by 1 MiB, but it's fine.
 		array_walk($out, fn (&$value) => $value = $value ? (int) round(substr((string) $value, 0, -6) ?: 0) : $value);
 
-		unset($value);
-
 		if ($out['total'] === null) {
 			$out['total'] = $this->quota;
 		}

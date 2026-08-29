@@ -71,7 +71,8 @@ class NextCloud extends WebDAV_NextCloud
 		$ok = $this->users->setCurrent($login);
 
 		if ($ok) {
-			$this->user  = $this->users->current();
+			$this->user = $this->users->current();
+			$this->storage->setUser($this->user);
 		}
 
 		return $ok;
