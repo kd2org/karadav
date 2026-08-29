@@ -19,7 +19,8 @@ form_exec_if('create', function () use ($users) {
 		throw new UserException(_('Password is empty'));
 	}
 
-	$users->create(trim($_POST['login']), trim($_POST['password']));
+	$user = new User;
+	$user->create($_POST);
 }, 'users/');
 
 $tpl->display('users/new.tpl');

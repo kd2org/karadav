@@ -20,13 +20,13 @@
 	<tbody>
 
 	{foreach from=$list item="user"}
-	<?php $quota = $users->quota($user); ?>
+	<?php $quota = $user->quota(); ?>
 
 		<tr>
 			<td><img src="{$user.avatar_url}" alt="" /></td>
 			<th>{$user.login}</th>
 			<td>
-				{{%used used out of %total} used=$quota.used|format_bytes total=$quota.total|format_bytes}<br />
+				{{%used used out of %total} used=$quota.used|format_mbytes total=$quota.total|format_mbytes}<br />
 				<progress max="{$quota.total}" value="{$quota.used}"></progress>
 			</td>
 			<td>{if $user.is_admin}{{Admin}}{/if}</td>

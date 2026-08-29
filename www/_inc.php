@@ -38,18 +38,15 @@ $tpl->register_function('form_csrf', function (): string {
 	return sprintf('<input type="hidden" name="_c_" value="%s:%s:%s" />', $token, base64_encode($random), $expire);
 });
 
-$tpl->register_modifier('format_bytes', function ($bytes, string $unit = 'B'): string {
-	if ($bytes >= 1024*1024*1024) {
-		return round($bytes / (1024*1024*1024), 1) . ' G' . $unit;
+$tpl->register_modifier('format_mbytes', function ($bytes, string $unit = 'B'): string {
+	if ($bytes >= 1000 * 1000) {
+		return round($bytes / 1000 / 1000, 1) . ' T' . $unit;
 	}
-	elseif ($bytes >= 1024*1024) {
-		return round($bytes / (1024*1024), 1) . ' M' . $unit;
-	}
-	elseif ($bytes >= 1024) {
-		return round($bytes / 1024, 1) . ' K' . $unit;
+	elseif ($bytes >= 1000) {
+		return round($bytes / 1000, 1) . ' G' . $unit;
 	}
 	else {
-		return $bytes . ' ' . $unit;
+		return $bytes . ' M' . $unit;
 	}
 });
 

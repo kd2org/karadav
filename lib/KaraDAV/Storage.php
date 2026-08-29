@@ -10,11 +10,11 @@ use stdClass;
 
 class Storage extends AbstractStorage implements TrashInterface
 {
-	protected Users $users;
+	protected User $user;
 	protected NextCloud $nextcloud;
 	protected array $properties = [];
 	protected ?stdClass $quota = null;
-	protected string $root;
+	protected ?string $root;
 
 	const THUMBNAIL_SIZES = [150, 500, 1200];
 
@@ -32,21 +32,29 @@ class Storage extends AbstractStorage implements TrashInterface
 		'\\', ':', '*', '?', '"', '<', '>', '|',
 	];
 
-	public function __construct(Users $users, NextCloud $nextcloud)
+	public function __construct(NextCloud $nextcloud)
 	{
-		$this->users = $users;
 		$this->nextcloud = $nextcloud;
-		$this->root = realpath($this->users->current()->path);
 	}
 
 	protected function getQuota(): stdClass
 	{
-		$this->quota ??= $this->users->quota($this->users->current());
+		$this->quota ??= $this->user->quota();
 		return $this->quota;
+	}
+
+	public function setUser(User $user): void
+	{
+		$this->user = $user;
+		$this->root = realpath($user->path);
 	}
 
 	protected function isPathValid(string $path): bool
 	{
+		if (null === $this->root) {
+			throw new \LogicException('User root path not set');
+		}
+
 		// Normalize separators
 		$path = preg_replace('!/{2,}!', '/', $path);
 		$path = str_replace('\\', '/', $path);
@@ -101,21 +109,21 @@ class Storage extends AbstractStorage implements TrashInterface
 	protected function ensureDirectoryExists(string $path): void
 	{
 		if (!file_exists($path)) {
-			@mkdir($path, @fileperms($this->users->current()->path) ?: 0770, true);
+			@mkdir($path, @fileperms($this->root) ?: 0770, true);
 		}
 	}
 
 	protected function ensureTrashExists(): void
 	{
-		$this->ensureDirectoryExists($this->users->current()->path  . '.trash/info');
-		$this->ensureDirectoryExists($this->users->current()->path . '.trash/files');
+		$this->ensureDirectoryExists($this->root  . '.trash/info');
+		$this->ensureDirectoryExists($this->root . '.trash/files');
 	}
 
 	public function getLock(string $uri, ?string $token = null): ?string
 	{
 		// It is important to check also for a lock on parent directory as we support depth=1
 		$sql = 'SELECT scope FROM locks WHERE user = ? AND (uri = ? OR uri = ?)';
-		$params = [$this->users->current()->id, $uri, dirname($uri)];
+		$params = [$this->user->id, $uri, dirname($uri)];
 
 		if ($token) {
 			$sql .= ' AND token = ?';
@@ -129,17 +137,17 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function lock(string $uri, string $token, string $scope): void
 	{
-		DB::getInstance()->run('REPLACE INTO locks VALUES (?, ?, ?, ?, datetime(\'now\', \'+5 minutes\'));', $this->users->current()->id, $uri, $token, $scope);
+		DB::getInstance()->run('REPLACE INTO locks VALUES (?, ?, ?, ?, datetime(\'now\', \'+5 minutes\'));', $this->user->id, $uri, $token, $scope);
 	}
 
 	public function unlock(string $uri, string $token): void
 	{
-		DB::getInstance()->run('DELETE FROM locks WHERE user = ? AND uri = ? AND token = ?;', $this->users->current()->id, $uri, $token);
+		DB::getInstance()->run('DELETE FROM locks WHERE user = ? AND uri = ? AND token = ?;', $this->user->id, $uri, $token);
 	}
 
 	public function list(string $uri, ?array $properties): iterable
 	{
-		$path = $this->users->current()->path . $uri;
+		$path = $this->user->path . $uri;
 		$this->validatePath($path);
 
 		$dir = dir($path);
@@ -174,7 +182,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function get(string $uri): ?array
 	{
-		$path = $this->users->current()->path . $uri;
+		$path = $this->user->path . $uri;
 		$this->validatePath($path);
 
 		if (!file_exists($path)) {
@@ -198,7 +206,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function fetch(string $uri): ?string
 	{
-		$path = $this->users->current()->path . $uri;
+		$path = $this->user->path . $uri;
 		$this->validatePath($path);
 
 		if (!file_exists($path)) {
@@ -214,7 +222,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function exists(string $uri): bool
 	{
-		$path = $this->users->current()->path . $uri;
+		$path = $this->user->path . $uri;
 		$this->validatePath($path);
 		return file_exists($path);
 	}
@@ -247,12 +255,12 @@ class Storage extends AbstractStorage implements TrashInterface
 			$params[] = $db->getPathLikeExpression($uri);
 		}
 
-		return $db->firstColumn($sql, $this->users->current()->id, ...$params);
+		return $db->firstColumn($sql, $this->user->id, ...$params);
 	}
 
 	public function get_file_property(string $uri, string $name, int $depth)
 	{
-		$target = $this->users->current()->path . $uri;
+		$target = $this->user->path . $uri;
 
 		switch ($name) {
 			case 'DAV::getcontentlength':
@@ -320,7 +328,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			case NextCloud::PROP_OC_SHARETYPES:
 				return WebDAV::EMPTY_PROP_VALUE;
 			case NextCloud::PROP_OC_DOWNLOADURL:
-				return is_dir($target) ? null : $this->nextcloud->getDirectDownloadURL($uri, $this->users->current()->login);
+				return is_dir($target) ? null : $this->nextcloud->getDirectDownloadURL($uri, $this->user->login);
 			case Nextcloud::PROP_NC_RICH_WORKSPACE:
 				if (!is_dir($target)) {
 					return '';
@@ -403,7 +411,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function propfind(string $uri, ?array $properties, int $depth): ?array
 	{
-		$target = $this->users->current()->path . $uri;
+		$target = $this->user->path . $uri;
 		$this->validatePath($target);
 
 		if (!file_exists($target)) {
@@ -449,7 +457,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$this->validateFileName(basename($uri));
 
-		$target = $this->users->current()->path . $uri;
+		$target = $this->user->path . $uri;
 		$this->validatePath($target);
 
 		$parent = dirname($target);
@@ -525,7 +533,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function createFileCache(string $uri): void
 	{
-		$target = $this->users->current()->path . $uri;
+		$target = $this->user->path . $uri;
 		$this->validatePath($target);
 
 		if (!file_exists($target)) {
@@ -533,7 +541,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		DB::getInstance()->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, ?, ?);',
-			$this->users->current()->id,
+			$this->user->id,
 			$uri,
 			filesize($target),
 			filemtime($target)
@@ -544,7 +552,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	{
 		$this->validateFileName(basename($uri));
 
-		$target = $this->users->current()->path . $uri;
+		$target = $this->user->path . $uri;
 		$this->validatePath($target);
 
 		if (!file_exists($target)) {
@@ -565,7 +573,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		$db = DB::getInstance();
-		$params = [$this->users->current()->id, $uri, $db->getPathLikeExpression($uri)];
+		$params = [$this->user->id, $uri, $db->getPathLikeExpression($uri)];
 		$sql = 'SELECT id FROM files WHERE user = ? AND (path = ? OR path LIKE ? ESCAPE \'\\\')';
 
 		// Delete all thumbnails from cache
@@ -588,8 +596,8 @@ class Storage extends AbstractStorage implements TrashInterface
 		$this->validateFileName(basename($uri));
 		$this->validateFileName(basename($destination));
 
-		$source = $this->users->current()->path . $uri;
-		$target = $this->users->current()->path . $destination;
+		$source = $this->user->path . $uri;
+		$target = $this->user->path . $destination;
 
 		$this->validatePath($source);
 		$this->validatePath($target);
@@ -654,21 +662,21 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$db->begin();
 		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ? OR path = ? OR path LIKE ?);',
-			$this->users->current()->id,
+			$this->user->id,
 			$destination,
 			$db->getPathLikeExpression($destination),
 			$uri,
 			$db->getPathLikeExpression($uri)
 		);
 
-		self::indexFiles($this->users->current(), $destination);
+		self::indexFiles($this->user, $destination);
 
 		$db->commit();
 
 		return $overwritten;
 	}
 
-	static public function indexFiles(\stdClass $user, ?string $path): void
+	static public function indexFiles(User $user, ?string $path): void
 	{
 		$db = DB::getInstance();
 
@@ -753,7 +761,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			throw new WebDAV_Exception('Your quota is exhausted', 507);
 		}
 
-		$target = $this->users->current()->path . $uri;
+		$target = $this->user->path . $uri;
 		$this->validatePath($target);
 
 		$parent = dirname($target);
@@ -777,7 +785,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		foreach ($paths as $path) {
 			$db->run('REPLACE INTO files (user, path, size, modified) VALUES (?, ?, 0, ?);',
-				$this->users->current()->id, $path, $now);
+				$this->user->id, $path, $now);
 		}
 
 		$db->commit();
@@ -787,7 +795,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function touch(string $uri, \DateTimeInterface $datetime): bool
 	{
-		$target = $this->users->current()->path . $uri;
+		$target = $this->user->path . $uri;
 		$this->validatePath($target);
 
 		if (!file_exists($target)) {
@@ -801,7 +809,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		$ts = $datetime->getTimestamp();
 
 		DB::getInstance()->run('UPDATE files SET modified = ? WHERE user = ? AND path = ?;',
-			$ts, $this->users->current()->id, $uri);
+			$ts, $this->user->id, $uri);
 
 		return touch($target, $ts);
 	}
@@ -809,7 +817,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function getResourceProperties(string $uri): Properties
 	{
 		if (!isset($this->properties[$uri])) {
-			$this->properties[$uri] = new Properties($this->users->current()->id, $uri);
+			$this->properties[$uri] = new Properties($this->user->id, $uri);
 		}
 
 		return $this->properties[$uri];
@@ -842,13 +850,13 @@ class Storage extends AbstractStorage implements TrashInterface
 	public function getFilePathFromId(int $id): ?string
 	{
 		return DB::getInstance()->firstColumn('SELECT path FROM files WHERE user = ? AND id = ?;',
-			$this->users->current()->id, $id);
+			$this->user->id, $id);
 	}
 
 	public function getFileId(string $path): ?int
 	{
 		$id = DB::getInstance()->firstColumn('SELECT id FROM files WHERE user = ? AND path = ?;',
-			$this->users->current()->id,
+			$this->user->id,
 			ltrim($path, '/')
 		);
 
@@ -895,10 +903,50 @@ class Storage extends AbstractStorage implements TrashInterface
 		return false;
 	}
 
+	static public function addNumbersSafe(int|string $a, int|string $b): int|string
+	{
+		if (PHP_INT_SIZE === 8) {
+			return $a + $b;
+		}
+		elseif (function_exists('bcadd')) {
+			return bcadd($a, $b, 40);
+		}
+
+		$a = (string) $a;
+		$b = (string) $b;
+
+		// Remove leading zeros
+		$a = ltrim($a, '0');
+		$b = ltrim($b, '0');
+
+		// If empty after trimming, treat as zero
+		if ($a === '') $a = '0';
+		if ($b === '') $b = '0';
+
+		$i = strlen($a) - 1;
+		$j = strlen($b) - 1;
+		$carry = 0;
+		$result = '';
+
+		while ($i >= 0 || $j >= 0 || $carry > 0) {
+			$digit_a = ($i >= 0) ? (ord($a[$i]) - 48) : 0;
+			$digit_b = ($j >= 0) ? (ord($b[$j]) - 48) : 0;
+
+			$sum = $digit_a + $digit_b + $carry;
+			$carry = intdiv($sum, 10);
+			$result .= chr(($sum % 10) + 48);
+
+			$i--;
+			$j--;
+		}
+
+		return strrev($result);
+	}
+
 	/**
-	 * @return int|float
+	 * @return int|string
 	 */
-	static public function getDirectorySize(string $path)
+	static public function getDirectorySize(string $path): int|string
 	{
 		$total = 0;
 		$path = rtrim($path, '/');
@@ -909,7 +957,8 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)) as $f) {
-			$total += self::getFileSize($f->getRealPath());
+			$size = self::getFileSize($f->getRealPath());
+			$total = self::addNumbersSafe($total, $size);
 		}
 
 		return $total;
@@ -950,7 +999,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			return null;
 		}
 
-		$user = $this->users->current();
+		$user = $this->user;
 		$ttl = time()+(3600*10);
 
 		$hash = sha1($uri);
@@ -995,7 +1044,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		}
 
 		$hash = sha1($uri);
-		$user = $this->users->current();
+		$user = $this->user;
 		$hmac = WebDAV::hmac(compact('ttl', 'random', 'hash', 'login'), $user->password);
 
 		if (!hash_equals($hmac, $user_hmac)) {
@@ -1031,7 +1080,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$name = basename($uri);
 
-		$target = $this->users->current()->path . '.trash/info/' . $name . '.trashinfo';
+		$target = $this->user->path . '.trash/info/' . $name . '.trashinfo';
 		$this->validatePath($target);
 
 		$info = sprintf("[Trash Info]\nPath=%s\nDeletionDate=%s\n",
@@ -1046,7 +1095,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	public function restoreFromTrash(string $uri): void
 	{
-		$src = $this->users->current()->path . '.trash/files/' . $uri;
+		$src = $this->user->path . '.trash/files/' . $uri;
 		$this->validatePath($src);
 
 		if (!file_exists($src)) {
@@ -1078,7 +1127,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 	protected function getTrashInfo(string $uri): ?array
 	{
-		$info_file = $this->users->current()->path . '.trash/info/' . $uri . '.trashinfo';
+		$info_file = $this->user->path . '.trash/info/' . $uri . '.trashinfo';
 		$info = @parse_ini_file($info_file, false, INI_SCANNER_RAW);
 
 		if (!isset($info['Path'], $info['DeletionDate'])) {
@@ -1100,7 +1149,7 @@ class Storage extends AbstractStorage implements TrashInterface
 	{
 		$this->ensureTrashExists();
 
-		$info_dir = $this->users->current()->path . '.trash/info';
+		$info_dir = $this->user->path . '.trash/info';
 		$count = 0;
 
 		foreach (glob($info_dir . '/*.trashinfo') as $file) {
@@ -1127,8 +1176,8 @@ class Storage extends AbstractStorage implements TrashInterface
 		$this->pruneTrash(time() - DEFAULT_TRASHBIN_DELAY);
 
 		$this->ensureTrashExists();
-		$info_dir = $this->users->current()->path . '.trash/info';
-		$files_dir = $this->users->current()->path . '.trash/files';
+		$info_dir = $this->user->path . '.trash/info';
+		$files_dir = $this->user->path . '.trash/files';
 
 		foreach (glob($info_dir . '/*.trashinfo') as $file) {
 			$name = basename($file);

@@ -3,8 +3,6 @@
 
 <form method="post" action="">
 {form_csrf}
-	<?php $quota = $user->quota > 0 ? round($user->quota / 1024 / 1024) : $user->quota; ?>
-
 	{if $form_error}
 		<p class="error">{$form_error}</p>
 	{/if}
@@ -24,7 +22,7 @@
 	{/if}
 
 			<dt><label for="f_quota">{{Quota}}</label></dt>
-			<dd><input type="number" name="quota" step="1" min="-1" value="{$quota}" required="required" size="6" /> {{(in MB)}}</dd>
+			<dd><input type="number" name="quota" step="1" min="-1" value="{$user.quota}" required="required" size="6" /> {{(in MB)}}</dd>
 			<dd>{{Set to 0 to disable upload.}}</dd>
 			<dd>{{Use -1 to allow using all the available space on disk.}}</dd>
 			<dd><input type="submit" name="save" value="{{Save}}" /></dd>

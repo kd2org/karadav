@@ -6,7 +6,7 @@ use stdClass;
 
 class Users
 {
-	protected ?stdClass $current = null;
+	protected ?User $current = null;
 
 	public function __construct()
 	{
@@ -29,15 +29,15 @@ class Users
 
 	public function list(): array
 	{
-		return array_map([$this, 'makeUserObjectGreatAgain'], iterator_to_array(DB::getInstance()->iterate('SELECT * FROM users ORDER BY login;')));
+		return array_map([User::class, 'from'], iterator_to_array(DB::getInstance()->iterate('SELECT * FROM users ORDER BY login;')));
 	}
 
-	public function fetch(string $login): ?stdClass
+	public function fetch(string $login): ?User
 	{
-		return DB::getInstance()->first('SELECT * FROM users WHERE login = ?;', $login);
+		return User::from(DB::getInstance()->first('SELECT * FROM users WHERE login = ?;', $login));
 	}
 
-	public function get(string $login): ?stdClass
+	public function get(string $login): ?User
 	{
 		$user = $this->fetch($login);
 
@@ -57,124 +57,16 @@ class Users
 
 			$user->is_admin = $ldap->checkIsAdmin($login);
 		}
-		elseif (!$user) {
-			return null;
-		}
-
-		return $this->makeUserObjectGreatAgain($user);
-	}
-
-	public function getById(int $id): ?stdClass
-	{
-		$user = DB::getInstance()->first('SELECT * FROM users WHERE id = ?;', $id);
-		return $this->makeUserObjectGreatAgain($user);
-	}
-
-	protected function makeUserObjectGreatAgain(?stdClass $user): ?stdClass
-	{
-		if (null === $user) {
-			return $user;
-		}
-
-		$user->path = sprintf(STORAGE_PATH, $user->login);
-		$user->path = rtrim($user->path, '/') . '/';
-
-		if (!file_exists($user->path)) {
-			$parent = dirname($user->path);
-
-			// Create parent directory with default permissions, if required
-			if (!file_exists($parent)) {
-				mkdir($parent, 0770, true);
-			}
-
-			mkdir($user->path, fileperms($parent), true);
-		}
-
-		$user->path = rtrim(realpath($user->path), '/') . '/';
-
-		$user->dav_url = WWW_URL . 'files/' . $user->login . '/';
-		$user->avatar_url = WWW_URL . 'avatars/' . substr(md5($user->login), 0, 16);
 
 		return $user;
 	}
 
-	public function create(string $login, string $password, int $quota = DEFAULT_QUOTA, bool $is_admin = false)
+	public function getById(int $id): ?User
 	{
-		$login = strtolower(trim($login));
-		$hash = password_hash(trim($password), \PASSWORD_DEFAULT);
-
-		$db = DB::getInstance();
-		$db->begin();
-
-		$db->run('INSERT OR IGNORE INTO users (login, password, quota, is_admin) VALUES (?, ?, ?, ?);',
-			$login, $hash, $quota * 1024 * 1024, $is_admin ? 1 : 0);
-
-		$user = $this->fetch($login);
-		$user = $this->makeUserObjectGreatAgain($user);
-
-		if (file_exists($user->path)) {
-			// Just in case the user data directory already exists, index its files
-			Storage::indexFiles($user, null);
-		}
-
-		$db->commit();
+		return User::from(DB::getInstance()->first('SELECT * FROM users WHERE id = ?;', $id));
 	}
 
-	public function edit(int $id, array $data)
-	{
-		$old_user = $this->getById($id);
-
-		if (!$old_user) {
-			throw new \LogicException('User does not exist: ' . $id);
-		}
-
-		$params = [];
-		$new_login = null;
-
-		if (!empty($data['password'])) {
-			$params['password'] = password_hash(trim($data['password']), \PASSWORD_DEFAULT);
-		}
-
-		if (!empty($data['login'])) {
-			$new_login = strtolower(trim($data['login']));
-
-			if ($new_login !== $old_user->login) {
-				$exists = $this->get($new_login);
-				$params['login'] = $new_login;
-
-				if ($exists) {
-					throw new \LogicException('User login already exists: ' . $params['login']);
-				}
-			}
-			else {
-				$new_login = null;
-			}
-		}
-
-		if (isset($data['quota'])) {
-			$params['quota'] = $data['quota'] <= 0 ? (int) $data['quota'] : (int) $data['quota'] * 1024 * 1024;
-		}
-
-		if (isset($data['is_admin'])) {
-			$params['is_admin'] = (int) $data['is_admin'];
-		}
-
-		$update = array_map(fn($k) => $k . ' = ?', array_keys($params));
-		$update = implode(', ', $update);
-		$params = array_values($params);
-		$params[] = $id;
-
-		DB::getInstance()->run(sprintf('UPDATE users SET %s WHERE id = ?;', $update), ...$params);
-
-		if ($new_login) {
-			$path = sprintf(STORAGE_PATH, $new_login);
-			$path = rtrim($path, '/') . '/';
-
-			rename($old_user->path, $path);
-		}
-	}
-
-	public function current(): ?stdClass
+	public function current(): ?User
 	{
 		if ($this->current) {
 			return $this->current;
@@ -195,7 +87,7 @@ class Users
 			$this->setPermanentSession($user->id);
 		}
 
-		$this->current = $this->makeUserObjectGreatAgain($_SESSION['user'] ?? null);
+		$this->current = $_SESSION['user'] ?? null;
 
 		return $this->current;
 	}
@@ -212,7 +104,7 @@ class Users
 		return true;
 	}
 
-	public function login(?string $login, ?string $password, bool $permanent = false): ?stdClass
+	public function login(?string $login, ?string $password, bool $permanent = false): ?User
 	{
 		$login = null !== $login ? strtolower(trim($login)) : null;
 
@@ -284,12 +176,6 @@ class Users
 			'samesite' => 'Strict',
 			'secure'   => parse_url(WWW_URL, PHP_URL_SCHEME) === 'https',
 		]);
-	}
-
-	public function logout(): void
-	{
-		DB::getInstance()->run('UPDATE users SET session_id = NULL WHERE id = ?;', $this->current()->id);
-		session_destroy();
 	}
 
 	public function appSessionCreate(?string $token = null): ?stdClass
@@ -397,58 +283,10 @@ class Users
 		}
 
 		@session_start();
+		$user = Users::from($user);
 		$_SESSION['user'] = $user;
 
-		return $this->makeUserObjectGreatAgain($user);
-	}
-
-	public function quota(?stdClass $user = null, bool $with_trash = false): stdClass
-	{
-		$user ??= $this->current();
-		$used = $total = $free = 0;
-		$trash = null;
-
-		if ($user) {
-			if ($user->quota == -1) {
-				$total = (int) @disk_total_space($user->path);
-				$free = (int) @disk_free_space($user->path);
-
-				// Guard against filesystems where system calls fail (false) or
-				// return meaningless values
-				if ($total === false || $free === false || $total <= 0) {
-					$used = Storage::getDirectorySize($user->path);
-				}
-				else {
-					$used = $total - $free;
-				}
-			}
-			elseif ($user->quota == 0) {
-				$total = 0;
-				$free = 0;
-				$used = 0;
-			}
-			else {
-				$used = Storage::getDirectorySize($user->path);
-				$total = $user->quota;
-				$free = max(0, $total - $used);
-			}
-
-			$trash = $with_trash ? Storage::getDirectorySize($user->path . '/.trash') : null;
-		}
-
-		return (object) compact('free', 'total', 'used', 'trash');
-	}
-
-	public function delete(?stdClass $user)
-	{
-		Storage::deleteDirectory($user->path);
-		DB::getInstance()->run('DELETE FROM users WHERE id = ?;', $user->id);
-	}
-
-	public function emptyTrash(?stdClass $user)
-	{
-		$path = rtrim($user->path, '/') . '/.trash';
-		Storage::deleteDirectory($path);
+		return $user;
 	}
 
 	public function indexAllFiles()

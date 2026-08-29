@@ -6,11 +6,11 @@
 </h3>
 
 <dl>
-	<dd><h3>{$percent} used, {$quota.free|format_bytes} free</h3></dd>
+	<dd><h3>{$percent} used, {$quota.free|format_mbytes} free</h3></dd>
 	<dd><progress max="{$quota.total}" value="{$quota.used}"></progress>
-	<dd>Used {$quota.used|format_bytes} out of a total of {$quota.total|format_bytes}.</dd>
+	<dd>Used {$quota.used|format_mbytes} out of a total of {$quota.total|format_mbytes}.</dd>
 	<dd>
-		Trash: {$quota.trash|format_bytes}.
+		Trash: {$quota.trash|format_mbytes}.
 		{if $quota.trash}
 			<br /><a href="?empty_trash" class="btn sm">{{Empty trash now}}</a>
 		{/if}

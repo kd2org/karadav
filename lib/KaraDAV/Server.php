@@ -9,6 +9,7 @@ class Server
 	public Users $users;
 	public WebDAV $dav;
 	public NextCloud $nc;
+	public Storage $storage;
 
 	public function __construct()
 	{
@@ -16,8 +17,9 @@ class Server
 		$this->users = new Users;
 		$this->dav = new WebDAV;
 		$this->nc = new NextCloud($this->users);
-		$storage = new Storage($this->users, $this->nc);
-		$this->dav->setStorage($storage);
+
+		$this->storage = new Storage($this->nc);
+		$this->dav->setStorage($this->storage);
 	}
 
 	public function route(string $uri, string $relative_uri): bool
@@ -65,6 +67,7 @@ class Server
 			return true;
 		}
 
+		$this->storage->setUser($user);
 		$this->dav->setBaseURI($base . '/files/' . $user->login . '/');
 
 		return $this->dav->route($uri);
