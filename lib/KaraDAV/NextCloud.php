@@ -10,7 +10,7 @@ use KD2\Graphics\Image;
 class NextCloud extends WebDAV_NextCloud
 {
 	protected Users $users;
-	protected ?\stdClass $user;
+	protected ?User $user;
 	protected string $temporary_chunks_path;
 
 	public function __construct(Users $users)
@@ -56,6 +56,7 @@ class NextCloud extends WebDAV_NextCloud
 		}
 
 		$this->user = $user;
+		$this->storage->setUser($user);
 
 		return true;
 	}
@@ -78,7 +79,10 @@ class NextCloud extends WebDAV_NextCloud
 
 	public function getUserQuota(): array
 	{
-		return (array) $this->users->quota($this->users->current());
+		$quota = (array) $this->user->quota();
+		// Add bytes to quota values as this is what nextcloud is expecting
+		$quota = array_map(fn($v) => $v ? strval($v) . '000000' : $v, $quota);
+		return $quota;
 	}
 
 	public function generateToken(): string
@@ -155,14 +159,14 @@ class NextCloud extends WebDAV_NextCloud
 
 		$file_path = $path . '/' . $part;
 		$out = fopen($file_path, 'wb');
-		$quota = $this->getUserQuota();
-		$used = $quota['used'] + Storage::getDirectorySize($path);
+		$quota = $this->user->quota();
+		$size = Storage::getDirectorySize($path);
 
 		while (!feof($pointer)) {
 			$data = fread($pointer, 8192);
-			$used += strlen($data);
+			$size += Storage::addNumbersSafe($size, strlen($data));
 
-			if ($used > $quota['total']) {
+			if (Storage::compareQuotaSafe($quota->used, $size)) {
 				$this->deleteChunks($login, $name);
 				throw new WebDAV_Exception('Your quota does not allow for the upload of this file', 403);
 			}

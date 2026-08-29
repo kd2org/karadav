@@ -46,7 +46,7 @@ if (!$user) {
 http_response_code(200);
 header('Content-Type: application/json; charset=utf-8');
 
-$quota = $users->quota($user);
+$quota = $user->quota();
 $data = compact('user', 'quota');
 
 echo json_encode($data, JSON_PRETTY_PRINT);

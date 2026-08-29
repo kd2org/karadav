@@ -37,10 +37,19 @@ class Storage extends AbstractStorage implements TrashInterface
 		$this->nextcloud = $nextcloud;
 	}
 
-	protected function getQuota(): stdClass
+	protected function getQuota(bool $in_bytes = false): stdClass
 	{
 		$this->quota ??= $this->user->quota();
-		return $this->quota;
+		$quota = $this->quota;
+
+		if ($in_bytes) {
+			foreach ($quota as &$value) {
+				$value = $value ? strval($value) . '000000' : $value;
+			}
+			unset($value);
+		}
+
+		return $quota;
 	}
 
 	public function setUser(User $user): void
@@ -245,7 +254,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		if ($uri === '') {
 			// Shortcut
 			if ($prop === 'size') {
-				return $this->getQuota()->used;
+				return $this->getQuota(true)->used;
 			}
 
 			$sql = sprintf('SELECT %s FROM files WHERE user = ?;', $col);
@@ -384,9 +393,9 @@ class Storage extends AbstractStorage implements TrashInterface
 
 				return $this->getTrashInfo(basename($uri))['Path'] ?? null;
 			case 'DAV::quota-available-bytes':
-				return $this->getQuota()->free;
+				return $this->getQuota(true)->free;
 			case 'DAV::quota-used-bytes':
-				return $this->getQuota()->used;
+				return $this->getQuota(true)->used;
 			case Nextcloud::PROP_OC_SIZE:
 				if (is_dir($target)) {
 					return $this->getRecursiveFileProperty($uri, 'size') ?? 0;
@@ -497,9 +506,9 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		while (!feof($pointer)) {
 			$bytes = fread($pointer, 8192);
-			$size += strlen($bytes);
+			$size = self::addNumbersSafe($size, strlen($bytes));
 
-			if ($size > $quota->free) {
+			if (self::compareQuotaSafe($quota->free, $size)) {
 				$delete = true;
 				break;
 			}
@@ -619,7 +628,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		if (false === $move) {
 			$quota = $this->getQuota();
 
-			if (self::getFilesize($source) > $quota->free) {
+			if (self::compareQuotaSafe($quota->free, self::getFilesize($source))) {
 				throw new WebDAV_Exception('Your quota is exhausted', 507);
 			}
 		}
@@ -757,7 +766,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$quota = $this->getQuota();
 
-		if (!$quota->free) {
+		if ($quota->free <= 0) {
 			throw new WebDAV_Exception('Your quota is exhausted', 507);
 		}
 
@@ -898,6 +907,20 @@ class Storage extends AbstractStorage implements TrashInterface
 		if ($data !== false
 			&& preg_match('/Content-Length: (\d+)/', $data, $matches)) {
 			return 0 + $matches[1];
+		}
+
+		return false;
+	}
+
+	static public function compareQuotaSafe(int|string $max_in_mb, int|string $value_in_bytes): bool
+	{
+		// Small files and 64 bits systems
+		if ($value_in_bytes > $max_in_mb . '000000') {
+			return true;
+		}
+
+		if (substr($value_in_bytes, 0, -6) > $max_in_mb) {
+			return true;
 		}
 
 		return false;
