@@ -255,7 +255,7 @@ class Storage extends AbstractStorage implements TrashInterface
 		if ($uri === '') {
 			// Shortcut
 			if ($prop === 'size') {
-				return $this->getQuota(true)->used;
+				return (int) $this->getQuota(true)->used;
 			}
 
 			$sql = sprintf('SELECT %s FROM files WHERE user = ?;', $col);
