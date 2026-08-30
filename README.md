@@ -178,7 +178,7 @@ I don't own an Apple device. If someone with an Apple device wants to do some te
   * [CarotDAV](http://rei.to/carotdav_en.html) (proprietary, untested)
 * Android:
   * [EasySync](https://github.com/phpbg/easysync) (does not allow to sync user-chosen folders sadly)
-  * [WebDAV provider](https://github.com/alexbakker/webdav-provider) (untested)
+  * [WebDAV provider](https://github.com/alexbakker/webdav-provider) (gives access to WebDAV from other file managers, like DAVx5 does, untested)
   * [WebDAV Sync](https://github.com/SakiiCode/WebDavSync) (untested)
   * [X-Plore](https://www.lonelycatgames.com/apps/xplore) (proprietary) has been tested and works, but the app is now full of intrusive video ads, don't use it!
   * [DrivinCloudOpen](https://github.com/bohwaz/drivinCloudOpen) is a defunct open-source Android WebDAV client that was easy to use

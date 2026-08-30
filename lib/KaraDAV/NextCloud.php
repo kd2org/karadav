@@ -35,8 +35,8 @@ class NextCloud extends WebDAV_NextCloud
 			'logo'                 => '',
 			'background'           => '#d3dddb',
 			'background-text'      => '#000000',
-			'background-plain'     => '',
-			'background-default'   => '',
+			'background-plain'     => false,
+			'background-default'   => false,
 			'logoheader'           => $this->root_url . '/logo.svg',
 			'favicon'              => $this->root_url . '/logo.svg',
 		];
