@@ -356,7 +356,7 @@ class Storage extends AbstractStorage implements TrashInterface
 			case NextCloud::PROP_OC_ID:
 				$id = $this->getFileId($uri);
 				if (!$id) {
-					var_dump($id, $uri); exit;
+					return null;
 				}
 				// ID = fileid (padded with zeros to be at least 8 characters long) + instanceid
 				$id = str_pad((string)$id, 8, '0', STR_PAD_LEFT) . 'oc' . substr(sha1(WWW_URL), 0, 10);
