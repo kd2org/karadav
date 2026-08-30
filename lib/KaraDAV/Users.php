@@ -86,7 +86,15 @@ class Users
 			$this->setPermanentSession($user->id);
 		}
 
-		$this->current = $_SESSION['user'] ?? null;
+		$user = $_SESSION['user'] ?? null;
+
+		// Old sessions (pre-refactor) stored a stdClass with stale, byte-based quota values
+		if ($user instanceof stdClass) {
+			$user = $this->getById($user->id);
+			$_SESSION['user'] = $user;
+		}
+
+		$this->current = $user;
 
 		return $this->current;
 	}
