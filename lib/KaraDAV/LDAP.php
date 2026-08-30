@@ -80,7 +80,7 @@ class LDAP
 	public function checkPassword(string $login, string $password): bool
 	{
 		$this->connect();
-		$ok = ldap_bind($this->ldap, sprintf(LDAP_LOGIN, $login), $password);
+		$ok = @ldap_bind($this->ldap, sprintf(LDAP_LOGIN, $login), $password);
 		return (bool) $ok;
 	}
 }
