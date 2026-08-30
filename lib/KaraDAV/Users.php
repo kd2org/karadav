@@ -86,6 +86,12 @@ class Users
 			$this->setPermanentSession($user->id);
 		}
 
+		// Old sessions (pre-refactor) stored a stdClass with stale, byte-based quota values
+		// FIXME: remove in 1.0 release
+		if ($user instanceof stdClass) {
+			$_SESSION['user'] = $this->getById($user->id);
+		}
+
 		$this->current = $_SESSION['user'] ?? null;
 
 		return $this->current;
