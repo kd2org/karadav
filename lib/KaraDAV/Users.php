@@ -88,8 +88,8 @@ class Users
 
 		// Old sessions (pre-refactor) stored a stdClass with stale, byte-based quota values
 		// FIXME: remove in 1.0 release
-		if ($user instanceof stdClass) {
-			$_SESSION['user'] = $this->getById($user->id);
+		if (($_SESSION['user'] ?? null) instanceof stdClass) {
+			$_SESSION['user'] = $this->getById($_SESSION['user']->id);
 		}
 
 		$this->current = $_SESSION['user'] ?? null;
