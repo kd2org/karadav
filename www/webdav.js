@@ -537,7 +537,12 @@ const WebDAVNavigator = async function (url, options) {
 
 	browser.setRowPermissions = (tr, file) => {
 		var p = file.permissions;
-		var hideButton = a => document.querySelector('.buttons .' + a).style.display = 'none';
+		var hideButton = a => {
+			var b = tr.querySelector('.buttons .' + a);
+			if (b) {
+				b.style.display = 'none';
+			}
+		};
 
 		if (!p.includes(PERM_RENAME)) {
 			hideButton('rename');
