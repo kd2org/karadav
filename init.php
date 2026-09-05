@@ -157,7 +157,13 @@ if (!file_exists(DB_FILE)) {
 	if (!LDAP::enabled()) {
 		$users = new Users;
 		$p = 'karadavdemo';
-		$users->create('demo', $p, 10, true);
+		$user = new User;
+		$user->create([
+			'login'    => 'demo',
+			'password' => $p,
+			'quota'    => 10,
+			'is_admin' => true,
+		]);
 		$users->login('demo', $p);
 		$_SESSION['install_password'] = $p;
 	}
