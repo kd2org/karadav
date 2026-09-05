@@ -335,7 +335,8 @@ class Storage extends AbstractStorage implements TrashInterface
 				// We are not returning OC checksums as this could slow directory listings
 				return null;
 			case NextCloud::PROP_NC_HAS_PREVIEW:
-				if (preg_match('!\.(?:webp|jpe?g|gif|png)$!i', $uri)) {
+				if (ENABLE_THUMBNAILS_OK
+					&& preg_match('!\.(?:webp|jpe?g|gif|png)$!i', $uri)) {
 					return 'true';
 				}
 
@@ -647,7 +648,7 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$method = $move ? 'rename' : 'copy';
 
-		if ($method == 'copy' && is_dir($source)) {
+		if ($method === 'copy' && is_dir($source)) {
 			$this->ensureDirectoryExists($target);
 
 			if (!is_dir($target)) {
@@ -661,6 +662,7 @@ class Storage extends AbstractStorage implements TrashInterface
 				} else {
 					copy($item, $target . DIRECTORY_SEPARATOR . $iterator->getSubPathname());
 				}
+
 				touch($target . DIRECTORY_SEPARATOR . $iterator->getSubPathname(), filemtime($item));
 			}
 		}
@@ -677,16 +679,36 @@ class Storage extends AbstractStorage implements TrashInterface
 
 		$db = DB::getInstance();
 
+		if ($move) {
+			// FIXME: instead of delete/re-create indexed files, which changes their IDs, update their path in the cache
+			$sql = 'SELECT id FROM files WHERE user = ? AND (path = ? OR path LIKE ? OR path = ? OR path LIKE ?);';
+			$params = [
+				$this->user->id,
+				$destination,
+				$db->getPathLikeExpression($destination),
+				$uri,
+				$db->getPathLikeExpression($uri)
+			];
+
+			// Remove thumbnails
+			foreach ($db->iterate($sql, ...$params) as $file) {
+				foreach (self::THUMBNAIL_SIZES as $size) {
+					@unlink($this->getThumbnailCachePath($file->id, $size));
+				}
+			}
+		}
+
 		$db->begin();
-		$db->run('DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ? OR path = ? OR path LIKE ?);',
-			$this->user->id,
-			$destination,
-			$db->getPathLikeExpression($destination),
-			$uri,
-			$db->getPathLikeExpression($uri)
-		);
+
+		if ($move) {
+			// Delete old cache entries
+			$sql = 'DELETE FROM files WHERE user = ? AND (path = ? OR path LIKE ? OR path = ? OR path LIKE ?);';
+			$db->run($sql, ...$params);
+		}
 
 		self::indexFiles($this->user, $destination);
+
+		// TODO: copy thumbnails when copying image files
 
 		$db->commit();
 
@@ -877,11 +899,21 @@ class Storage extends AbstractStorage implements TrashInterface
 			ltrim($path, '/')
 		);
 
+
 		// root path doesn't exist in database, just assign a very large value
 		// if you have more than 1 trillion files well… you might miss one
 		// Fix from @adamshand: keep the number in 32 bit range for iOS clients
 		if (!$id && $path === '') {
 			$id = 1000000000;
+		}
+
+		if (!$id) {
+			$target = $this->root . $path;
+			$this->validatePath($target);
+
+			if (file_exists($target)) {
+				$this->createFileCache($path);
+			}
 		}
 
 		return $id;
