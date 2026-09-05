@@ -43,6 +43,8 @@ class Storage extends AbstractStorage implements TrashInterface
 		$quota = $this->quota;
 
 		if ($in_bytes) {
+			$quota = clone $quota;
+
 			foreach ($quota as &$value) {
 				$value = $value ? strval($value) . '000000' : $value;
 			}
@@ -57,6 +59,11 @@ class Storage extends AbstractStorage implements TrashInterface
 		$this->user = $user;
 		$this->ensureDirectoryExists($user->path);
 		$this->root = realpath($user->path) . '/';
+	}
+
+	public function getUserURL(): string
+	{
+		return $this->user->dav_url;
 	}
 
 	protected function isPathValid(string $path): bool
@@ -328,7 +335,7 @@ class Storage extends AbstractStorage implements TrashInterface
 				// We are not returning OC checksums as this could slow directory listings
 				return null;
 			case NextCloud::PROP_NC_HAS_PREVIEW:
-				if (preg_match('!\.(?:webp|jpe?g|gif|png)$i!', $uri)) {
+				if (preg_match('!\.(?:webp|jpe?g|gif|png)$!i', $uri)) {
 					return 'true';
 				}
 
