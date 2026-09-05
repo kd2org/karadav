@@ -705,6 +705,11 @@ class Server
 		$items = [$uri => $properties];
 
 		if ($depth) {
+			// Don't request quota on each file/folder, only on root element
+			unset($requested['DAV::quota-used-bytes']);
+			unset($requested['DAV::quota-available-bytes']);
+			$requested_keys = $requested ? array_keys($requested) : null;
+
 			foreach ($this->storage->list($uri, $requested) as $file => $properties) {
 				$path = trim($uri . '/' . $file, '/');
 				$properties = $properties ?? $this->storage->propfind($path, $requested_keys, 0);
@@ -808,7 +813,7 @@ class Server
 				// see https://github.com/opencloud-eu/android/issues/74
 				if ($name == 'DAV::creationdate'
 					&& ($value instanceof \DateTimeInterface)
-					&& false !== preg_match('/(?:owncloud|opencloud).*android/i', $_SERVER['HTTP_USER_AGENT'] ?? '')) {
+					&& preg_match('/(?:owncloud|opencloud).*android/i', $_SERVER['HTTP_USER_AGENT'] ?? '')) {
 					$value = $value->getTimestamp();
 				}
 				// ownCloud app crashes if mimetype is provided for a directory

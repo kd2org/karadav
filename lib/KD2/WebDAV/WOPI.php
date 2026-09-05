@@ -268,9 +268,11 @@ class WOPI
 			'Version'                 => $props['DAV::getetag'] ?? md5($uri . $size . $modified),
 			'ReadOnly'                => $readonly,
 			'UserCanWrite'            => !$readonly,
-			'UserCanRename'           => !$readonly,
-			'DisableCopy'             => $readonly,
+			'UserCanRename'           => false, // this would require implementing the rename endpoint (TODO)
+			'DisableCopy'             => false, // this disables copy to the clipboard, not making a copy of a document
 			'UserCanNotWriteRelative' => true, // This requires you to implement file name UI
+			'DisableAISettings'       => true, // WTF is this
+			'EnableRemoteAIContent'   => false, // WTF is this
 		];
 
 		if (isset($props[self::PROP_USER_AVATAR])) {
