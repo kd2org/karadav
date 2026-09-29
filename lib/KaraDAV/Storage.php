@@ -1032,7 +1032,15 @@ class Storage extends AbstractStorage implements TrashInterface
 		$path = rtrim($path, '/');
 		$path = realpath($path);
 
-		$dir = opendir($path);
+		if ($path === false || !is_dir($path)) {
+			return;
+		}
+
+		$dir = @opendir($path);
+
+		if ($dir === false) {
+			return;
+		}
 
 		while ($f = readdir($dir)) {
 			// Skip dots
