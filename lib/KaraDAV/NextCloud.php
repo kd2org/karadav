@@ -165,9 +165,9 @@ class NextCloud extends WebDAV_NextCloud
 
 		while (!feof($pointer)) {
 			$data = fread($pointer, 8192);
-			$size += Storage::addNumbersSafe($size, strlen($data));
+			$size = Storage::addNumbersSafe($size, strlen($data));
 
-			if (Storage::compareQuotaSafe($quota->used, $size)) {
+			if (Storage::compareQuotaSafe($quota->free, $size)) {
 				$this->deleteChunks($login, $name);
 				throw new WebDAV_Exception('Your quota does not allow for the upload of this file', 403);
 			}
