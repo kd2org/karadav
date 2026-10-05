@@ -206,6 +206,7 @@ class Server
 				table, tr, td {
 					display: block !important;
 					text-align: left !important;
+					border: none !important;
 				}
 				td.size, td.date {
 					display: none !important;
