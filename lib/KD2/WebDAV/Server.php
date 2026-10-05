@@ -202,6 +202,15 @@ class Server
 			a { font-weight: normal !important; display: block; padding: .2em .5em; }
 			a:hover { background: #eee; }
 			td.file a { padding-left: 1em; }
+			@media screen and (max-width: 400px) {
+				table, tr, td {
+					display: block !important;
+					text-align: left !important;
+				}
+				td.size, td.date {
+					display: none !important;
+				}
+			}
 			</style>';
 
 		$out .= sprintf('<title>%s</title></head><body><h1>%1$s</h1><table width="100%%">', htmlspecialchars($uri ? str_replace('/', ' / ', $uri) : 'Files'));
@@ -257,7 +266,7 @@ class Server
 					$color = 'black';
 				}
 
-				$out .= sprintf('<tr><td class="name file"><a href="%s" style="color: %s;">%s</a></td><td class="size" align="right"><nobr>%s</nobr></td><td class="date" align="right"><nobr>%s</nobr></td></tr>',
+				$out .= sprintf('<tr><td class="name file"><a href="%s" style="color: %s;">%s</a></td><td class="size"><nobr>%s</nobr></td><td class="date"><nobr>%s</nobr></td></tr>',
 					rawurlencode($file),
 					$color,
 					htmlspecialchars($file),
