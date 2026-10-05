@@ -191,19 +191,27 @@ class Server
 		}
 
 		$out = '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0, target-densitydpi=device-dpi" /><style>
-			body { font-size: 1.1em; font-family: Arial, Helvetica, sans-serif; }
-			table { border-collapse: collapse; }
-			th, td { padding: .5em; text-align: left; border: 2px solid #ccc; }
+			body { font-family: monospace !important; }
+			table { border-collapse: collapse; width: 100%; }
+			td { padding: .2em .5em; text-align: left; }
+			td.name, td.size { border-right: 1px solid #ccc; }
+			td.date { text-align: right !important; }
+			td.name { padding: 0; }
 			span { font-size: 40px; line-height: 40px; }
+			h1 { background: #ddd; padding: .5rem; font-size: 1.2em; }
+			a { font-weight: normal !important; display: block; padding: .2em .5em; }
+			a:hover { background: #eee; }
+			td.file a { padding-left: 1em; }
 			</style>';
 
-		$out .= sprintf('<title>%s</title></head><body><h1>%1$s</h1><table>', htmlspecialchars($uri ? str_replace('/', ' / ', $uri) . ' - Files' : 'Files'));
+		$out .= sprintf('<title>%s</title></head><body><h1>%1$s</h1><table width="100%%">', htmlspecialchars($uri ? str_replace('/', ' / ', $uri) : 'Files'));
 
 		if (trim($uri)) {
-			$out .= '<tr><th colspan=3><a href="../"><b>Back</b></a></th></tr>';
+			$out .= '<tr><td colspan=2 class="name"><a href="../"><b>/..</b></a></td></tr>';
 		}
 
 		$props = null;
+		$year = date('Y');
 
 		foreach ($list as $file => $props) {
 			if (null === $props) {
@@ -213,7 +221,7 @@ class Server
 			$collection = !empty($props['DAV::resourcetype']) && $props['DAV::resourcetype'] == 'collection';
 
 			if ($collection) {
-				$out .= sprintf('<tr><td>[DIR]</td><th><a href="%s/"><b>%s</b></a></th></tr>', rawurlencode($file), htmlspecialchars($file));
+				$out .= sprintf('<tr><td class="name"><a href="%s/"><b>/%s</b></a></td></tr>', rawurlencode($file), htmlspecialchars($file));
 			}
 			else {
 				$size = $props['DAV::getcontentlength'];
@@ -221,18 +229,37 @@ class Server
 				if ($size > 1024*1024) {
 					$size = sprintf('%d MB', $size / 1024 / 1024);
 				}
-				elseif ($size) {
+				elseif ($size > 1024) {
 					$size = sprintf('%d KB', $size / 1024);
+				}
+				else {
+					$size .= ' B&nbsp;';
 				}
 
 				$date = $props['DAV::getlastmodified'];
 
 				if ($date instanceof \DateTimeInterface) {
-					$date = $date->format('d/m/Y H:i');
+					if ($date->format('Y') === $year) {
+						$date = $date->format('j M H:i');
+					}
+					else {
+						$date = $date->format('d/m/Y H:i');
+					}
 				}
 
-				$out .= sprintf('<tr><td></td><th><a href="%s">%s</a></th><td>%s</td><td>%s</td></tr>',
+				if (preg_match('/\.(?:jpe?g|gif|webp|png|mkv|avi|mp4|mp3|ogg|m4a|flac)$/i', $file)) {
+					$color = 'darkgreen';
+				}
+				elseif (preg_match('/\.(?:pdf|docx?|xlsx?|od[a-z])$/i', $file)) {
+					$color = 'darkred';
+				}
+				else {
+					$color = 'black';
+				}
+
+				$out .= sprintf('<tr><td class="name file"><a href="%s" style="color: %s;">%s</a></td><td class="size" align="right"><nobr>%s</nobr></td><td class="date" align="right"><nobr>%s</nobr></td></tr>',
 					rawurlencode($file),
+					$color,
 					htmlspecialchars($file),
 					$size,
 					$date
@@ -457,8 +484,15 @@ class Server
 
 		if ($is_collection) {
 			$list = $this->storage->list($uri, self::BASIC_PROPERTIES);
+			$accepts_html = isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'html') || $_SERVER['HTTP_ACCEPT'] === '*/*');
 
-			if (!isset($_SERVER['HTTP_ACCEPT']) || false === strpos($_SERVER['HTTP_ACCEPT'], 'html')) {
+			if (!$accepts_html
+				&& isset($_SERVER['HTTP_USER_AGENT'])
+				&& false !== strpos('curl/', $_SERVER['HTTP_USER_AGENT'])) {
+				$accepts_html = false;
+			}
+
+			if (!$accepts_html) {
 				$list = is_array($list) ? $list : iterator_to_array($list);
 
 				if (!count($list)) {

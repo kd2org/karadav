@@ -36,6 +36,7 @@ If you are looking for an even lighter WebDAV server, try also our other server,
 	* Download/delete selected files from a directory
   * Download selected files as a ZIP file
   * Thumbnails
+* Support for listing and downloading files for browser without Javascript (Lynx, Dillo, NetSurf, etc. even curl): always have access to your files!
 * WebDAV class 1, 2, 3 support, support for Etags
 * No database server is required (SQLite is used)
 * Multiple user accounts

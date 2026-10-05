@@ -13,17 +13,23 @@ class WebDAV extends WebDAV_Server
 		if (null !== $out) {
 			$options = [
 				'wopi_discovery_url' => WOPI_DISCOVERY_URL,
-				'server_url' => WWW_URL,
-				'webdav_url' => $this->storage->getUserURL(),
-				'autosave' => true,
+				'server_url'         => WWW_URL,
+				'webdav_url'         => $this->storage->getUserURL(),
+				'autosave'           => true,
+				'has_trash'          => true,
 			];
 
 			$uri = $this->storage->getUserURL() . $uri;
 			$js = WWW_URL . (DEV ? 'browser/boot.js' : 'browser.min.js');
 
 			$out = str_replace('</head>', sprintf('<script type="text/javascript" src="%s"></script>
-				<script type="text/javascript">window.onload = () => browser.init(%s, %s);</script>', $js, json_encode($uri), json_encode($options)), $out);
-			$out = str_replace('<body>', '<body><noscript>Please enable javascript</noscript><div style="opacity:0">', $out);
+				<script type="text/javascript">window.onload = () => { try { browser.init(%s, %s); } catch (e) { document.body.style.opacity = \'unset\'; throw e; } };</script>', $js, json_encode($uri), json_encode($options)), $out);
+			$out = str_replace('<body>', '<body>
+				<style type="text/css">body { opacity: 0; }</style>
+				<noscript>
+					<style type="text/css">body { opacity: unset; }</style>
+					Javascript is required to manage files, you will only be able to browse and download files.
+				</noscript>', $out);
 		}
 
 		return $out;
